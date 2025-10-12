@@ -1,6 +1,6 @@
 {
-  "id": "00ebb1f1-921c-485a-bc12-46a8e3cf386a",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "8c7fc012-5bc1-4f09-be90-6ad76d9b2677",
+  "prevId": "00ebb1f1-921c-485a-bc12-46a8e3cf386a",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -918,7 +918,8 @@
         "TEACHER",
         "STUDENT",
         "PARENT",
-        "ACCOUNTANT"
+        "ACCOUNTANT",
+        "CLASS_TEACHER"
       ]
     }
   },
