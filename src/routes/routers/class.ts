@@ -1,0 +1,9 @@
+import express from "express";
+import Controllers from "../../controllers";
+
+const classRouter = express.Router();
+
+classRouter.post("/", Controllers.Class.create);
+classRouter.get("/:schoolId", Controllers.Class.getAll);
+
+export default classRouter;
