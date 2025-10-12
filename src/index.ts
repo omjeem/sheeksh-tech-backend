@@ -21,7 +21,7 @@ app.delete("/flush", async (req, res) => {
     // if (process.env.NODE_ENV === "production") {
     //   return res.status(403).json({ error: "Forbidden in production" });
     // }
-    await db.execute(sql`TRUNCATE TABLE users RESTART IDENTITY CASCADE`);
+    await db.execute(sql`TRUNCATE TABLE schools RESTART IDENTITY CASCADE`);
 
     return successResponse(res, 200, "All data flushed successfully.");
   } catch (error: any) {
