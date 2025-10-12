@@ -41,6 +41,7 @@ export const schoolsTable = pgTable("schools", {
   meta: jsonb("meta"),
   isApproved: boolean("isApproved").default(false),
   isSuspended: boolean("isSuspended").default(false),
+  isDeleted : boolean("isDeleted").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
