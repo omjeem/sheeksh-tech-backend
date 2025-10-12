@@ -11,26 +11,34 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import { jsonb } from "drizzle-orm/pg-core";
 
 // Enum for user roles
 
-enum UserRoles {
+export enum UserRoles {
   SUPER_ADMIN = "SUPER_ADMIN",
   ADMIN = "ADMIN",
   TEACHER = "TEACHER",
   STUDENT = "STUDENT",
   PARENT = "PARENT",
   ACCOUNTANT = "ACCOUNTANT",
-  CLASS_TEACHER = "CLASS_TEACHER"
+  CLASS_TEACHER = "CLASS_TEACHER",
 }
 export const roleEnum = pgEnum("role", UserRoles);
 
 // Schools table (multi-tenant entity)
-export const schools = pgTable("schools", {
+export const schoolsTable = pgTable("schools", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
   url: varchar("url", { length: 255 }).unique().notNull(), // e.g., school-specific subdomain
   address: text("address").notNull(),
+  phone: varchar("phone").notNull(),
+  superAdminName: varchar("superAdminName").notNull(),
+  superAdminEmail: varchar("superAdminEmail").notNull(),
+  superAdminPhone: varchar("superAdminPhone").notNull(),
+  superAdminPassword: varchar("superAdminPassword").notNull(),
+  meta: jsonb("meta"),
   isApproved: boolean("isApproved").default(false),
   isSuspended: boolean("isSuspended").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
@@ -38,10 +46,10 @@ export const schools = pgTable("schools", {
 });
 
 // Users table (all roles: super admins, teachers, students, parents)
-export const users = pgTable("users", {
+export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(), // Ties user to a school
   role: roleEnum("role").notNull(),
   username: varchar("username", { length: 100 }).unique().notNull(), // Auto-generated initially
@@ -54,16 +62,16 @@ export const users = pgTable("users", {
 });
 
 // Students table (specific student data)
-export const students = pgTable(
+export const studentsTable = pgTable(
   "students",
   {
     id: uuid("id").primaryKey().defaultRandom(),
     userId: uuid("user_id")
-      .references(() => users.id)
+      .references(() => usersTable.id)
       .notNull()
       .unique(), // Links to users table
     schoolId: uuid("school_id")
-      .references(() => schools.id)
+      .references(() => schoolsTable.id, { onDelete: "cascade" })
       .notNull(),
     srNo: varchar("sr_no", { length: 50 }).notNull(), // Unique student ID per school
     dateOfBirth: timestamp("date_of_birth"),
@@ -79,37 +87,37 @@ export const students = pgTable(
 );
 
 // Teachers table (specific teacher data)
-export const teachers = pgTable("teachers", {
+export const teachersTable = pgTable("teachers", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id")
-    .references(() => users.id)
+    .references(() => usersTable.id)
     .notNull()
     .unique(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
 // Teacher-School history (handles teacher school switches)
-export const teacherSchoolHistory = pgTable("teacher_school_history", {
+export const teacherSchoolHistoryTable = pgTable("teacher_school_history", {
   id: serial("id").primaryKey(),
   teacherId: uuid("teacher_id")
-    .references(() => teachers.id)
+    .references(() => teachersTable.id)
     .notNull(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   startDate: timestamp("start_date").defaultNow().notNull(),
   endDate: timestamp("end_date"), // Null if currently employed
 });
 
 // Academic sessions (e.g., 2025-2026)
-export const sessions = pgTable("sessions", {
+export const sessionsTable = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   name: varchar("name", { length: 100 }).notNull(), // e.g., "2025-2026"
   startDate: timestamp("start_date").notNull(),
@@ -119,44 +127,44 @@ export const sessions = pgTable("sessions", {
 });
 
 // Classes (e.g., Grade 10)
-export const classes = pgTable("classes", {
+export const classesTable = pgTable("classes", {
   id: uuid("id").primaryKey().defaultRandom(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   name: varchar("name", { length: 100 }).notNull(), // e.g., "Grade 10"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Sections (e.g., 10A, 10B)
-export const sections = pgTable("sections", {
+export const sectionsTable = pgTable("sections", {
   id: uuid("id").primaryKey().defaultRandom(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   classId: uuid("class_id")
-    .references(() => classes.id)
+    .references(() => classesTable.id)
     .notNull(),
   name: varchar("name", { length: 50 }).notNull(), // e.g., "10A"
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Student-Class assignments (links students to classes/sections per session)
-export const studentClasses = pgTable(
+export const studentClassesTable = pgTable(
   "student_classes",
   {
     id: serial("id").primaryKey(),
     studentId: uuid("student_id")
-      .references(() => students.id)
+      .references(() => studentsTable.id)
       .notNull(),
     classId: uuid("class_id")
-      .references(() => classes.id)
+      .references(() => classesTable.id, { onDelete: "cascade" })
       .notNull(),
     sectionId: uuid("section_id")
-      .references(() => sections.id)
+      .references(() => sectionsTable.id)
       .notNull(),
     sessionId: uuid("session_id")
-      .references(() => sessions.id)
+      .references(() => sessionsTable.id)
       .notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
@@ -169,27 +177,27 @@ export const studentClasses = pgTable(
 );
 
 // Fees structure (per school)
-export const feeStructures = pgTable("fee_structures", {
+export const feeStructuresTable = pgTable("fee_structures", {
   id: uuid("id").primaryKey().defaultRandom(),
   schoolId: uuid("school_id")
-    .references(() => schools.id)
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   name: varchar("name", { length: 100 }).notNull(), // e.g., "Annual Tuition"
   amount: integer("amount").notNull(),
   sessionId: uuid("session_id")
-    .references(() => sessions.id)
+    .references(() => sessionsTable.id)
     .notNull(),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Student fee assignments
-export const studentFees = pgTable("student_fees", {
+export const studentFeesTable = pgTable("student_fees", {
   id: serial("id").primaryKey(),
   studentId: uuid("student_id")
-    .references(() => students.id)
+    .references(() => studentsTable.id, { onDelete: "cascade" })
     .notNull(),
   feeStructureId: uuid("fee_structure_id")
-    .references(() => feeStructures.id)
+    .references(() => feeStructuresTable.id)
     .notNull(),
   amountPaid: integer("amount_paid").default(0).notNull(),
   dueDate: timestamp("due_date").notNull(),
@@ -198,140 +206,143 @@ export const studentFees = pgTable("student_fees", {
 });
 
 // Relations
-export const schoolsRelations = relations(schools, ({ many }) => ({
-  users: many(users),
-  students: many(students),
-  teachers: many(teachers),
-  sessions: many(sessions),
-  classes: many(classes),
-  feeStructures: many(feeStructures),
+export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
+  users: many(usersTable),
+  students: many(studentsTable),
+  teachers: many(teachersTable),
+  sessions: many(sessionsTable),
+  classes: many(classesTable),
+  feeStructures: many(feeStructuresTable),
 }));
 
-export const usersRelations = relations(users, ({ one, many }) => ({
-  school: one(schools, {
-    fields: [users.schoolId],
-    references: [schools.id],
+export const usersRelations = relations(usersTable, ({ one, many }) => ({
+  school: one(schoolsTable, {
+    fields: [usersTable.schoolId],
+    references: [schoolsTable.id],
   }),
-  student: one(students, {
-    fields: [users.id],
-    references: [students.userId],
+  student: one(studentsTable, {
+    fields: [usersTable.id],
+    references: [studentsTable.userId],
   }),
-  teacher: one(teachers, {
-    fields: [users.id],
-    references: [teachers.userId],
+  teacher: one(teachersTable, {
+    fields: [usersTable.id],
+    references: [teachersTable.userId],
   }),
 }));
 
-export const studentsRelations = relations(students, ({ one, many }) => ({
-  user: one(users, {
-    fields: [students.userId],
-    references: [users.id],
+export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [studentsTable.userId],
+    references: [usersTable.id],
   }),
-  school: one(schools, {
-    fields: [students.schoolId],
-    references: [schools.id],
+  school: one(schoolsTable, {
+    fields: [studentsTable.schoolId],
+    references: [schoolsTable.id],
   }),
-  studentClasses: many(studentClasses),
-  studentFees: many(studentFees),
+  studentClasses: many(studentClassesTable),
+  studentFees: many(studentFeesTable),
 }));
 
-export const teachersRelations = relations(teachers, ({ one, many }) => ({
-  user: one(users, {
-    fields: [teachers.userId],
-    references: [users.id],
+export const teachersRelations = relations(teachersTable, ({ one, many }) => ({
+  user: one(usersTable, {
+    fields: [teachersTable.userId],
+    references: [usersTable.id],
   }),
-  school: one(schools, {
-    fields: [teachers.schoolId],
-    references: [schools.id],
+  school: one(schoolsTable, {
+    fields: [teachersTable.schoolId],
+    references: [schoolsTable.id],
   }),
-  history: many(teacherSchoolHistory),
+  history: many(teacherSchoolHistoryTable),
 }));
 
 export const teacherSchoolHistoryRelations = relations(
-  teacherSchoolHistory,
+  teacherSchoolHistoryTable,
   ({ one }) => ({
-    teacher: one(teachers, {
-      fields: [teacherSchoolHistory.teacherId],
-      references: [teachers.id],
+    teacher: one(teachersTable, {
+      fields: [teacherSchoolHistoryTable.teacherId],
+      references: [teachersTable.id],
     }),
-    school: one(schools, {
-      fields: [teacherSchoolHistory.schoolId],
-      references: [schools.id],
+    school: one(schoolsTable, {
+      fields: [teacherSchoolHistoryTable.schoolId],
+      references: [schoolsTable.id],
     }),
   })
 );
 
-export const sessionsRelations = relations(sessions, ({ one, many }) => ({
-  school: one(schools, {
-    fields: [sessions.schoolId],
-    references: [schools.id],
+export const sessionsRelations = relations(sessionsTable, ({ one, many }) => ({
+  school: one(schoolsTable, {
+    fields: [sessionsTable.schoolId],
+    references: [schoolsTable.id],
   }),
-  studentClasses: many(studentClasses),
-  feeStructures: many(feeStructures),
+  studentClasses: many(studentClassesTable),
+  feeStructures: many(feeStructuresTable),
 }));
 
-export const classesRelations = relations(classes, ({ one, many }) => ({
-  school: one(schools, {
-    fields: [classes.schoolId],
-    references: [schools.id],
+export const classesRelations = relations(classesTable, ({ one, many }) => ({
+  school: one(schoolsTable, {
+    fields: [classesTable.schoolId],
+    references: [schoolsTable.id],
   }),
-  sections: many(sections),
-  studentClasses: many(studentClasses),
+  sections: many(sectionsTable),
+  studentClasses: many(studentClassesTable),
 }));
 
-export const sectionsRelations = relations(sections, ({ one, many }) => ({
-  class: one(classes, {
-    fields: [sections.classId],
-    references: [classes.id],
+export const sectionsRelations = relations(sectionsTable, ({ one, many }) => ({
+  class: one(classesTable, {
+    fields: [sectionsTable.classId],
+    references: [classesTable.id],
   }),
-  school: one(schools, {
-    fields: [sections.schoolId],
-    references: [schools.id],
+  school: one(schoolsTable, {
+    fields: [sectionsTable.schoolId],
+    references: [schoolsTable.id],
   }),
-  studentClasses: many(studentClasses),
+  studentClasses: many(studentClassesTable),
 }));
 
-export const studentClassesRelations = relations(studentClasses, ({ one }) => ({
-  student: one(students, {
-    fields: [studentClasses.studentId],
-    references: [students.id],
-  }),
-  class: one(classes, {
-    fields: [studentClasses.classId],
-    references: [classes.id],
-  }),
-  section: one(sections, {
-    fields: [studentClasses.sectionId],
-    references: [sections.id],
-  }),
-  session: one(sessions, {
-    fields: [studentClasses.sessionId],
-    references: [sessions.id],
-  }),
-}));
+export const studentClassesRelations = relations(
+  studentClassesTable,
+  ({ one }) => ({
+    student: one(studentsTable, {
+      fields: [studentClassesTable.studentId],
+      references: [studentsTable.id],
+    }),
+    class: one(classesTable, {
+      fields: [studentClassesTable.classId],
+      references: [classesTable.id],
+    }),
+    section: one(sectionsTable, {
+      fields: [studentClassesTable.sectionId],
+      references: [sectionsTable.id],
+    }),
+    session: one(sessionsTable, {
+      fields: [studentClassesTable.sessionId],
+      references: [sessionsTable.id],
+    }),
+  })
+);
 
 export const feeStructuresRelations = relations(
-  feeStructures,
+  feeStructuresTable,
   ({ one, many }) => ({
-    school: one(schools, {
-      fields: [feeStructures.schoolId],
-      references: [schools.id],
+    school: one(schoolsTable, {
+      fields: [feeStructuresTable.schoolId],
+      references: [schoolsTable.id],
     }),
-    session: one(sessions, {
-      fields: [feeStructures.sessionId],
-      references: [sessions.id],
+    session: one(sessionsTable, {
+      fields: [feeStructuresTable.sessionId],
+      references: [sessionsTable.id],
     }),
-    studentFees: many(studentFees),
+    studentFees: many(studentFeesTable),
   })
 );
 
-export const studentFeesRelations = relations(studentFees, ({ one }) => ({
-  student: one(students, {
-    fields: [studentFees.studentId],
-    references: [students.id],
+export const studentFeesRelations = relations(studentFeesTable, ({ one }) => ({
+  student: one(studentsTable, {
+    fields: [studentFeesTable.studentId],
+    references: [studentsTable.id],
   }),
-  feeStructure: one(feeStructures, {
-    fields: [studentFees.feeStructureId],
-    references: [feeStructures.id],
+  feeStructure: one(feeStructuresTable, {
+    fields: [studentFeesTable.feeStructureId],
+    references: [feeStructuresTable.id],
   }),
 }));

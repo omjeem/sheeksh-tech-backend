@@ -3,8 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
     "start": "tsc && node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "nodemon --exec npx tsx src/index.ts",
+    "d:generate": "drizzle-kit generate",
+    "d:migrate": "drizzle-kit migrate",
+    "d:studio": "drizzle-kit studio"
   },
   "keywords": [],
   "author": "",
@@ -17,7 +21,9 @@
     "drizzle-kit": "^0.31.4",
     "drizzle-orm": "^0.44.4",
     "express": "^5.1.0",
+    "nodemon": "^3.1.10",
     "pg": "^8.16.3",
+    "tsx": "^4.20.6",
     "typescript": "^5.9.2",
     "zod": "^4.0.14"
   },

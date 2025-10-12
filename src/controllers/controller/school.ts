@@ -3,57 +3,103 @@ import bcrypt from "bcrypt";
 import { eq, or } from "drizzle-orm";
 import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
-import { school_master } from "../../config/schema";
+import { schoolsTable, UserRoles, usersTable } from "../../config/schema";
 
 export class School {
   static createSchool = async (req: Request, res: Response) => {
     try {
       const {
         name,
-        address,
-        phone,
         email,
-        website,
+        url,
+        address,
+        meta,
+        phone,
         superAdminName,
         superAdminEmail,
+        superAdminPhone,
         superAdminPassword,
       } = req.body;
 
-      const existing = await db.query.school_master.findFirst({
+      const existingSchool = await db.query.schoolsTable.findFirst({
         where: or(
-          eq(school_master.email, email),
-          eq(school_master.website, website),
-          eq(school_master.superAdminEmail, superAdminEmail)
+          eq(schoolsTable.email, email),
+          eq(schoolsTable.phone, phone),
+          eq(schoolsTable.url, url),
+          eq(schoolsTable.superAdminEmail, superAdminEmail),
+          eq(schoolsTable.superAdminPhone, superAdminPhone)
         ),
       });
+      const itemsPresentAlreayd = [];
+      if (existingSchool) {
+        if (existingSchool.email === email) {
+          itemsPresentAlreayd.push({
+            field: "email",
+            value: email,
+          });
+        }
+        if (existingSchool.phone === phone) {
+          itemsPresentAlreayd.push({
+            field: "phone",
+            value: phone,
+          });
+        }
+        if (existingSchool.url === url) {
+          itemsPresentAlreayd.push({
+            field: "url",
+            value: url,
+          });
+        }
+        if (existingSchool.superAdminEmail === superAdminEmail) {
+          itemsPresentAlreayd.push({
+            field: "superAdminEmail",
+            value: superAdminEmail,
+          });
+        }
+        if (existingSchool.superAdminPhone === superAdminPhone) {
+          itemsPresentAlreayd.push({
+            field: "superAdminPhone",
+            value: superAdminPhone,
+          });
+        }
+      }
+      if (itemsPresentAlreayd.length > 0) {
+        const errorMessage = `Following details are already exists in the databse: ${itemsPresentAlreayd
+          .map((item) => `${item.field} = ${item.value}`)
+          .join(", ")}`;
 
-      if (existing) {
-        return errorResponse(res, 400, "School or super admin already registered.");
+        throw new Error(errorMessage);
       }
 
-    //   const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
+      //   const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
 
-      await db.insert(school_master).values({
-        name,
-        address,
-        phone,
-        email,
-        website,
-        superAdminName,
-        superAdminEmail,
-        superAdminPassword,
-        isVerified: false,
-      });
+      const school = await db
+        .insert(schoolsTable)
+        .values({
+          name,
+          email,
+          url,
+          address,
+          phone,
+          superAdminName,
+          superAdminEmail,
+          superAdminPhone,
+          superAdminPassword,
+          meta,
+          isApproved: true,
+          isSuspended: false,
+        })
+        .returning();
 
       return successResponse(
         res,
         201,
         "School registration successful. Awaiting verification.",
-        null
+        school
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("School Onboarding Error:", error);
-      return errorResponse(res, 500, "Internal Server Error");
+      return errorResponse(res, 400, error?.message || error);
     }
   };
 }

@@ -10,5 +10,5 @@ export function successResponse(
 }
 
 export function errorResponse(res: Response, status: number, error: any) {
-  return res.status(status).json({ success: false, error: error || error });
+  return res.status(status).json({ success: false, error: error });
 }
