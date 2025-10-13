@@ -3,12 +3,9 @@ import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
 import { sessionsTable } from "../../config/schema";
 import { eq } from "drizzle-orm";
+import { toUTCFromIST } from "../../utils/dateTime";
 
-function toUTCFromIST(dateString: string) {
-  // dateString = "01-04-2025"
-  const [day, month, year] = dateString.split("-");
-  return new Date(`${year}-${month}-${day}T00:00:00+05:30`);
-}
+
 export class Session {
   static create = async (req: Request, res: Response) => {
     try {

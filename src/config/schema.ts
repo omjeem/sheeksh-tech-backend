@@ -53,7 +53,6 @@ export const usersTable = pgTable("users", {
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(), // Ties user to a school
   role: roleEnum("role").notNull(),
-  username: varchar("username", { length: 100 }).unique().notNull(), // Auto-generated initially
   password: varchar("password", { length: 255 }).notNull(), // Hashed password
   email: varchar("email", { length: 255 }).unique(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
