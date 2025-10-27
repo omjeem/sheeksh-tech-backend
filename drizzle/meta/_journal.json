@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1760264441518,
-      "tag": "0000_woozy_peter_parker",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1760264522048,
-      "tag": "0001_strong_micromacro",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1760265181755,
-      "tag": "0002_solid_blizzard",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1760279881684,
-      "tag": "0003_classy_rumiko_fujikawa",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1760383385157,
-      "tag": "0004_last_wolf_cub",
+      "when": 1761594503839,
+      "tag": "0000_harsh_bill_hollister",
       "breakpoints": true
     }
   ]

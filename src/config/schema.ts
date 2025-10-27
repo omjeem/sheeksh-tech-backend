@@ -16,22 +16,29 @@ import { jsonb } from "drizzle-orm/pg-core";
 // Enum for user roles
 
 export enum UserRoles {
-  SUPER_ADMIN = "SUPER_ADMIN",
   ADMIN = "ADMIN",
   TEACHER = "TEACHER",
   STUDENT = "STUDENT",
   PARENT = "PARENT",
   ACCOUNTANT = "ACCOUNTANT",
-  CLASS_TEACHER = "CLASS_TEACHER",
+}
+
+export enum TeacherDesignation {
+  TGT = "TGT",
+  PGT = "PGT",
 }
 export const roleEnum = pgEnum("role", UserRoles);
+export const teacherDesignationEnum = pgEnum(
+  "teacherDesignation",
+  TeacherDesignation
+);
 
 // Schools table (multi-tenant entity)
 export const schoolsTable = pgTable("schools", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar("name", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).notNull(),
-  url: varchar("url", { length: 255 }).unique().notNull(), // e.g., school-specific subdomain
+  url: varchar("url", { length: 255 }).unique().notNull(),
   address: text("address").notNull(),
   phone: varchar("phone").notNull(),
   superAdminName: varchar("superAdminName").notNull(),
@@ -41,7 +48,7 @@ export const schoolsTable = pgTable("schools", {
   meta: jsonb("meta"),
   isApproved: boolean("isApproved").default(false),
   isSuspended: boolean("isSuspended").default(false),
-  isDeleted : boolean("isDeleted").default(false),
+  isDeleted: boolean("isDeleted").default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -51,9 +58,9 @@ export const usersTable = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   schoolId: uuid("school_id")
     .references(() => schoolsTable.id, { onDelete: "cascade" })
-    .notNull(), // Ties user to a school
+    .notNull(),
   role: roleEnum("role").notNull(),
-  password: varchar("password", { length: 255 }).notNull(), // Hashed password
+  password: varchar("password", { length: 255 }).notNull(),
   email: varchar("email", { length: 255 }).unique(),
   firstName: varchar("first_name", { length: 100 }).notNull(),
   lastName: varchar("last_name", { length: 100 }),
@@ -96,9 +103,50 @@ export const teachersTable = pgTable("teachers", {
   schoolId: uuid("school_id")
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date"), // Null if currently employed
+  designation: teacherDesignationEnum("designation"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
+
+export const subjectsTable = pgTable("subjects", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  schoolId: uuid("school_id")
+    .references(() => schoolsTable.id)
+    .notNull(),
+  classId: uuid("class_id")
+    .references(() => classesTable.id)
+    .notNull(),
+  subject: varchar("subject").notNull(),
+  isDeleted: boolean("isDeleted").default(false),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const teacherClassSubjectSectionTable = pgTable(
+  "teacherClassSubjectSection",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    teacherId: uuid("teacher_id")
+      .references(() => teachersTable.id)
+      .notNull(),
+    classId: uuid("class_id")
+      .references(() => classesTable.id)
+      .notNull(),
+    sectionId: uuid("sectionId")
+      .references(() => sectionsTable.id)
+      .notNull(),
+    subjectId: uuid("subjectId")
+      .references(() => subjectsTable.id)
+      .notNull(),
+    fromDate: timestamp("from_date").notNull(),
+    endDate: timestamp("endDate"),
+    isActive: boolean("isActive").default(true),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  }
+);
 
 // Teacher-School history (handles teacher school switches)
 export const teacherSchoolHistoryTable = pgTable("teacher_school_history", {
@@ -213,6 +261,19 @@ export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   sessions: many(sessionsTable),
   classes: many(classesTable),
   feeStructures: many(feeStructuresTable),
+  subjects: many(subjectsTable),
+}));
+
+export const subjectRelations = relations(subjectsTable, ({ one, many }) => ({
+  school: one(schoolsTable, {
+    fields: [subjectsTable.schoolId],
+    references: [schoolsTable.id],
+  }),
+  class: one(classesTable, {
+    fields: [subjectsTable.classId],
+    references: [classesTable.id],
+  }),
+  classSubjectSection: many(teacherClassSubjectSectionTable),
 }));
 
 export const usersRelations = relations(usersTable, ({ one, many }) => ({
@@ -253,7 +314,30 @@ export const teachersRelations = relations(teachersTable, ({ one, many }) => ({
     references: [schoolsTable.id],
   }),
   history: many(teacherSchoolHistoryTable),
+  classSubjectSection: many(teacherClassSubjectSectionTable),
 }));
+
+export const teacherClassSubjectRelations = relations(
+  teacherClassSubjectSectionTable,
+  ({ one }) => ({
+    teacher: one(teachersTable, {
+      fields: [teacherClassSubjectSectionTable.teacherId],
+      references: [teachersTable.id],
+    }),
+    class: one(classesTable, {
+      fields: [teacherClassSubjectSectionTable.classId],
+      references: [classesTable.id],
+    }),
+    section: one(sectionsTable, {
+      fields: [teacherClassSubjectSectionTable.sectionId],
+      references: [sectionsTable.id],
+    }),
+    subject: one(subjectsTable, {
+      fields: [teacherClassSubjectSectionTable.subjectId],
+      references: [subjectsTable.id],
+    }),
+  })
+);
 
 export const teacherSchoolHistoryRelations = relations(
   teacherSchoolHistoryTable,
@@ -285,6 +369,7 @@ export const classesRelations = relations(classesTable, ({ one, many }) => ({
   }),
   sections: many(sectionsTable),
   studentClasses: many(studentClassesTable),
+  classSubjectSection: many(teacherClassSubjectSectionTable),
 }));
 
 export const sectionsRelations = relations(sectionsTable, ({ one, many }) => ({
@@ -297,6 +382,7 @@ export const sectionsRelations = relations(sectionsTable, ({ one, many }) => ({
     references: [schoolsTable.id],
   }),
   studentClasses: many(studentClassesTable),
+  classSubjectSection: many(teacherClassSubjectSectionTable),
 }));
 
 export const studentClassesRelations = relations(

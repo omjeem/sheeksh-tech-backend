@@ -45,14 +45,14 @@ export class Student {
       const srNoCheck = dataToFeed
         .map((d) => String(d.srNo))
         .filter((f) => f != null);
-        
+
       if (srNoCheck.length > 0) {
         const existingSrNo = await db
           .select({ srNo: studentsTable.srNo })
           .from(studentsTable)
           .where(
             and(
-              inArray(studentsTable.srNo, srNoCheck.map(String)), // Convert numbers to strings if needed
+              inArray(studentsTable.srNo, srNoCheck.map(String)), 
               eq(studentsTable.schoolId, schoolId)
             )
           );
