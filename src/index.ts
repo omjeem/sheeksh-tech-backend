@@ -29,6 +29,19 @@ app.delete("/flush", async (req, res) => {
     return errorResponse(res, 400, error.message || error);
   }
 });
+app.delete("/flush/db", async (req, res) => {
+  try {
+    // if (process.env.NODE_ENV === "production") {
+    //   return res.status(403).json({ error: "Forbidden in production" });
+    // }
+    await db.execute(sql`drop database`);
+
+    return successResponse(res, 200, "All data flushed successfully.");
+  } catch (error: any) {
+    console.error("Error while flushing data:", error);
+    return errorResponse(res, 400, error.message || error);
+  }
+});
 
 app.use("/api", router);
 

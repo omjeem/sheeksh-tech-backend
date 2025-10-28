@@ -33,57 +33,56 @@ export const teacherDesignationEnum = pgEnum(
   TeacherDesignation
 );
 
-// Schools table (multi-tenant entity)
 export const schoolsTable = pgTable("schools", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 255 }).notNull(),
-  email: varchar("email", { length: 255 }).notNull(),
-  url: varchar("url", { length: 255 }).unique().notNull(),
-  address: text("address").notNull(),
-  phone: varchar("phone").notNull(),
-  superAdminName: varchar("superAdminName").notNull(),
-  superAdminEmail: varchar("superAdminEmail").notNull(),
-  superAdminPhone: varchar("superAdminPhone").notNull(),
-  superAdminPassword: varchar("superAdminPassword").notNull(),
-  meta: jsonb("meta"),
-  isApproved: boolean("isApproved").default(false),
-  isSuspended: boolean("isSuspended").default(false),
-  isDeleted: boolean("isDeleted").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  id: uuid().primaryKey().defaultRandom(),
+  name: varchar({ length: 255 }).notNull(),
+  email: varchar({ length: 255 }).notNull(),
+  url: varchar({ length: 255 }).unique().notNull(),
+  address: text().notNull(),
+  phone: varchar().notNull(),
+  superAdminName: varchar().notNull(),
+  superAdminEmail: varchar().notNull(),
+  superAdminPhone: varchar().notNull(),
+  superAdminPassword: varchar().notNull(),
+  meta: jsonb(),
+  isApproved: boolean().default(false),
+  isSuspended: boolean().default(false),
+  isDeleted: boolean().default(false),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
 });
 
 // Users table (all roles: super admins, teachers, students, parents)
 export const usersTable = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  schoolId: uuid("school_id")
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  role: roleEnum("role").notNull(),
-  password: varchar("password", { length: 255 }).notNull(),
-  email: varchar("email", { length: 255 }).unique(),
-  firstName: varchar("first_name", { length: 100 }).notNull(),
-  lastName: varchar("last_name", { length: 100 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  role: roleEnum().notNull(),
+  password: varchar({ length: 255 }).notNull(),
+  email: varchar({ length: 255 }).unique(),
+  dateOfBirth: timestamp(),
+  firstName: varchar({ length: 100 }).notNull(),
+  lastName: varchar({ length: 100 }),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
 });
 
 // Students table (specific student data)
 export const studentsTable = pgTable(
   "students",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    userId: uuid("user_id")
+    id: uuid().primaryKey().defaultRandom(),
+    userId: uuid()
       .references(() => usersTable.id)
       .notNull()
-      .unique(), // Links to users table
-    schoolId: uuid("school_id")
+      .unique(),
+    schoolId: uuid()
       .references(() => schoolsTable.id, { onDelete: "cascade" })
       .notNull(),
-    srNo: varchar("sr_no", { length: 50 }).notNull(), // Unique student ID per school
-    dateOfBirth: timestamp("date_of_birth"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    srNo: varchar({ length: 50 }).notNull(),
+    createdAt: timestamp().defaultNow().notNull(),
+    updatedAt: timestamp().defaultNow().notNull(),
   },
   (table) => ({
     uniqueSrNoPerSchool: unique("unique_sr_no_per_school").on(
@@ -95,126 +94,126 @@ export const studentsTable = pgTable(
 
 // Teachers table (specific teacher data)
 export const teachersTable = pgTable("teachers", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
+  id: uuid().primaryKey().defaultRandom(),
+  userId: uuid()
     .references(() => usersTable.id)
     .notNull()
     .unique(),
-  schoolId: uuid("school_id")
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date"), // Null if currently employed
-  designation: teacherDesignationEnum("designation"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  startDate: timestamp().notNull(),
+  endDate: timestamp(),
+  designation: teacherDesignationEnum(),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
 });
 
 export const subjectsTable = pgTable("subjects", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  schoolId: uuid("school_id")
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
     .references(() => schoolsTable.id)
     .notNull(),
-  classId: uuid("class_id")
+  classId: uuid()
     .references(() => classesTable.id)
     .notNull(),
-  subject: varchar("subject").notNull(),
-  isDeleted: boolean("isDeleted").default(false),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  subject: varchar().notNull(),
+  isDeleted: boolean().default(false),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
 });
 
 export const teacherClassSubjectSectionTable = pgTable(
   "teacherClassSubjectSection",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    teacherId: uuid("teacher_id")
+    id: uuid().primaryKey().defaultRandom(),
+    teacherId: uuid()
       .references(() => teachersTable.id)
       .notNull(),
-    classId: uuid("class_id")
+    classId: uuid()
       .references(() => classesTable.id)
       .notNull(),
-    sectionId: uuid("sectionId")
+    sectionId: uuid()
       .references(() => sectionsTable.id)
       .notNull(),
-    subjectId: uuid("subjectId")
+    subjectId: uuid()
       .references(() => subjectsTable.id)
       .notNull(),
-    fromDate: timestamp("from_date").notNull(),
-    endDate: timestamp("endDate"),
-    isActive: boolean("isActive").default(true),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+    fromDate: timestamp().notNull(),
+    endDate: timestamp(),
+    isActive: boolean().default(true),
+    createdAt: timestamp().defaultNow().notNull(),
+    updatedAt: timestamp().defaultNow().notNull(),
   }
 );
 
 // Teacher-School history (handles teacher school switches)
 export const teacherSchoolHistoryTable = pgTable("teacher_school_history", {
-  id: serial("id").primaryKey(),
-  teacherId: uuid("teacher_id")
+  id: serial().primaryKey(),
+  teacherId: uuid()
     .references(() => teachersTable.id)
     .notNull(),
-  schoolId: uuid("school_id")
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  startDate: timestamp("start_date").defaultNow().notNull(),
-  endDate: timestamp("end_date"), // Null if currently employed
+  startDate: timestamp().defaultNow().notNull(),
+  endDate: timestamp(),
 });
 
 // Academic sessions (e.g., 2025-2026)
 export const sessionsTable = pgTable("sessions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  schoolId: uuid("school_id")
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  name: varchar("name", { length: 100 }).notNull(), // e.g., "2025-2026"
-  startDate: timestamp("start_date").notNull(),
-  endDate: timestamp("end_date").notNull(),
-  isActive: boolean("is_active").default(false).notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  name: varchar({ length: 100 }).notNull(),
+  startDate: timestamp().notNull(),
+  endDate: timestamp().notNull(),
+  isActive: boolean().default(false).notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 // Classes (e.g., Grade 10)
 export const classesTable = pgTable("classes", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  schoolId: uuid("school_id")
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  name: varchar("name", { length: 100 }).notNull(), // e.g., "Grade 10"
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  name: varchar({ length: 100 }).notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 // Sections (e.g., 10A, 10B)
 export const sectionsTable = pgTable("sections", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  schoolId: uuid("school_id")
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  classId: uuid("class_id")
+  classId: uuid()
     .references(() => classesTable.id)
     .notNull(),
-  name: varchar("name", { length: 50 }).notNull(), // e.g., "10A"
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  name: varchar({ length: 50 }).notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 // Student-Class assignments (links students to classes/sections per session)
 export const studentClassesTable = pgTable(
   "student_classes",
   {
-    id: serial("id").primaryKey(),
-    studentId: uuid("student_id")
+    id: serial().primaryKey(),
+    studentId: uuid()
       .references(() => studentsTable.id)
       .notNull(),
-    classId: uuid("class_id")
+    classId: uuid()
       .references(() => classesTable.id, { onDelete: "cascade" })
       .notNull(),
-    sectionId: uuid("section_id")
+    sectionId: uuid()
       .references(() => sectionsTable.id)
       .notNull(),
-    sessionId: uuid("session_id")
+    sessionId: uuid()
       .references(() => sessionsTable.id)
       .notNull(),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
+    createdAt: timestamp().defaultNow().notNull(),
   },
   (table) => ({
     uniqueStudentPerSession: unique("unique_student_per_session").on(
@@ -226,31 +225,31 @@ export const studentClassesTable = pgTable(
 
 // Fees structure (per school)
 export const feeStructuresTable = pgTable("fee_structures", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  schoolId: uuid("school_id")
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  name: varchar("name", { length: 100 }).notNull(), // e.g., "Annual Tuition"
-  amount: integer("amount").notNull(),
-  sessionId: uuid("session_id")
+  name: varchar({ length: 100 }).notNull(),
+  amount: integer().notNull(),
+  sessionId: uuid()
     .references(() => sessionsTable.id)
     .notNull(),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 // Student fee assignments
 export const studentFeesTable = pgTable("student_fees", {
-  id: serial("id").primaryKey(),
-  studentId: uuid("student_id")
+  id: serial().primaryKey(),
+  studentId: uuid()
     .references(() => studentsTable.id, { onDelete: "cascade" })
     .notNull(),
-  feeStructureId: uuid("fee_structure_id")
+  feeStructureId: uuid()
     .references(() => feeStructuresTable.id)
     .notNull(),
-  amountPaid: integer("amount_paid").default(0).notNull(),
-  dueDate: timestamp("due_date").notNull(),
-  paidAt: timestamp("paid_at"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
+  amountPaid: integer().default(0).notNull(),
+  dueDate: timestamp().notNull(),
+  paidAt: timestamp(),
+  createdAt: timestamp().defaultNow().notNull(),
 });
 
 // Relations
