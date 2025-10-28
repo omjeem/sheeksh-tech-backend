@@ -3,16 +3,25 @@ import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
 import { sessionsTable } from "../../config/schema";
 import { eq } from "drizzle-orm";
-import { toUTCFromIST } from "../../utils/dateTime";
+import { Utils } from "../../utils/dateTime";
 
+interface SessionCreate {
+  schoolId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  isActive: boolean;
+}
 
 export class Session {
   static create = async (req: Request, res: Response) => {
     try {
-      const { schoolId, name, startDate, endDate, isActive } = req.body;
+      const data = req.body;
+      const { schoolId, name, startDate, endDate, isActive } = data;
+      
+      const start = Utils.toUTCFromIST(startDate);
+      const end = Utils.toUTCFromIST(endDate);
 
-      const start = toUTCFromIST(startDate);
-      const end = toUTCFromIST(endDate);
       const session = await db
         .insert(sessionsTable)
         .values({

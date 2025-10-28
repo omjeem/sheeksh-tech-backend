@@ -7,8 +7,8 @@ import {
   UserRoles,
   usersTable,
 } from "../../config/schema";
-import { toUTCFromIST } from "../../utils/dateTime";
 import { and, eq, inArray } from "drizzle-orm";
+import { Utils } from "../../utils/dateTime";
 
 interface StudentData {
   srNo: number;
@@ -29,7 +29,7 @@ export class Student {
       const dataToFeed = studentData.map((d) => {
         return {
           srNo: d.srNo,
-          dateOfBirth: toUTCFromIST(d.dateOfBirth),
+          dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
           schoolId,
           role: UserRoles.STUDENT,
           email: d.email,

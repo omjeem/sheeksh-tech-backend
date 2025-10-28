@@ -102,7 +102,7 @@ export const teachersTable = pgTable("teachers", {
   schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  startDate: timestamp().notNull(),
+  startDate: timestamp(),
   endDate: timestamp(),
   designation: teacherDesignationEnum(),
   createdAt: timestamp().defaultNow().notNull(),

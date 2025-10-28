@@ -3,6 +3,7 @@ import { School } from "./controller/school";
 import { Section } from "./controller/section";
 import { Session } from "./controller/session";
 import { Student } from "./controller/student";
+import { Teacher } from "./controller/teacher";
 import { User } from "./controller/user";
 
 const Controllers = {
@@ -11,7 +12,8 @@ const Controllers = {
   Class,
   Section,
   User,
-  Student
+  Student,
+  Teacher
 };
 
 
