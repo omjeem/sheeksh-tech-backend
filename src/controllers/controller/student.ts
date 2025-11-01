@@ -66,7 +66,7 @@ export class Student {
       }
 
       if (emailsToCheck.length > 0) {
-        await Services.UserService.isUsersExists(emailsToCheck);
+        await Services.User.isUsersExists(emailsToCheck);
       }
 
       await db.transaction(async (tx) => {

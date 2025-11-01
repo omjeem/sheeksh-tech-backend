@@ -99,9 +99,6 @@ export const subjectsTable = pgTable("subjects", {
   schoolId: uuid()
     .references(() => schoolsTable.id)
     .notNull(),
-  classId: uuid()
-    .references(() => classesTable.id)
-    .notNull(),
   subject: varchar().notNull(),
   isDeleted: boolean().default(false),
   createdAt: timestamp().defaultNow().notNull(),
@@ -165,6 +162,7 @@ export const classesTable = pgTable("classes", {
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   name: varchar({ length: 100 }).notNull(),
+  isDeleted: boolean().default(false),
   createdAt: timestamp().defaultNow().notNull(),
 });
 
@@ -252,10 +250,6 @@ export const subjectRelations = relations(subjectsTable, ({ one, many }) => ({
   school: one(schoolsTable, {
     fields: [subjectsTable.schoolId],
     references: [schoolsTable.id],
-  }),
-  class: one(classesTable, {
-    fields: [subjectsTable.classId],
-    references: [classesTable.id],
   }),
   classSubjectSection: many(teacherClassSubjectSectionTable),
 }));
@@ -352,7 +346,6 @@ export const classesRelations = relations(classesTable, ({ one, many }) => ({
     references: [schoolsTable.id],
   }),
   sections: many(sectionsTable),
-  studentClasses: many(studentClassesTable),
   classSubjectSection: many(teacherClassSubjectSectionTable),
 }));
 

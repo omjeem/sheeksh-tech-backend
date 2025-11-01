@@ -7,15 +7,17 @@ import sectionRouter from "./routers/section";
 import teacherRouter from "./routers/teacher";
 import authRouter from "./routers/auth";
 import { authMiddleware } from "../middlewares/authMiddleware";
+import subjectRouter from "./routers/subject";
 
 const router = express.Router();
 
 router.use("/auth", authRouter);
 router.use("/school", schoolRouter);
-router.use("/student", studentRouter);
-router.use("/session", sessionRouter);
+router.use("/student", authMiddleware, studentRouter);
+router.use("/session", authMiddleware, sessionRouter);
 router.use("/class", authMiddleware, classRouter);
-router.use("/section", sectionRouter);
-router.use("/teacher", teacherRouter);
+router.use("/section", authMiddleware, sectionRouter);
+router.use("/teacher", authMiddleware, teacherRouter);
+router.use("/subject", authMiddleware, subjectRouter)
 
 export default router;

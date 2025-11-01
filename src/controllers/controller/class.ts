@@ -1,21 +1,13 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
-import { db } from "../../config/db";
-import { classesTable } from "../../config/schema";
-import { eq } from "drizzle-orm";
+import Services from "../../services";
 
 export class Class {
   static create = async (req: Request, res: Response) => {
     try {
       const { name } = req.body;
       const schoolId = req.user.schoolId;
-      const classData = await db
-        .insert(classesTable)
-        .values({
-          schoolId,
-          name,
-        })
-        .returning();
+      const classData = await Services.Classes.create(schoolId, name);
       return successResponse(res, 200, "Class created Successfully", classData);
     } catch (error: any) {
       return errorResponse(res, 400, error.message || error);
@@ -25,9 +17,7 @@ export class Class {
   static getAll = async (req: Request, res: Response) => {
     try {
       const schoolId = req.user.schoolId;
-      const allClasses = await db.query.classesTable.findMany({
-        where: eq(classesTable.schoolId, String(schoolId)),
-      });
+      const allClasses = await Services.Classes.get(schoolId);
       return successResponse(
         res,
         200,

@@ -32,7 +32,7 @@ export class Teacher {
       }
 
       const emails = teachersData.map((d) => d.email);
-      await Services.UserService.isUsersExists(emails);
+      await Services.User.isUsersExists(emails);
 
       const responseData = await db.transaction(async (tx) => {
         console.log({ teachersData });
@@ -80,6 +80,23 @@ export class Teacher {
       );
     } catch (error: any) {
       console.log("Error while creating teachers", error);
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static getAllTeachers = async (req: Request, res: Response) => {
+    try {
+      const schoolId = req.user.schoolId;
+      const { pageNo = 1, limit = 10 } = req.query;
+      const data = await Services.Teacher.getData(pageNo, limit, schoolId);
+      return successResponse(
+        res,
+        200,
+        "Teachers details fetched successfully",
+        data
+      );
+    } catch (error: any) {
+      console.log("Error while getting teachers deatils", error)
       return errorResponse(res, 400, error.message || error);
     }
   };

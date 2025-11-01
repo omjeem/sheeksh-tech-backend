@@ -1,0 +1,1 @@
+ALTER TABLE "classes" ADD COLUMN "isDeleted" boolean DEFAULT false;

@@ -8,6 +8,20 @@
       "when": 1761909689266,
       "tag": "0000_early_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1762030181549,
+      "tag": "0001_harsh_sharon_carter",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1762030966057,
+      "tag": "0002_wet_wasp",
+      "breakpoints": true
     }
   ]
 }

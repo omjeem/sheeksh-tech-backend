@@ -4,6 +4,7 @@ import { School } from "./controller/school";
 import { Section } from "./controller/section";
 import { Session } from "./controller/session";
 import { Student } from "./controller/student";
+import { Subject } from "./controller/subject";
 import { Teacher } from "./controller/teacher";
 import { User } from "./controller/user";
 
@@ -16,6 +17,7 @@ const Controllers = {
   User,
   Student,
   Teacher,
+  Subject
 };
 
 export default Controllers;

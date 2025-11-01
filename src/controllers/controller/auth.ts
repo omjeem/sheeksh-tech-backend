@@ -8,7 +8,7 @@ export class Auth {
     try {
       const { email, password, isSuperAdmin = false } = req.body;
       const { schoolId, role, userId } =
-        await Services.UserService.validateUserIdAndPassword(
+        await Services.User.validateUserIdAndPassword(
           email,
           password,
           isSuperAdmin

@@ -3,7 +3,7 @@ import { db } from "../../config/db";
 import { schoolsTable, usersTable } from "../../config/schema";
 import { UserRoles, UserRolesType } from "../../types/types";
 
-export class UserService {
+export class User {
   static isUsersExists = async (emails: string[]) => {
     const existingEmails = await db
       .select({ email: usersTable.email })
