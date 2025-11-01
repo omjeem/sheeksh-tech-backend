@@ -20,12 +20,19 @@ export class Classes {
         schoolId,
         name,
       })
-      .returning();
+      .returning({
+        id : classesTable.id,
+        name : classesTable.name
+      });
   };
 
   static get = async (schoolId: string) => {
     return await db.query.classesTable.findMany({
       where: eq(classesTable.schoolId, String(schoolId)),
+      columns : {
+        id : true,
+        name : true
+      }
     });
   };
 }

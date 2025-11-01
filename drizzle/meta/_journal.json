@@ -22,6 +22,13 @@
       "when": 1762030966057,
       "tag": "0002_wet_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1762032993713,
+      "tag": "0003_tiny_shiver_man",
+      "breakpoints": true
     }
   ]
 }

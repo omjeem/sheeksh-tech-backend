@@ -176,6 +176,7 @@ export const sectionsTable = pgTable("sections", {
     .references(() => classesTable.id)
     .notNull(),
   name: varchar({ length: 50 }).notNull(),
+  isDeleted : boolean().default(false),
   createdAt: timestamp().defaultNow().notNull(),
 });
 

@@ -4,6 +4,7 @@ import { db } from "../../config/db";
 import { sessionsTable } from "../../config/schema";
 import { eq } from "drizzle-orm";
 import { Utils } from "../../utils/dateTime";
+import Services from "../../services";
 
 interface SessionCreate {
   schoolId: string;
@@ -19,25 +20,18 @@ export class Session {
       const data = req.body;
       const { name, startDate, endDate, isActive } = data;
       const schoolId = req.user.schoolId;
-      const start = Utils.toUTCFromIST(startDate);
-      const end = Utils.toUTCFromIST(endDate);
-      if (!start || !end) {
-        throw new Error(
-          `Start and End data should be valid Start date - ${startDate} End date - ${endDate}`
-        );
-      }
-      const session = await db
-        .insert(sessionsTable)
-        .values({
-          schoolId,
-          name,
-          startDate: start,
-          endDate: end,
-          isActive: true,
-        })
-        .returning();
-
-      return successResponse(res, 201, "Session Created Successfully", session);
+      const sessionData = await Services.Session.create(
+        schoolId,
+        name,
+        startDate,
+        endDate
+      );
+      return successResponse(
+        res,
+        201,
+        "Session Created Successfully",
+        sessionData
+      );
     } catch (error: any) {
       return errorResponse(res, 400, error.message || error);
     }
@@ -46,9 +40,7 @@ export class Session {
   static getAll = async (req: Request, res: Response) => {
     try {
       const schoolId = req.user.schoolId;
-      const sessions = await db.query.sessionsTable.findMany({
-        where: eq(sessionsTable.schoolId, String(schoolId)),
-      });
+      const sessions = await Services.Session.get(schoolId);
       return successResponse(
         res,
         200,

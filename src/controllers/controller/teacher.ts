@@ -53,7 +53,7 @@ export class Teacher {
           .returning({
             userId: usersTable.id,
           });
-        console.log({ usersResponse });
+        // console.log({ usersResponse });
         const teachersDataTofeed = usersResponse.map((d, i) => {
           return {
             userId: d.userId,
@@ -63,7 +63,7 @@ export class Teacher {
             designation: teachersData[i]!.designation,
           };
         });
-        console.log({ teachersDataTofeed });
+        // console.log({ teachersDataTofeed });
         const teacherDataResponse = await tx
           .insert(teachersTable)
           .values(teachersDataTofeed)

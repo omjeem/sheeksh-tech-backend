@@ -3,20 +3,18 @@ import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
 import { sectionsTable } from "../../config/schema";
 import { eq } from "drizzle-orm";
+import Services from "../../services";
 
 export class Section {
   static create = async (req: Request, res: Response) => {
     try {
       const { classId, name } = req.body;
       const schoolId = req.user.schoolId;
-      const sesctionData = await db
-        .insert(sectionsTable)
-        .values({
-          schoolId,
-          classId,
-          name,
-        })
-        .returning();
+      const sesctionData = await Services.Section.create(
+        schoolId,
+        classId,
+        name
+      );
       return successResponse(
         res,
         200,
@@ -31,9 +29,11 @@ export class Section {
   static getAll = async (req: Request, res: Response) => {
     try {
       const { classId } = req.params;
-      const sectionsData = await db.query.sectionsTable.findMany({
-        where: eq(sectionsTable.classId, String(classId)),
-      });
+      const schoolId = req.user.schoolId;
+      const sectionsData = await Services.Section.get(
+        String(classId),
+        schoolId
+      );
       return successResponse(
         res,
         200,
