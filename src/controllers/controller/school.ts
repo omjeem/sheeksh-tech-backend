@@ -3,7 +3,7 @@ import bcrypt from "bcrypt";
 import { eq, or } from "drizzle-orm";
 import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
-import { schoolsTable, UserRoles, usersTable } from "../../config/schema";
+import { schoolsTable, usersTable } from "../../config/schema";
 
 export class School {
   static createSchool = async (req: Request, res: Response) => {

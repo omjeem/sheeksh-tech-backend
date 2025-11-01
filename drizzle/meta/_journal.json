@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1761671402121,
-      "tag": "0000_known_sentinel",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1761680142575,
-      "tag": "0001_overconfident_peter_parker",
+      "when": 1761909689266,
+      "tag": "0000_early_daimon_hellstrom",
       "breakpoints": true
     }
   ]

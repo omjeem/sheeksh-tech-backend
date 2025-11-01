@@ -1,19 +1,15 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
-import {
-  schoolsTable,
-  TeacherDesignation,
-  teachersTable,
-  UserRoles,
-  usersTable,
-} from "../../config/schema";
+import { schoolsTable, teachersTable, usersTable } from "../../config/schema";
 import { db } from "../../config/db";
 import { eq } from "drizzle-orm";
 import { Utils } from "../../utils/dateTime";
+import Services from "../../services";
+import { TeacherDesignation, UserRoles } from "../../types/types";
 
 interface TeacherData {
   email: string;
-  password: string;
+  password?: string;
   dateOfBirth: string;
   firstName: string;
   lastName: string;
@@ -25,25 +21,26 @@ interface TeacherData {
 export class Teacher {
   static create = async (req: Request, res: Response) => {
     try {
-      const data: {
-        schoolId: string;
-        teachersData: TeacherData[];
-      } = req.body;
-      const { schoolId, teachersData } = data;
+      const teachersData: TeacherData[] = req.body;
+      const schoolId = req.user.schoolId;
       const isSchool = await db.query.schoolsTable.findFirst({
         where: eq(schoolsTable.id, schoolId),
       });
+
       if (!isSchool) {
         throw new Error("School not exists");
       }
 
+      const emails = teachersData.map((d) => d.email);
+      await Services.UserService.isUsersExists(emails);
+
       const responseData = await db.transaction(async (tx) => {
-        console.log({teachersData})
+        console.log({ teachersData });
         const userData = teachersData.map((d) => {
           return {
             schoolId: schoolId,
             email: d.email,
-            password: d.password,
+            password: d.password || `${d.email + "-" + d.dateOfBirth}`,
             role: UserRoles.TEACHER,
             dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
             firstName: d.firstName,
@@ -56,17 +53,17 @@ export class Teacher {
           .returning({
             userId: usersTable.id,
           });
-        console.log({usersResponse})
+        console.log({ usersResponse });
         const teachersDataTofeed = usersResponse.map((d, i) => {
           return {
             userId: d.userId,
             schoolId,
             startDate: Utils.toUTCFromIST(teachersData[i]?.startDate),
             endDate: Utils.toUTCFromIST(teachersData[i]?.endDate),
-            designation: teachersData[i]?.designation,
+            designation: teachersData[i]!.designation,
           };
         });
-        console.log({teachersDataTofeed})
+        console.log({ teachersDataTofeed });
         const teacherDataResponse = await tx
           .insert(teachersTable)
           .values(teachersDataTofeed)

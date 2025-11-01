@@ -7,7 +7,8 @@ import { eq } from "drizzle-orm";
 export class Section {
   static create = async (req: Request, res: Response) => {
     try {
-      const { schoolId, classId, name } = req.body;
+      const { classId, name } = req.body;
+      const schoolId = req.user.schoolId;
       const sesctionData = await db
         .insert(sectionsTable)
         .values({

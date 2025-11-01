@@ -4,11 +4,12 @@ import { db } from "../../config/db";
 import {
   studentClassesTable,
   studentsTable,
-  UserRoles,
   usersTable,
 } from "../../config/schema";
 import { and, eq, inArray } from "drizzle-orm";
 import { Utils } from "../../utils/dateTime";
+import Services from "../../services";
+import { UserRoles } from "../../types/types";
 
 interface StudentData {
   srNo: number;
@@ -23,7 +24,8 @@ export class Student {
   static feedStudents = async (req: Request, res: Response) => {
     try {
       const body = req.body;
-      const { schoolId, classId, sessionId, sectionId } = body;
+      const { classId, sessionId, sectionId } = body;
+      const schoolId = req.user.schoolId;
       const studentData: StudentData[] = body.studentData;
       console.log({ studentData });
       const dataToFeed = studentData.map((d) => {
@@ -52,7 +54,7 @@ export class Student {
           .from(studentsTable)
           .where(
             and(
-              inArray(studentsTable.srNo, srNoCheck.map(String)), 
+              inArray(studentsTable.srNo, srNoCheck.map(String)),
               eq(studentsTable.schoolId, schoolId)
             )
           );
@@ -64,15 +66,7 @@ export class Student {
       }
 
       if (emailsToCheck.length > 0) {
-        const existingEmails = await db
-          .select({ email: usersTable.email })
-          .from(usersTable)
-          .where(inArray(usersTable.email, emailsToCheck));
-
-        if (existingEmails.length > 0) {
-          const duplicateEmails = existingEmails.map((e) => e.email).join(", ");
-          throw new Error(`Duplicate emails found: ${duplicateEmails}`);
-        }
+        await Services.UserService.isUsersExists(emailsToCheck);
       }
 
       await db.transaction(async (tx) => {

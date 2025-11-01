@@ -7,11 +7,15 @@ import { eq } from "drizzle-orm";
 export class Class {
   static create = async (req: Request, res: Response) => {
     try {
-      const { schoolId, name } = req.body;
-      const classData = await db.insert(classesTable).values({
-        schoolId,
-        name,
-      }).returning();
+      const { name } = req.body;
+      const schoolId = req.user.schoolId;
+      const classData = await db
+        .insert(classesTable)
+        .values({
+          schoolId,
+          name,
+        })
+        .returning();
       return successResponse(res, 200, "Class created Successfully", classData);
     } catch (error: any) {
       return errorResponse(res, 400, error.message || error);
@@ -20,7 +24,7 @@ export class Class {
 
   static getAll = async (req: Request, res: Response) => {
     try {
-      const { schoolId } = req.params;
+      const schoolId = req.user.schoolId;
       const allClasses = await db.query.classesTable.findMany({
         where: eq(classesTable.schoolId, String(schoolId)),
       });

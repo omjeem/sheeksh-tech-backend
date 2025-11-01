@@ -1,5 +1,3 @@
-CREATE TYPE "public"."role" AS ENUM('ADMIN', 'TEACHER', 'STUDENT', 'PARENT', 'ACCOUNTANT');--> statement-breakpoint
-CREATE TYPE "public"."teacherDesignation" AS ENUM('TGT', 'PGT');--> statement-breakpoint
 CREATE TABLE "classes" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"schoolId" uuid NOT NULL,
@@ -120,9 +118,9 @@ CREATE TABLE "teachers" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"userId" uuid NOT NULL,
 	"schoolId" uuid NOT NULL,
-	"startDate" timestamp NOT NULL,
+	"startDate" timestamp,
 	"endDate" timestamp,
-	"designation" "teacherDesignation",
+	"designation" varchar(255) NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
 	"updatedAt" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "teachers_userId_unique" UNIQUE("userId")
@@ -131,10 +129,11 @@ CREATE TABLE "teachers" (
 CREATE TABLE "users" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"schoolId" uuid NOT NULL,
-	"role" "role" NOT NULL,
+	"role" varchar(255) NOT NULL,
 	"password" varchar(255) NOT NULL,
-	"email" varchar(255),
+	"email" varchar(255) NOT NULL,
 	"dateOfBirth" timestamp,
+	"isSuspended" boolean DEFAULT false,
 	"firstName" varchar(100) NOT NULL,
 	"lastName" varchar(100),
 	"createdAt" timestamp DEFAULT now() NOT NULL,

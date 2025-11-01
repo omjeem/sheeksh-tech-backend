@@ -1,1 +1,0 @@
-ALTER TABLE "teachers" ALTER COLUMN "startDate" DROP NOT NULL;

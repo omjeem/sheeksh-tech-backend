@@ -15,23 +15,7 @@ import { jsonb } from "drizzle-orm/pg-core";
 
 // Enum for user roles
 
-export enum UserRoles {
-  ADMIN = "ADMIN",
-  TEACHER = "TEACHER",
-  STUDENT = "STUDENT",
-  PARENT = "PARENT",
-  ACCOUNTANT = "ACCOUNTANT",
-}
 
-export enum TeacherDesignation {
-  TGT = "TGT",
-  PGT = "PGT",
-}
-export const roleEnum = pgEnum("role", UserRoles);
-export const teacherDesignationEnum = pgEnum(
-  "teacherDesignation",
-  TeacherDesignation
-);
 
 export const schoolsTable = pgTable("schools", {
   id: uuid().primaryKey().defaultRandom(),
@@ -58,10 +42,11 @@ export const usersTable = pgTable("users", {
   schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
-  role: roleEnum().notNull(),
+  role: varchar({ length: 255 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
-  email: varchar({ length: 255 }).unique(),
+  email: varchar({ length: 255 }).unique().notNull(),
   dateOfBirth: timestamp(),
+  isSuspended: boolean().default(false),
   firstName: varchar({ length: 100 }).notNull(),
   lastName: varchar({ length: 100 }),
   createdAt: timestamp().defaultNow().notNull(),
@@ -104,7 +89,7 @@ export const teachersTable = pgTable("teachers", {
     .notNull(),
   startDate: timestamp(),
   endDate: timestamp(),
-  designation: teacherDesignationEnum(),
+  designation: varchar({ length: 255 }).notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });

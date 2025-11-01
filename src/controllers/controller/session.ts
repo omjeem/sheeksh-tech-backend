@@ -17,11 +17,15 @@ export class Session {
   static create = async (req: Request, res: Response) => {
     try {
       const data = req.body;
-      const { schoolId, name, startDate, endDate, isActive } = data;
-      
+      const { name, startDate, endDate, isActive } = data;
+      const schoolId = req.user.schoolId;
       const start = Utils.toUTCFromIST(startDate);
       const end = Utils.toUTCFromIST(endDate);
-
+      if (!start || !end) {
+        throw new Error(
+          `Start and End data should be valid Start date - ${startDate} End date - ${endDate}`
+        );
+      }
       const session = await db
         .insert(sessionsTable)
         .values({
@@ -41,7 +45,7 @@ export class Session {
 
   static getAll = async (req: Request, res: Response) => {
     try {
-      const { schoolId } = req.params;
+      const schoolId = req.user.schoolId;
       const sessions = await db.query.sessionsTable.findMany({
         where: eq(sessionsTable.schoolId, String(schoolId)),
       });

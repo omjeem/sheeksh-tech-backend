@@ -1,5 +1,5 @@
 {
-  "id": "960cb61a-69a5-43c0-918b-2a83a0828364",
+  "id": "789a6071-7b0b-4cc4-95bf-2568816a83c8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -1007,7 +1007,7 @@
           "name": "startDate",
           "type": "timestamp",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "endDate": {
           "name": "endDate",
@@ -1017,9 +1017,9 @@
         },
         "designation": {
           "name": "designation",
-          "type": "teacherDesignation",
+          "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "createdAt": {
           "name": "createdAt",
@@ -1098,7 +1098,7 @@
         },
         "role": {
           "name": "role",
-          "type": "role",
+          "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
         },
@@ -1112,13 +1112,20 @@
           "name": "email",
           "type": "varchar(255)",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "dateOfBirth": {
           "name": "dateOfBirth",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": false
+        },
+        "isSuspended": {
+          "name": "isSuspended",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "firstName": {
           "name": "firstName",
@@ -1178,27 +1185,7 @@
       "isRLSEnabled": false
     }
   },
-  "enums": {
-    "public.role": {
-      "name": "role",
-      "schema": "public",
-      "values": [
-        "ADMIN",
-        "TEACHER",
-        "STUDENT",
-        "PARENT",
-        "ACCOUNTANT"
-      ]
-    },
-    "public.teacherDesignation": {
-      "name": "teacherDesignation",
-      "schema": "public",
-      "values": [
-        "TGT",
-        "PGT"
-      ]
-    }
-  },
+  "enums": {},
   "schemas": {},
   "sequences": {},
   "roles": {},
