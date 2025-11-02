@@ -107,7 +107,7 @@ export class Teacher {
       const body = req.body;
       const data = await Services.Teacher.getteacherClassSectionMap(
         body,
-        schoolId
+        schoolId,
       );
       return successResponse(
         res,

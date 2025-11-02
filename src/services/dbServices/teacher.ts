@@ -1,6 +1,9 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "../../config/db";
 import {
+  sectionsTable,
+  sessionsTable,
+  subjectsTable,
   teacherClassSubjectSectionTable,
   teachersTable,
 } from "../../config/schema";
@@ -52,13 +55,13 @@ export class Teacher {
       sectionId?: string;
       subjectId?: string;
       fromDate?: string;
+      allData?: boolean;
     },
-    schoolId: string,
-    allData: boolean = false
+    schoolId: string
   ) => {
     const conditions = [eq(teacherClassSubjectSectionTable.schoolId, schoolId)];
 
-    if (!allData) {
+    if (!queries.allData) {
       if (queries.classId) {
         conditions.push(
           eq(teacherClassSubjectSectionTable.classId, queries.classId)
@@ -118,6 +121,7 @@ export class Teacher {
         session: {
           columns: {
             id: true,
+            name: true,
           },
         },
         section: {
@@ -139,8 +143,9 @@ export class Teacher {
           with: {
             user: {
               columns: {
-                id: true,
                 firstName: true,
+                lastName: true,
+                email: true,
               },
             },
           },
@@ -157,40 +162,64 @@ export class Teacher {
       sectionId: string;
       subjectId: string;
       fromDate: string;
-    }[],
+    },
     schoolId: string
   ) => {
-    const dataToFeed = data.map((d) => {
-      const date = Utils.toUTCFromIST(d.fromDate);
-      if (!date) {
-        throw new Error(
-          `Invalid date format ${d.fromDate} of ${String(JSON.stringify(d))}`
-        );
-      }
-      return {
-        ...d,
-        fromDate: date,
-        schoolId: schoolId,
-      };
+    const date = Utils.toUTCFromIST(data.fromDate);
+    if (!date) {
+      throw new Error(`Invalid date format ${data.fromDate}}`);
+    }
+    const dataToFeed = {
+      ...data,
+      fromDate: date,
+      schoolId: schoolId,
+    };
+    const isClassSection = await db.query.sectionsTable.findFirst({
+      where: and(
+        eq(sectionsTable.id, data.sectionId),
+        eq(sectionsTable.isDeleted, false)
+      ),
     });
+    if (!isClassSection) {
+      throw new Error("Section you mentioned is not valid");
+    }
+    if (isClassSection.classId !== data.classId) {
+      throw new Error("This section is not belongs to this class");
+    }
+    const isSucjectBelongs = await db.query.subjectsTable.findFirst({
+      where: and(eq(subjectsTable.id, data.subjectId)),
+    });
+    if (!isSucjectBelongs) {
+      throw new Error("This subject is not belongs to the school");
+    }
+    const isSessionBelongs = await db.query.sessionsTable.findFirst({
+      where: and(
+        eq(sessionsTable.id, data.sessionId),
+        eq(sessionsTable.schoolId, schoolId)
+      ),
+    });
+    if(!isSessionBelongs){
+      throw new Error("This session is not belongs to the school")
+    }
+    const isExists = await db.query.teacherClassSubjectSectionTable.findFirst({
+      where: and(
+        eq(teacherClassSubjectSectionTable.schoolId, schoolId),
+        eq(teacherClassSubjectSectionTable.classId, data.classId),
+        eq(teacherClassSubjectSectionTable.sectionId, data.sectionId),
+        eq(teacherClassSubjectSectionTable.sessionId, data.sessionId),
+        eq(teacherClassSubjectSectionTable.subjectId, data.subjectId),
+        eq(teacherClassSubjectSectionTable.isActive, true)
+      ),
+    });
+    if (isExists) {
+      throw new Error(
+        "There is already an active teacher for this class, section and subject!"
+      );
+    }
+
     return await db
       .insert(teacherClassSubjectSectionTable)
       .values(dataToFeed)
       .returning();
-    // const teachersIds = data.map((d) => d.teacherId);
-    // const classIds = data.map((d) => d.classId);
-    // const sessionIds = data.map((d) => d.sessionId);
-    // const sectionIds = data.map((d) => d.sectionId);
-    // const subjectIds = data.map((d) => d.subjectId);
-
-    // const teachers = await db.query.teachersTable.findMany({
-    //   where: and(
-    //     inArray(teachersTable.id, teachersIds),
-    //     eq(teachersTable.schoolId, schoolId)
-    //   ),
-    //   columns: {
-    //     id: true,
-    //   },
-    // });
   };
 }
