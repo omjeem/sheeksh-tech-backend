@@ -1,0 +1,2 @@
+ALTER TABLE "teacherClassSubjectSection" ADD COLUMN "sessionId" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "teacherClassSubjectSection" ADD CONSTRAINT "teacherClassSubjectSection_sessionId_sessions_id_fk" FOREIGN KEY ("sessionId") REFERENCES "public"."sessions"("id") ON DELETE no action ON UPDATE no action;

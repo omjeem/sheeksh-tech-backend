@@ -15,8 +15,6 @@ import { jsonb } from "drizzle-orm/pg-core";
 
 // Enum for user roles
 
-
-
 export const schoolsTable = pgTable("schools", {
   id: uuid().primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
@@ -109,11 +107,17 @@ export const teacherClassSubjectSectionTable = pgTable(
   "teacherClassSubjectSection",
   {
     id: uuid().primaryKey().defaultRandom(),
+    schoolId: uuid()
+      .references(() => schoolsTable.id)
+      .notNull(),
     teacherId: uuid()
       .references(() => teachersTable.id)
       .notNull(),
     classId: uuid()
       .references(() => classesTable.id)
+      .notNull(),
+    sessionId: uuid()
+      .references(() => sessionsTable.id)
       .notNull(),
     sectionId: uuid()
       .references(() => sectionsTable.id)
@@ -176,7 +180,7 @@ export const sectionsTable = pgTable("sections", {
     .references(() => classesTable.id)
     .notNull(),
   name: varchar({ length: 50 }).notNull(),
-  isDeleted : boolean().default(false),
+  isDeleted: boolean().default(false),
   createdAt: timestamp().defaultNow().notNull(),
 });
 
@@ -245,6 +249,7 @@ export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   classes: many(classesTable),
   feeStructures: many(feeStructuresTable),
   subjects: many(subjectsTable),
+  teacherClass : many(teacherClassSubjectSectionTable)
 }));
 
 export const subjectRelations = relations(subjectsTable, ({ one, many }) => ({
@@ -311,9 +316,17 @@ export const teacherClassSubjectRelations = relations(
       fields: [teacherClassSubjectSectionTable.sectionId],
       references: [sectionsTable.id],
     }),
+    session: one(sessionsTable, {
+      fields: [teacherClassSubjectSectionTable.sessionId],
+      references: [sessionsTable.id],
+    }),
     subject: one(subjectsTable, {
       fields: [teacherClassSubjectSectionTable.subjectId],
       references: [subjectsTable.id],
+    }),
+    school: one(schoolsTable, {
+      fields: [teacherClassSubjectSectionTable.schoolId],
+      references: [schoolsTable.id],
     }),
   })
 );
@@ -339,6 +352,7 @@ export const sessionsRelations = relations(sessionsTable, ({ one, many }) => ({
   }),
   studentClasses: many(studentClassesTable),
   feeStructures: many(feeStructuresTable),
+  teacherClassSubject: many(teacherClassSubjectSectionTable),
 }));
 
 export const classesRelations = relations(classesTable, ({ one, many }) => ({

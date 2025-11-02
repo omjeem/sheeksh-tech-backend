@@ -29,6 +29,10 @@ export class Subject {
         eq(subjectsTable.schoolId, schoolId),
         eq(subjectsTable.isDeleted, false)
       ),
+      columns : {
+        id : true,
+        subject : true
+      }
     });
   };
 }

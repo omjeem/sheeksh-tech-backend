@@ -96,7 +96,47 @@ export class Teacher {
         data
       );
     } catch (error: any) {
-      console.log("Error while getting teachers deatils", error)
+      console.log("Error while getting teachers deatils", error);
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static getTeacherClassSectionMap = async (req: Request, res: Response) => {
+    try {
+      const schoolId = req.user.schoolId;
+      const body = req.body;
+      const data = await Services.Teacher.getteacherClassSectionMap(
+        body,
+        schoolId
+      );
+      return successResponse(
+        res,
+        200,
+        "Teachers Mapped Data fetched Successfully",
+        data
+      );
+    } catch (error: any) {
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static teacherClassSectionMap = async (req: Request, res: Response) => {
+    try {
+      const schoolId = req.user.schoolId;
+      const body = req.body;
+      await Services.School.isSchoolExistsAndActive(schoolId);
+      const data = await Services.Teacher.teacherClassSectionMap(
+        body,
+        schoolId
+      );
+      return successResponse(
+        res,
+        201,
+        "Teacher Mapped with classes Successfully",
+        data
+      );
+    } catch (error: any) {
+      console.log(error);
       return errorResponse(res, 400, error.message || error);
     }
   };

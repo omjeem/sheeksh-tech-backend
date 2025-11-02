@@ -1,8 +1,5 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
-import { db } from "../../config/db";
-import { sectionsTable } from "../../config/schema";
-import { eq } from "drizzle-orm";
 import Services from "../../services";
 
 export class Section {
