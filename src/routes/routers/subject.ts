@@ -1,11 +1,16 @@
-import express from "express"
-import { subjectRelations } from "../../config/schema"
+import express from "express";
+import { subjectRelations } from "../../config/schema";
 import Controllers from "../../controllers";
+import { validateRequest } from "../../middlewares/zodMiddleware";
+import Validators from "../../validators";
 
-const subjectRouter = express.Router()
+const subjectRouter = express.Router();
 
-subjectRouter.post("/", Controllers.Subject.create)
-subjectRouter.get("/", Controllers.Subject.get)
-
+subjectRouter.post(
+  "/",
+  validateRequest(Validators.Subject.create),
+  Controllers.Subject.create
+);
+subjectRouter.get("/", Controllers.Subject.get);
 
 export default subjectRouter;

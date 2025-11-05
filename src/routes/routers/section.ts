@@ -1,9 +1,15 @@
-import express from "express"
+import express from "express";
 import Controllers from "../../controllers";
+import { validateRequest } from "../../middlewares/zodMiddleware";
+import Validators from "../../validators";
 
-const sectionRouter = express.Router()
+const sectionRouter = express.Router();
 
-sectionRouter.post("/", Controllers.Section.create)
-sectionRouter.get("/:classId", Controllers.Section.getAll)
+sectionRouter.post(
+  "/",
+  validateRequest(Validators.Section.create),
+  Controllers.Section.create
+);
+sectionRouter.get("/:classId", Controllers.Section.getAll);
 
 export default sectionRouter;

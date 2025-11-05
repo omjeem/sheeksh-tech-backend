@@ -1,15 +1,27 @@
-import z from "zod"
+import {z} from "zod";
+import Validators from "..";
+import { dateValidator } from "./common";
 
 export class School {
-  createSchool = z.object({
+  static createSchool = z.object({
     name: z.string().min(3),
-    address: z.string().min(10),
-    phone: z.string().min(10).max(15),
-    email: z.string().email(),
-    website: z.string().url(),
+    email: z.email(),
+    url: z.string(),
+    address: z.string(),
+    meta: z.string(),
+    phone: z.string(),
+    superAdminName: z.string(),
+    superAdminEmail: z.email(),
+    superAdminPhone: z.string(),
+    superAdminPassword: z.string(),
+  });
 
-    superAdminName: z.string().min(3),
-    superAdminEmail: z.string().email(),
-    superAdminPassword: z.string().min(8)
+  static teacherClassSectionMap = z.object({
+    teacherId: z.string(),
+    classId: z.string(),
+    sessionId: z.string(),
+    sectionId: z.string(),
+    subjectId: z.string(),
+    fromDate: dateValidator,
   });
 }

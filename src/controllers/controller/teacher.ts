@@ -6,22 +6,13 @@ import { eq } from "drizzle-orm";
 import { Utils } from "../../utils/dateTime";
 import Services from "../../services";
 import { TeacherDesignation, UserRoles } from "../../types/types";
+import { CreateTeachers_Type } from "../../validators/validator/teacher";
 
-interface TeacherData {
-  email: string;
-  password?: string;
-  dateOfBirth: string;
-  firstName: string;
-  lastName: string;
-  startDate: string;
-  endDate: string;
-  designation: TeacherDesignation;
-}
 
 export class Teacher {
   static create = async (req: Request, res: Response) => {
     try {
-      const teachersData: TeacherData[] = req.body;
+      const teachersData: CreateTeachers_Type = req.body;
       const schoolId = req.user.schoolId;
       const isSchool = await db.query.schoolsTable.findFirst({
         where: eq(schoolsTable.id, schoolId),

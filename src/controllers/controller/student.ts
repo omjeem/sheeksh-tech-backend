@@ -10,23 +10,14 @@ import { and, eq, inArray } from "drizzle-orm";
 import { Utils } from "../../utils/dateTime";
 import Services from "../../services";
 import { UserRoles } from "../../types/types";
-
-interface StudentData {
-  srNo: number;
-  password?: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-}
+import { FeedStudents } from "../../validators/validator/student";
 
 export class Student {
   static feedStudents = async (req: Request, res: Response) => {
     try {
-      const body = req.body;
-      const { classId, sessionId, sectionId } = body;
+      const body: FeedStudents = req.body;
       const schoolId = req.user.schoolId;
-      const studentData: StudentData[] = body.studentData;
+      const { classId, sessionId, sectionId, studentData } = body;
       console.log({ studentData });
       const dataToFeed = studentData.map((d) => {
         return {
