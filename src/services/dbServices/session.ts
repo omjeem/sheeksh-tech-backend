@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { db } from "../../config/db";
 import { sessionsTable } from "../../config/schema";
 import { Utils } from "../../utils/dateTime";
@@ -7,38 +7,67 @@ export class Session {
   static create = async (
     schoolId: string,
     name: string,
-    startDate: string,
-    endDate: string
+    startDate: Date,
+    endDate: Date,
+    isActive: boolean
   ) => {
-    const start = Utils.toUTCFromIST(startDate);
-    const end = Utils.toUTCFromIST(endDate);
-    if (!start || !end) {
-      throw new Error(
-        `Start and End data should be valid Start date - ${startDate} End date - ${endDate}`
-      );
-    }
+    if (isActive) await this.isSessionActive(schoolId);
     return await db
       .insert(sessionsTable)
       .values({
         schoolId,
         name,
-        startDate: start,
-        endDate: end,
-        isActive: true,
+        startDate,
+        endDate,
+        isActive,
       })
       .returning();
   };
 
-  static get = async (schoolId: string) => {
+  private static isSessionActive = async (schoolId: string) => {
+    const isCurrentSessionExists = await db.query.sessionsTable.findFirst({
+      where: and(
+        eq(sessionsTable.isActive, true),
+        eq(sessionsTable.schoolId, schoolId)
+      ),
+    });
+    if (isCurrentSessionExists) {
+      throw new Error(
+        "There is already an active session exists for the school."
+      );
+    }
+  };
+
+  static changeSessionActiveState = async (
+    sessionId: string,
+    schoolId: string,
+    status: boolean
+  ) => {
+    const session = await db.query.sessionsTable.findFirst({
+      where: eq(sessionsTable.id, sessionId),
+    });
+    if (session?.schoolId !== schoolId) {
+      throw new Error("This session is not related with this school!");
+    }
+    if (status) await this.isSessionActive(schoolId);
+    return await db
+      .update(sessionsTable)
+      .set({ isActive: status })
+      .where(and(eq(sessionsTable.id, sessionId)));
+  };
+
+  static get = async (schoolId: string, active: boolean) => {
+    const conditions = [eq(sessionsTable.schoolId, schoolId)];
+    if (active) conditions.push(eq(sessionsTable.isActive, true));
     return await db.query.sessionsTable.findMany({
-      where: eq(sessionsTable.schoolId, String(schoolId)),
-      columns : {
+      where: and(...conditions),
+      columns: {
         id: true,
-        name : true,
+        name: true,
         startDate: true,
-        endDate : true,
-        isActive : true
-      }
+        endDate: true,
+        isActive: true,
+      },
     });
   };
 }

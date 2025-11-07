@@ -10,6 +10,15 @@ sessionRouter.post(
   validateRequest(Validators.Session.create),
   Controllers.Session.create
 );
-sessionRouter.get("/", Controllers.Session.getAll);
+sessionRouter.get(
+  "/",
+  validateRequest(Validators.Session.getSessions),
+  Controllers.Session.getAll
+);
+sessionRouter.put(
+  "/",
+  validateRequest(Validators.Session.updateSessionState),
+  Controllers.Session.changeSessionStatus
+);
 
 export default sessionRouter;

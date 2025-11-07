@@ -11,7 +11,7 @@ export const validateRequest =
         params: req.params,
         query: req.query,
       });
-      console.log({ sanitizedValues });
+      // console.log({ sanitizedValues });
       if (req.body) Object.assign(req.body, sanitizedValues.data);
       if (req.params) Object.assign(req.params, sanitizedValues.params);
       if (req.query) Object.assign(req.query, sanitizedValues.query);

@@ -13,10 +13,12 @@ teacherRouter.post(
 teacherRouter.get("/", Controllers.Teacher.getAllTeachers);
 teacherRouter.post(
   "/teacher-class",
+  validateRequest(Validators.Teacher.teacherClassSectionMap),
   Controllers.Teacher.teacherClassSectionMap
 );
 teacherRouter.post(
   "/get-teacher-class",
+  validateRequest(Validators.Teacher.getTeacherClassSectionMap),
   Controllers.Teacher.getTeacherClassSectionMap
 );
 
