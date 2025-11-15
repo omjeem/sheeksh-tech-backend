@@ -63,7 +63,7 @@ export const studentsTable = pgTable(
     schoolId: uuid()
       .references(() => schoolsTable.id, { onDelete: "cascade" })
       .notNull(),
-    srNo: varchar({ length: 50 }).notNull(),
+    srNo: integer().notNull(),
     createdAt: timestamp().defaultNow().notNull(),
     updatedAt: timestamp().defaultNow().notNull(),
   },
@@ -188,7 +188,10 @@ export const sectionsTable = pgTable("sections", {
 export const studentClassesTable = pgTable(
   "student_classes",
   {
-    id: serial().primaryKey(),
+    id: uuid().primaryKey().defaultRandom(),
+    schoolId: uuid()
+      .references(() => schoolsTable.id)
+      .notNull(),
     studentId: uuid()
       .references(() => studentsTable.id)
       .notNull(),
@@ -249,7 +252,8 @@ export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   classes: many(classesTable),
   feeStructures: many(feeStructuresTable),
   subjects: many(subjectsTable),
-  teacherClass : many(teacherClassSubjectSectionTable)
+  teacherClass: many(teacherClassSubjectSectionTable),
+  studentClass: many(studentClassesTable),
 }));
 
 export const subjectRelations = relations(subjectsTable, ({ one, many }) => ({
@@ -395,6 +399,10 @@ export const studentClassesRelations = relations(
     session: one(sessionsTable, {
       fields: [studentClassesTable.sessionId],
       references: [sessionsTable.id],
+    }),
+    school: one(schoolsTable, {
+      fields: [studentClassesTable.schoolId],
+      references: [schoolsTable.id],
     }),
   })
 );

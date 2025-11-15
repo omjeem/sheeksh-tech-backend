@@ -1,5 +1,5 @@
 {
-  "id": "789a6071-7b0b-4cc4-95bf-2568816a83c8",
+  "id": "006a68e0-7598-4554-87cd-7f37654b0b09",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -26,6 +26,13 @@
           "type": "varchar(100)",
           "primaryKey": false,
           "notNull": true
+        },
+        "isDeleted": {
+          "name": "isDeleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
         },
         "createdAt": {
           "name": "createdAt",
@@ -287,6 +294,13 @@
           "primaryKey": false,
           "notNull": true
         },
+        "isDeleted": {
+          "name": "isDeleted",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false,
+          "default": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp",
@@ -408,9 +422,16 @@
       "columns": {
         "id": {
           "name": "id",
-          "type": "serial",
+          "type": "uuid",
           "primaryKey": true,
-          "notNull": true
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "schoolId": {
+          "name": "schoolId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
         },
         "studentId": {
           "name": "studentId",
@@ -446,6 +467,19 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "student_classes_schoolId_schools_id_fk": {
+          "name": "student_classes_schoolId_schools_id_fk",
+          "tableFrom": "student_classes",
+          "tableTo": "schools",
+          "columnsFrom": [
+            "schoolId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "student_classes_studentId_students_id_fk": {
           "name": "student_classes_studentId_students_id_fk",
           "tableFrom": "student_classes",
@@ -623,7 +657,7 @@
         },
         "srNo": {
           "name": "srNo",
-          "type": "varchar(50)",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -710,12 +744,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "classId": {
-          "name": "classId",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
         "subject": {
           "name": "subject",
           "type": "varchar",
@@ -758,19 +786,6 @@
           ],
           "onDelete": "no action",
           "onUpdate": "no action"
-        },
-        "subjects_classId_classes_id_fk": {
-          "name": "subjects_classId_classes_id_fk",
-          "tableFrom": "subjects",
-          "tableTo": "classes",
-          "columnsFrom": [
-            "classId"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "no action",
-          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -790,6 +805,12 @@
           "notNull": true,
           "default": "gen_random_uuid()"
         },
+        "schoolId": {
+          "name": "schoolId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
         "teacherId": {
           "name": "teacherId",
           "type": "uuid",
@@ -798,6 +819,12 @@
         },
         "classId": {
           "name": "classId",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessionId": {
+          "name": "sessionId",
           "type": "uuid",
           "primaryKey": false,
           "notNull": true
@@ -850,6 +877,19 @@
       },
       "indexes": {},
       "foreignKeys": {
+        "teacherClassSubjectSection_schoolId_schools_id_fk": {
+          "name": "teacherClassSubjectSection_schoolId_schools_id_fk",
+          "tableFrom": "teacherClassSubjectSection",
+          "tableTo": "schools",
+          "columnsFrom": [
+            "schoolId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
         "teacherClassSubjectSection_teacherId_teachers_id_fk": {
           "name": "teacherClassSubjectSection_teacherId_teachers_id_fk",
           "tableFrom": "teacherClassSubjectSection",
@@ -869,6 +909,19 @@
           "tableTo": "classes",
           "columnsFrom": [
             "classId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        },
+        "teacherClassSubjectSection_sessionId_sessions_id_fk": {
+          "name": "teacherClassSubjectSection_sessionId_sessions_id_fk",
+          "tableFrom": "teacherClassSubjectSection",
+          "tableTo": "sessions",
+          "columnsFrom": [
+            "sessionId"
           ],
           "columnsTo": [
             "id"

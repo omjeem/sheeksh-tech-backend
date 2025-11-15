@@ -31,8 +31,7 @@ export class Teacher {
   });
 
   static getTeacherClassSectionMap = z.object({
-    body: z.object({
-      allDate: z.boolean().optional(),
+    query: z.object({
       teacherId: z.uuid().optional(),
       classId: z.uuid().optional(),
       sessionId: z.uuid().optional(),

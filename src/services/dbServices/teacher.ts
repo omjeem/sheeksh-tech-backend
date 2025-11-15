@@ -55,38 +55,35 @@ export class Teacher {
       sectionId?: string;
       subjectId?: string;
       fromDate?: string;
-      allData?: boolean;
     },
     schoolId: string
   ) => {
     const conditions = [eq(teacherClassSubjectSectionTable.schoolId, schoolId)];
 
-    if (!queries.allData) {
-      if (queries.classId) {
-        conditions.push(
-          eq(teacherClassSubjectSectionTable.classId, queries.classId)
-        );
-      }
-      if (queries.teacherId) {
-        conditions.push(
-          eq(teacherClassSubjectSectionTable.teacherId, queries.teacherId)
-        );
-      }
-      if (queries.sessionId) {
-        conditions.push(
-          eq(teacherClassSubjectSectionTable.sessionId, queries.sessionId)
-        );
-      }
-      if (queries.sectionId) {
-        conditions.push(
-          eq(teacherClassSubjectSectionTable.sectionId, queries.sectionId)
-        );
-      }
-      if (queries.subjectId) {
-        conditions.push(
-          eq(teacherClassSubjectSectionTable.subjectId, queries.subjectId)
-        );
-      }
+    if (queries.classId) {
+      conditions.push(
+        eq(teacherClassSubjectSectionTable.classId, queries.classId)
+      );
+    }
+    if (queries.teacherId) {
+      conditions.push(
+        eq(teacherClassSubjectSectionTable.teacherId, queries.teacherId)
+      );
+    }
+    if (queries.sessionId) {
+      conditions.push(
+        eq(teacherClassSubjectSectionTable.sessionId, queries.sessionId)
+      );
+    }
+    if (queries.sectionId) {
+      conditions.push(
+        eq(teacherClassSubjectSectionTable.sectionId, queries.sectionId)
+      );
+    }
+    if (queries.subjectId) {
+      conditions.push(
+        eq(teacherClassSubjectSectionTable.subjectId, queries.subjectId)
+      );
     }
     // if (queries.fromDate) {
     //   conditions.push(
@@ -198,8 +195,8 @@ export class Teacher {
         eq(sessionsTable.schoolId, schoolId)
       ),
     });
-    if(!isSessionBelongs){
-      throw new Error("This session is not belongs to the school")
+    if (!isSessionBelongs) {
+      throw new Error("This session is not belongs to the school");
     }
     const isExists = await db.query.teacherClassSubjectSectionTable.findFirst({
       where: and(

@@ -16,8 +16,8 @@ teacherRouter.post(
   validateRequest(Validators.Teacher.teacherClassSectionMap),
   Controllers.Teacher.teacherClassSectionMap
 );
-teacherRouter.post(
-  "/get-teacher-class",
+teacherRouter.get(
+  "/teacher-class",
   validateRequest(Validators.Teacher.getTeacherClassSectionMap),
   Controllers.Teacher.getTeacherClassSectionMap
 );

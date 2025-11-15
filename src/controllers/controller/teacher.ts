@@ -95,7 +95,7 @@ export class Teacher {
   static getTeacherClassSectionMap = async (req: Request, res: Response) => {
     try {
       const schoolId = req.user.schoolId;
-      const body = req.body;
+      const body = req.query;
       const data = await Services.Teacher.getteacherClassSectionMap(
         body,
         schoolId,

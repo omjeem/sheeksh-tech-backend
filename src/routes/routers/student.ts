@@ -11,4 +11,14 @@ studentRouter.post(
   Controllers.Student.feedStudents
 );
 
+studentRouter.get("/", Controllers.Student.getStudents);
+
+studentRouter.get("/sr", Controllers.Student.getLastSrNo);
+
+studentRouter.get(
+  "/class-section",
+  validateRequest(Validators.Student.getClassStudent),
+  Controllers.Student.getStudentClassData
+);
+
 export default studentRouter;

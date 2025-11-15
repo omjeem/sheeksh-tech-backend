@@ -5,43 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1761909689266,
-      "tag": "0000_early_daimon_hellstrom",
+      "when": 1763217290391,
+      "tag": "0000_condemned_darkhawk",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1762030181549,
-      "tag": "0001_harsh_sharon_carter",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1762030966057,
-      "tag": "0002_wet_wasp",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1762032993713,
-      "tag": "0003_tiny_shiver_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1762090381606,
-      "tag": "0004_lyrical_venus",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1762096856756,
-      "tag": "0005_narrow_sleepwalker",
+      "when": 1763218824374,
+      "tag": "0001_cloudy_ravenous",
       "breakpoints": true
     }
   ]

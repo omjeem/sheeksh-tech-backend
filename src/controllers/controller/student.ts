@@ -1,104 +1,54 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
-import { db } from "../../config/db";
-import {
-  studentClassesTable,
-  studentsTable,
-  usersTable,
-} from "../../config/schema";
-import { and, eq, inArray } from "drizzle-orm";
-import { Utils } from "../../utils/dateTime";
 import Services from "../../services";
-import { UserRoles } from "../../types/types";
-import { FeedStudents } from "../../validators/validator/student";
 
 export class Student {
   static feedStudents = async (req: Request, res: Response) => {
     try {
-      const body: FeedStudents = req.body;
+      const body = req.body;
       const schoolId = req.user.schoolId;
-      const { classId, sessionId, sectionId, studentData } = body;
-      console.log({ studentData });
-      const dataToFeed = studentData.map((d) => {
-        return {
-          srNo: d.srNo,
-          dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
-          schoolId,
-          role: UserRoles.STUDENT,
-          email: d.email,
-          password: d.password
-            ? d.password
-            : `${d.firstName}-${Math.random().toFixed(3)}`,
-          firstName: d.firstName,
-          lastName: d.lastName,
-        };
-      });
-      const emailsToCheck = dataToFeed.map((d) => d.email);
-
-      const srNoCheck = dataToFeed
-        .map((d) => String(d.srNo))
-        .filter((f) => f != null);
-
-      if (srNoCheck.length > 0) {
-        const existingSrNo = await db
-          .select({ srNo: studentsTable.srNo })
-          .from(studentsTable)
-          .where(
-            and(
-              inArray(studentsTable.srNo, srNoCheck.map(String)),
-              eq(studentsTable.schoolId, schoolId)
-            )
-          );
-
-        if (existingSrNo.length > 0) {
-          const duplicateSrNo = existingSrNo.map((e) => e.srNo).join(", ");
-          throw new Error(`Duplicate SrNo found: ${duplicateSrNo}`);
-        }
-      }
-
-      if (emailsToCheck.length > 0) {
-        await Services.User.isUsersExists(emailsToCheck);
-      }
-
-      await db.transaction(async (tx) => {
-        const userFeed = await tx
-          .insert(usersTable)
-          .values(dataToFeed.map(({ srNo, dateOfBirth, ...rest }) => rest))
-          .returning({
-            userId: usersTable.id,
-            email: usersTable.email,
-          });
-
-        const studentFeed: any = userFeed.map((u, index) => {
-          return {
-            userId: u.userId,
-            schoolId,
-            srNo: dataToFeed[index]?.srNo,
-            dateOfBirth: dataToFeed[index]?.dateOfBirth,
-          };
-        });
-
-        const students = await tx
-          .insert(studentsTable)
-          .values(studentFeed)
-          .returning({
-            studentId: studentsTable.id,
-          });
-
-        const studentClassFeed = students.map((s) => {
-          return {
-            ...s,
-            classId,
-            sectionId,
-            sessionId,
-          };
-        });
-
-        await tx.insert(studentClassesTable).values(studentClassFeed);
-      });
+      const data = await Services.Student.feedStudent(schoolId, body);
       return successResponse(res, 201, "Student Feed Successfully");
     } catch (error: any) {
       console.log("Error while feeding user data", error);
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static getLastSrNo = async (req: Request, res: Response) => {
+    try {
+      const schoolId = req.user.schoolId;
+      const data = await Services.Student.getLastSrNo(schoolId);
+      return successResponse(res, 200, "Last Sr no of Student", data);
+    } catch (error: any) {
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static getStudents = async (req: Request, res: Response) => {
+    try {
+      const schoolId = req.user.schoolId;
+      const data = await Services.Student.getStudentBySchoolId(schoolId);
+      return successResponse(
+        res,
+        200,
+        "Students data fetched successfully",
+        data
+      );
+    } catch (error: any) {
+      console.log("Error while fetching students", error);
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static getStudentClassData = async (req: Request, res: Response) => {
+    try {
+      const schoolId = req.user.schoolId;
+      const query = req.query;
+      const data = await Services.Student.getStudentClassData(schoolId, query);
+      console.log({ data });
+      return successResponse(res, 200, "Student class data", data);
+    } catch (error: any) {
       return errorResponse(res, 400, error.message || error);
     }
   };

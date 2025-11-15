@@ -1,2 +1,0 @@
-ALTER TABLE "teacherClassSubjectSection" ADD COLUMN "schoolId" uuid NOT NULL;--> statement-breakpoint
-ALTER TABLE "teacherClassSubjectSection" ADD CONSTRAINT "teacherClassSubjectSection_schoolId_schools_id_fk" FOREIGN KEY ("schoolId") REFERENCES "public"."schools"("id") ON DELETE no action ON UPDATE no action;
