@@ -9,7 +9,7 @@ const studentRouter = express.Router();
 studentRouter.post(
   "/",
   validateRequest(Validators.Student.feedStudents),
-    adminMiddleware,
+  adminMiddleware,
   Controllers.Student.feedStudents
 );
 

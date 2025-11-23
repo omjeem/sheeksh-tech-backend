@@ -8,7 +8,7 @@ const createZod = z.array(
     password: z.string().optional(),
     dateOfBirth: zodDateValidator,
     firstName: z.string(),
-    lastName: z.string(),
+    lastName: z.string().optional(),
     startDate: zodDateValidator,
     endDate: zodDateValidator.optional(),
     designation: z.enum(TeacherDesignation),

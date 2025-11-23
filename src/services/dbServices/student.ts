@@ -40,9 +40,11 @@ export class Student {
         d.password || `${d.firstName}-${d.email}`,
         d.email
       );
+      const dateOfBirth = Utils.toUTCFromIST(d.dateOfBirth);
+      console.log({ dateOfBirth });
       return {
         srNo: selfAssignSr ? ++lastSrNo : d.srNo,
-        dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
+        dateOfBirth,
         schoolId,
         role: UserRoles.STUDENT,
         email: d.email,
@@ -79,7 +81,7 @@ export class Student {
     await db.transaction(async (tx) => {
       const userFeed = await tx
         .insert(usersTable)
-        .values(dataToFeed.map(({ srNo, dateOfBirth, ...rest }) => rest))
+        .values(dataToFeed.map(({ srNo, ...rest }) => rest))
         .returning({
           userId: usersTable.id,
           email: usersTable.email,
@@ -90,7 +92,6 @@ export class Student {
           userId: u.userId,
           schoolId,
           srNo: dataToFeed[index]?.srNo,
-          dateOfBirth: dataToFeed[index]?.dateOfBirth,
         };
       });
 
