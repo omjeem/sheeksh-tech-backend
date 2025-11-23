@@ -13,7 +13,7 @@ studentRouter.post(
   Controllers.Student.feedStudents
 );
 
-studentRouter.get("/", Controllers.Student.getStudents);
+studentRouter.get("/", Controllers.Student.getStudentClassData);
 
 studentRouter.get("/sr", Controllers.Student.getLastSrNo);
 

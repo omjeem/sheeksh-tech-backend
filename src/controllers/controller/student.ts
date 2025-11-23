@@ -46,7 +46,7 @@ export class Student {
       const schoolId = req.user.schoolId;
       const query = req.query;
       const data = await Services.Student.getStudentClassData(schoolId, query);
-      console.log({ data });
+      // console.log({ data });
       return successResponse(res, 200, "Student class data", data);
     } catch (error: any) {
       return errorResponse(res, 400, error.message || error);
