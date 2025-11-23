@@ -1,7 +1,9 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import { db } from "../../config/db";
-import { schoolsTable, usersTable } from "../../config/schema";
-import { UserRoles, UserRolesType } from "../../types/types";
+import { usersTable } from "../../config/schema";
+import { UserRolesType } from "../../types/types";
+import { UsersTable_Type } from "../../config/schemaTypes";
+import { Utils } from "../../utils";
 
 export class User {
   static isUsersExists = async (emails: string[]) => {
@@ -16,62 +18,50 @@ export class User {
     }
   };
 
+  static addNewUsers = async (
+    data: [Omit<UsersTable_Type, "id" | "createdAt" | "updatedAt">],
+    tx: any
+  ) => {
+    const emails = data.map((d) => d.email);
+    await this.isUsersExists(emails);
+    return await tx.insert(usersTable).values(data).returning();
+  };
+
   static validateUserIdAndPassword = async (
     email: string,
-    password: string,
-    isSuperAdmin: boolean = false
+    password: string
   ): Promise<{
     schoolId: string;
     role: UserRolesType;
-    userId: string | null;
+    userId: string;
   }> => {
-    if (isSuperAdmin) {
-      const superAdminData = await db.query.schoolsTable.findFirst({
-        where: eq(schoolsTable.superAdminEmail, email),
-        columns: {
-          id: true,
-          superAdminPassword: true,
-        },
-      });
-      if (!superAdminData) {
-        throw new Error("Invalid Super Admin Email");
-      }
-      if (superAdminData.superAdminPassword !== password) {
-        throw new Error("Invalid Password");
-      }
-      return {
-        schoolId: superAdminData.id,
-        role: UserRoles.SUPER_ADMIN,
-        userId: null,
-      };
-    } else {
-      const userDetails = await db.query.usersTable.findFirst({
-        where: eq(usersTable.email, email),
-        columns: {
-          id: true,
-          schoolId: true,
-          email: true,
-          password: true,
-          isSuspended: true,
-          role: true,
-        },
-      });
-      if (!userDetails) {
-        throw new Error("Invalid user Email");
-      }
-      if (userDetails.password !== password) {
-        throw new Error("Invalid password");
-      }
-      if (userDetails.isSuspended) {
-        throw new Error(
-          "Your account is being suspended please contact your organization admin!"
-        );
-      }
-      return {
-        schoolId: userDetails.schoolId,
-        role: userDetails.role,
-        userId: userDetails.id,
-      };
+    const userDetails = await db.query.usersTable.findFirst({
+      where: eq(usersTable.email, email),
+      columns: {
+        id: true,
+        schoolId: true,
+        email: true,
+        password: true,
+        isSuspended: true,
+        role: true,
+      },
+    });
+    if (!userDetails) {
+      throw new Error("Invalid user Email");
     }
+    console.log({password})
+    if (!Utils.verifyPassword(password, email, userDetails.password)) {
+      throw new Error("Invalid password");
+    }
+    if (userDetails.isSuspended) {
+      throw new Error(
+        "Your account is being suspended please contact your organization admin!"
+      );
+    }
+    return {
+      schoolId: userDetails.schoolId,
+      role: userDetails.role,
+      userId: userDetails.id,
+    };
   };
 }

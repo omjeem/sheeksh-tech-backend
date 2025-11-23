@@ -1,68 +1,14 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
-import { schoolsTable, teachersTable, usersTable } from "../../config/schema";
-import { db } from "../../config/db";
-import { eq } from "drizzle-orm";
-import { Utils } from "../../utils/dateTime";
 import Services from "../../services";
-import { TeacherDesignation, UserRoles } from "../../types/types";
-import { CreateTeachers_Type } from "../../validators/validator/teacher";
-
 
 export class Teacher {
+  
   static create = async (req: Request, res: Response) => {
     try {
-      const teachersData: CreateTeachers_Type = req.body;
       const schoolId = req.user.schoolId;
-      const isSchool = await db.query.schoolsTable.findFirst({
-        where: eq(schoolsTable.id, schoolId),
-      });
-
-      if (!isSchool) {
-        throw new Error("School not exists");
-      }
-
-      const emails = teachersData.map((d) => d.email);
-      await Services.User.isUsersExists(emails);
-
-      const responseData = await db.transaction(async (tx) => {
-        console.log({ teachersData });
-        const userData = teachersData.map((d) => {
-          return {
-            schoolId: schoolId,
-            email: d.email,
-            password: d.password || `${d.email + "-" + d.dateOfBirth}`,
-            role: UserRoles.TEACHER,
-            dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
-            firstName: d.firstName,
-            lastName: d.lastName,
-          };
-        });
-        const usersResponse = await tx
-          .insert(usersTable)
-          .values(userData)
-          .returning({
-            userId: usersTable.id,
-          });
-        // console.log({ usersResponse });
-        const teachersDataTofeed = usersResponse.map((d, i) => {
-          return {
-            userId: d.userId,
-            schoolId,
-            startDate: Utils.toUTCFromIST(teachersData[i]?.startDate),
-            endDate: Utils.toUTCFromIST(teachersData[i]?.endDate),
-            designation: teachersData[i]!.designation,
-          };
-        });
-        // console.log({ teachersDataTofeed });
-        const teacherDataResponse = await tx
-          .insert(teachersTable)
-          .values(teachersDataTofeed)
-          .returning();
-
-        return teacherDataResponse;
-      });
-
+      const responseData = await Services.Teacher.createTeachers(schoolId, req.body);
+     
       return successResponse(
         res,
         201,
@@ -98,7 +44,7 @@ export class Teacher {
       const body = req.query;
       const data = await Services.Teacher.getteacherClassSectionMap(
         body,
-        schoolId,
+        schoolId
       );
       return successResponse(
         res,

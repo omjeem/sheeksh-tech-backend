@@ -12,10 +12,9 @@ import {
   FeedStudents_Type,
   GetStudentClassSection_Type,
 } from "../../validators/validator/student";
-import { Utils } from "../../utils/dateTime";
+import { Utils } from "../../utils";
 
 export class Student {
-    
   static getLastSrNo = async (schoolId: string) => {
     const srData = await db
       .select({ srNo: studentsTable.srNo })
@@ -37,13 +36,17 @@ export class Student {
     let lastSrNo: number;
     if (selfAssignSr) lastSrNo = await this.getLastSrNo(schoolId);
     const dataToFeed = studentData.map((d) => {
+      const hashedPassword = Utils.hashPassword(
+        d.password || `${d.firstName}-${d.email}`,
+        d.email
+      );
       return {
         srNo: selfAssignSr ? ++lastSrNo : d.srNo,
         dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
         schoolId,
         role: UserRoles.STUDENT,
         email: d.email,
-        password: d.password ? d.password : `${d.firstName}-${d.email}`,
+        password: hashedPassword,
         firstName: d.firstName,
         lastName: d.lastName,
       };

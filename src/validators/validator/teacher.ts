@@ -1,16 +1,16 @@
 import z, { email } from "zod";
-import { dateValidator } from "./common";
+import { zodDateValidator } from "./common";
 import { TeacherDesignation } from "../../types/types";
 
 const createZod = z.array(
   z.object({
     email: z.email(),
     password: z.string().optional(),
-    dateOfBirth: dateValidator,
+    dateOfBirth: zodDateValidator,
     firstName: z.string(),
     lastName: z.string(),
-    startDate: dateValidator,
-    endDate: dateValidator.optional(),
+    startDate: zodDateValidator,
+    endDate: zodDateValidator.optional(),
     designation: z.enum(TeacherDesignation),
   })
 );
@@ -26,7 +26,7 @@ export class Teacher {
       sessionId: z.uuid(),
       sectionId: z.uuid(),
       subjectId: z.uuid(),
-      fromDate: dateValidator,
+      fromDate: zodDateValidator,
     }),
   });
 
@@ -37,7 +37,7 @@ export class Teacher {
       sessionId: z.uuid().optional(),
       sectionId: z.uuid().optional(),
       subjectId: z.uuid().optional(),
-      fromDate: dateValidator.optional(),
+      fromDate: zodDateValidator.optional(),
     }),
   });
 }

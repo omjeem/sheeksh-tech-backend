@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../config/response";
-import { Utils } from "../utils/dateTime";
+import { Utils } from "../utils";
 
 export const authMiddleware = async (
   req: Request,

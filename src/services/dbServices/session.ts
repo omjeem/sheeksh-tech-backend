@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../config/db";
 import { sessionsTable } from "../../config/schema";
-import { Utils } from "../../utils/dateTime";
+import { Utils } from "../../utils";
 
 export class Session {
   static create = async (

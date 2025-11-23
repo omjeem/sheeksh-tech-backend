@@ -1,6 +1,7 @@
 import { envConfigs } from "../config/envConfig";
 import jwt, { decode, JwtPayload } from "jsonwebtoken";
 import { UserRolesType, UserTokenPayload } from "../types/types";
+import crypto from "crypto";
 
 type VerifyTokenSuccess = {
   valid: true;
@@ -54,5 +55,23 @@ export class Utils {
         error: err.message || "Token authentication failed! please login again",
       };
     }
+  };
+
+  static hashPassword = (password: string, email: string) => {
+    const salted = password + email;
+    return crypto.createHash("sha256").update(salted).digest("base64url");
+  };
+
+  static verifyPassword = (
+    plainPassword: string,
+    email: string,
+    hashedPassword: string
+  ) => {
+    const newHash = this.hashPassword(plainPassword, email);
+    return newHash === hashedPassword;
+  };
+
+  static defaultPassword = (firstName: string, email: string) => {
+    return `${firstName}-${email}`;
   };
 }

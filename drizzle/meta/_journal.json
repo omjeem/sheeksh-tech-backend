@@ -15,6 +15,34 @@
       "when": 1763218824374,
       "tag": "0001_cloudy_ravenous",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1763836775387,
+      "tag": "0002_outgoing_bloodaxe",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1763837209116,
+      "tag": "0003_eminent_green_goblin",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1763837528486,
+      "tag": "0004_sticky_korvac",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1763887450252,
+      "tag": "0005_equal_black_panther",
+      "breakpoints": true
     }
   ]
 }

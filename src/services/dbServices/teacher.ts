@@ -6,10 +6,63 @@ import {
   subjectsTable,
   teacherClassSubjectSectionTable,
   teachersTable,
+  usersTable,
 } from "../../config/schema";
-import { Utils } from "../../utils/dateTime";
+import { Utils } from "../../utils";
+import { CreateTeachers_Type } from "../../validators/validator/teacher";
+import Services from "..";
+import { UserRoles } from "../../types/types";
 
 export class Teacher {
+  static createTeachers = async (
+    schoolId: string,
+    teachersData: CreateTeachers_Type
+  ) => {
+    const emails = teachersData.map((d) => d.email);
+    await Services.User.isUsersExists(emails);
+
+    return await db.transaction(async (tx) => {
+      // console.log({ teachersData });
+      const userData = teachersData.map((d) => {
+        const hashedPassword = Utils.hashPassword(
+          d.password || Utils.defaultPassword(d.firstName, d.email),
+          d.email
+        );
+        return {
+          schoolId: schoolId,
+          email: d.email,
+          password: hashedPassword,
+          role: UserRoles.TEACHER,
+          dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
+          firstName: d.firstName,
+          lastName: d.lastName,
+        };
+      });
+      const usersResponse = await tx
+        .insert(usersTable)
+        .values(userData)
+        .returning({
+          userId: usersTable.id,
+        });
+
+        const teachersDataTofeed = usersResponse.map((d, i) => {
+        return {
+          userId: d.userId,
+          schoolId,
+          startDate: Utils.toUTCFromIST(teachersData[i]?.startDate),
+          endDate: Utils.toUTCFromIST(teachersData[i]?.endDate),
+          designation: teachersData[i]!.designation,
+        };
+      });
+
+      const teacherDataResponse = await tx
+        .insert(teachersTable)
+        .values(teachersDataTofeed)
+        .returning();
+
+      return teacherDataResponse;
+    });
+  };
   static getData = async (pageNo: any, limit: any, schoolId: string) => {
     const offset = (pageNo - 1) * limit;
 

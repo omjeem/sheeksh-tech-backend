@@ -1,29 +1,28 @@
 import { eq, or } from "drizzle-orm";
 import { db } from "../../config/db";
 import { schoolsTable } from "../../config/schema";
+import { CreateSchool_Type } from "../../validators/validator/school";
+import { Utils } from "../../utils";
+import Services from "..";
+import { UserRoles } from "../../types/types";
 
 export class School {
-  static create = async (body: any) => {
-    const {
-      name,
-      email,
-      url,
-      address,
-      meta,
-      phone,
-      superAdminName,
-      superAdminEmail,
-      superAdminPhone,
-      superAdminPassword,
-    } = body;
+  
+  static create = async (body: CreateSchool_Type) => {
+    const { name, email, url, address, meta, phone, admin, city, state } = body;
+
+    const superAdminEmail = admin.email;
+    const superAdminPhone = admin.phone;
+    const superAdminFirstName = admin.firstName;
+    const superAdminLastName = admin.lastName;
+    const superAdminDateOfBirth = Utils.toUTCFromIST(admin.dateOfBirth);
+    const superAdminPassword = admin.password;
 
     const existingSchool = await db.query.schoolsTable.findFirst({
       where: or(
         eq(schoolsTable.email, email),
         eq(schoolsTable.phone, phone),
-        eq(schoolsTable.url, url),
-        eq(schoolsTable.superAdminEmail, superAdminEmail),
-        eq(schoolsTable.superAdminPhone, superAdminPhone)
+        eq(schoolsTable.url, url)
       ),
     });
     const itemsPresentAlreayd = [];
@@ -46,18 +45,6 @@ export class School {
           value: url,
         });
       }
-      if (existingSchool.superAdminEmail === superAdminEmail) {
-        itemsPresentAlreayd.push({
-          field: "superAdminEmail",
-          value: superAdminEmail,
-        });
-      }
-      if (existingSchool.superAdminPhone === superAdminPhone) {
-        itemsPresentAlreayd.push({
-          field: "superAdminPhone",
-          value: superAdminPhone,
-        });
-      }
     }
     if (itemsPresentAlreayd.length > 0) {
       const errorMessage = `Following details are already exists in the databse: ${itemsPresentAlreayd
@@ -67,34 +54,50 @@ export class School {
       throw new Error(errorMessage);
     }
 
-    //   const hashedPassword = await bcrypt.hash(superAdminPassword, 10);
+    return await db.transaction(async (tx) => {
+      const schoolData = await tx
+        .insert(schoolsTable)
+        .values({
+          name,
+          email,
+          url,
+          city,
+          state,
+          address,
+          phone,
+          meta,
+          isApproved: true,
+        })
+        .returning({ id: schoolsTable.id });
 
-    return await db
-      .insert(schoolsTable)
-      .values({
-        name,
-        email,
-        url,
-        address,
-        phone,
-        superAdminName,
-        superAdminEmail,
-        superAdminPhone,
-        superAdminPassword,
-        meta,
-        isApproved: true,
-        isSuspended: false,
-      })
-      .returning();
+      const schoolId = schoolData[0]!.id;
+
+      return await Services.User.addNewUsers(
+        [
+          {
+            schoolId,
+            role: UserRoles.SUPER_ADMIN,
+            email: superAdminEmail,
+            password: Utils.hashPassword(superAdminPassword, superAdminEmail),
+            phone: superAdminPhone,
+            dateOfBirth: superAdminDateOfBirth,
+            isSuspended: false,
+            firstName: superAdminFirstName,
+            lastName: superAdminLastName || null,
+          },
+        ],
+        tx
+      );
+    });
   };
 
   static isSchoolExistsAndActive = async (schoolId: string) => {
     const isExists = await db.query.schoolsTable.findFirst({
       where: eq(schoolsTable.id, schoolId),
     });
-    if(!isExists){
-      throw new Error("School not exists")
+    if (!isExists) {
+      throw new Error("School not exists");
     }
-    return isExists
+    return isExists;
   };
 }

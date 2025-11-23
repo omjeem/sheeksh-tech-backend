@@ -7,18 +7,15 @@ export interface UserTokenPayload {
   };
 }
 
-enum UserRolesEnum {
-  ADMIN = "ADMIN",
-  TEACHER = "TEACHER",
-  STUDENT = "STUDENT",
-  PARENT = "PARENT",
-  ACCOUNTANT = "ACCOUNTANT",
-}
-
 export const UserRoles = {
-  ...UserRolesEnum,
+  ADMIN: "ADMIN",
+  TEACHER: "TEACHER",
+  STUDENT: "STUDENT",
+  PARENT: "PARENT",
+  ACCOUNTANT: "ACCOUNTANT",
   SUPER_ADMIN: "SUPER_ADMIN",
 };
+
 export type UserRolesType = (typeof UserRoles)[keyof typeof UserRoles];
 
 export enum TeacherDesignation {

@@ -1,5 +1,5 @@
 import z from "zod";
-import { dateValidator } from "./common";
+import { zodDateValidator } from "./common";
 
 const studentFeedData = z.object({
   classId: z.uuid(),
@@ -13,7 +13,7 @@ const studentFeedData = z.object({
       email: z.email(),
       firstName: z.string(),
       lastName: z.string(),
-      dateOfBirth: dateValidator,
+      dateOfBirth: zodDateValidator,
     })
   ),
 });
