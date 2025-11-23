@@ -10,12 +10,13 @@ export const adminMiddleware = async (
 ) => {
   try {
     const userRole: UserRolesType = req.user.role;
-    if (userRole === UserRoles.SUPER_ADMIN || userRole === UserRoles.ADMIN) {
-      next();
+    if (userRole !== UserRoles.SUPER_ADMIN && userRole !== UserRoles.ADMIN) {
+      console.log("Entering");
+      throw new Error(
+        `This is Admin protected route ${userRole} role are not allowed for this route`
+      );
     }
-    throw new Error(
-      `This is Admin protected route ${userRole} role are not allowed for this route`
-    );
+    next();
   } catch (error: any) {
     return errorResponse(res, 401, error.message || error);
   }
@@ -28,12 +29,12 @@ export const superAdminMiddleware = async (
 ) => {
   try {
     const userRole: UserRolesType = req.user.role;
-    if (userRole === UserRoles.SUPER_ADMIN) {
-      next();
+    if (userRole !== UserRoles.SUPER_ADMIN) {
+      throw new Error(
+        `This is Super Admin protected route ${userRole} role are not allowed for this route`
+      );
     }
-    throw new Error(
-      `This is Super Admin protected route ${userRole} role are not allowed for this route`
-    );
+    next();
   } catch (error: any) {
     return errorResponse(res, 401, error.message || error);
   }

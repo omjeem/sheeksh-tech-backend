@@ -8,8 +8,8 @@ const classRouter = express.Router();
 
 classRouter.post(
   "/",
-  adminMiddleware,
   validateRequest(Validators.Class.create),
+  adminMiddleware,
   Controllers.Class.create
 );
 classRouter.get("/", Controllers.Class.getAll);

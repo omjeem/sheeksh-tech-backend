@@ -8,8 +8,8 @@ const studentRouter = express.Router();
 
 studentRouter.post(
   "/",
-  adminMiddleware,
   validateRequest(Validators.Student.feedStudents),
+    adminMiddleware,
   Controllers.Student.feedStudents
 );
 

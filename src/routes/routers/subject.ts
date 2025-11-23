@@ -9,8 +9,8 @@ const subjectRouter = express.Router();
 
 subjectRouter.post(
   "/",
-  adminMiddleware,
   validateRequest(Validators.Subject.create),
+  adminMiddleware,
   Controllers.Subject.create
 );
 subjectRouter.get("/", Controllers.Subject.get);

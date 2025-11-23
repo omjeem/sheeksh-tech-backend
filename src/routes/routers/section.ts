@@ -8,8 +8,8 @@ const sectionRouter = express.Router();
 
 sectionRouter.post(
   "/",
-  adminMiddleware,
   validateRequest(Validators.Section.create),
+  adminMiddleware,
   Controllers.Section.create
 );
 sectionRouter.get("/:classId", Controllers.Section.getAll);

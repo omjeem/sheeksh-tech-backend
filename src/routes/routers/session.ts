@@ -8,19 +8,21 @@ const sessionRouter = express.Router();
 
 sessionRouter.post(
   "/",
-  adminMiddleware,
   validateRequest(Validators.Session.create),
+  adminMiddleware,
   Controllers.Session.create
 );
+
 sessionRouter.get(
   "/",
   validateRequest(Validators.Session.getSessions),
   Controllers.Session.getAll
 );
+
 sessionRouter.put(
   "/",
-  adminMiddleware,
   validateRequest(Validators.Session.updateSessionState),
+  adminMiddleware,
   Controllers.Session.changeSessionStatus
 );
 
