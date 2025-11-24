@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
+import Constants from "../../config/constants";
 
 export class School {
   static createSchool = async (req: Request, res: Response) => {
@@ -9,13 +10,16 @@ export class School {
       const school = await Services.School.create(body);
       return successResponse(
         res,
-        201,
         "School registration successful. Awaiting verification.",
-        school
+        school,
+        Constants.STATUS_CODE.CREATED
       );
     } catch (error: any) {
       console.error("School Onboarding Error:", error);
-      return errorResponse(res, 400, error?.message || error);
+      return errorResponse(
+        res,
+        error?.message || error
+      );
     }
   };
 }

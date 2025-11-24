@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
+import Constants from "../../config/constants";
 
 export class Section {
   static create = async (req: Request, res: Response) => {
@@ -14,12 +15,15 @@ export class Section {
       );
       return successResponse(
         res,
-        200,
         "Section created Successfully",
-        sesctionData
+        sesctionData,
+        Constants.STATUS_CODE.CREATED
       );
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(
+        res,
+        error.message || error
+      );
     }
   };
 
@@ -33,12 +37,14 @@ export class Section {
       );
       return successResponse(
         res,
-        200,
         "All Sections fetched successfully",
         sectionsData
       );
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(
+        res,
+        error.message || error
+      );
     }
   };
 }

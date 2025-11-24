@@ -1,14 +1,19 @@
-import { Response } from 'express';
+import { Response } from "express";
+import Constants from "./constants";
 
 export function successResponse(
   res: Response,
-  status: number,
-  message?: string,
-  data?: any,
+  message: string,
+  data: any,
+  status: number = Constants.STATUS_CODE.SUCCESS
 ) {
   return res.status(status).json({ success: true, message, data });
 }
 
-export function errorResponse(res: Response, status: number, error: any) {
+export function errorResponse(
+  res: Response,
+  error: any,
+  status: number = Constants.STATUS_CODE.BAD_REQUEST
+) {
   return res.status(status).json({ success: false, error: error });
 }

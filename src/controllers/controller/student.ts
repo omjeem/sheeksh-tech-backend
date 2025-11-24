@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
+import Constants from "../../config/constants";
 
 export class Student {
   static feedStudents = async (req: Request, res: Response) => {
@@ -8,10 +9,15 @@ export class Student {
       const body = req.body;
       const schoolId = req.user.schoolId;
       const data = await Services.Student.feedStudent(schoolId, body);
-      return successResponse(res, 201, "Student Feed Successfully");
+      return successResponse(
+        res,
+        "Student Feed Successfully",
+        null,
+        Constants.STATUS_CODE.NO_CONTENT
+      );
     } catch (error: any) {
       console.log("Error while feeding user data", error);
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 
@@ -19,9 +25,9 @@ export class Student {
     try {
       const schoolId = req.user.schoolId;
       const data = await Services.Student.getLastSrNo(schoolId);
-      return successResponse(res, 200, "Last Sr no of Student", data);
+      return successResponse(res, "Last Sr no of Student", data);
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 
@@ -31,13 +37,12 @@ export class Student {
       const data = await Services.Student.getStudentBySchoolId(schoolId);
       return successResponse(
         res,
-        200,
         "Students data fetched successfully",
         data
       );
     } catch (error: any) {
       console.log("Error while fetching students", error);
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 
@@ -47,9 +52,9 @@ export class Student {
       const query = req.query;
       const data = await Services.Student.getStudentClassData(schoolId, query);
       // console.log({ data });
-      return successResponse(res, 200, "Student class data", data);
+      return successResponse(res, "Student class data", data);
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 }

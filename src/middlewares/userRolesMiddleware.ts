@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../config/response";
-import { Utils } from "../utils";
 import { UserRoles, UserRolesType } from "../types/types";
+import Constants from "../config/constants";
 
 export const adminMiddleware = async (
   req: Request,
@@ -18,7 +18,11 @@ export const adminMiddleware = async (
     }
     next();
   } catch (error: any) {
-    return errorResponse(res, 403, error.message || error);
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.FORBIDDEN
+    );
   }
 };
 
@@ -36,6 +40,10 @@ export const superAdminMiddleware = async (
     }
     next();
   } catch (error: any) {
-    return errorResponse(res, 403, error.message || error);
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.FORBIDDEN
+    );
   }
 };

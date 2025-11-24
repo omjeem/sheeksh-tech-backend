@@ -1,9 +1,18 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "../../config/db";
-import { sectionsTable } from "../../config/schema";
+import { classesTable, sectionsTable } from "../../config/schema";
 
 export class Section {
   static create = async (schoolId: string, classId: string, name: string) => {
+    const isClassAndSchool = await db.query.classesTable.findFirst({
+      where : and(
+        eq(classesTable.schoolId, schoolId),
+        eq(classesTable.id, classId)
+      )
+    })
+    if(!isClassAndSchool){
+      throw new Error("This class is not associated with this school")
+    }
     const isAlreadyExists = await db.query.sectionsTable.findMany({
       where: and(
         eq(sectionsTable.schoolId, schoolId),
@@ -33,10 +42,10 @@ export class Section {
         eq(sectionsTable.classId, classId),
         eq(sectionsTable.schoolId, schoolId)
       ),
-      columns : {
-        id : true,
-        name: true
-      }
+      columns: {
+        id: true,
+        name: true,
+      },
     });
   };
 }

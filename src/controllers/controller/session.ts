@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
+import Constants from "../../config/constants";
 
 export class Session {
   static create = async (req: Request, res: Response) => {
@@ -23,12 +24,12 @@ export class Session {
 
       return successResponse(
         res,
-        201,
         "Session Created Successfully",
-        sessionData
+        sessionData,
+        Constants.STATUS_CODE.CREATED
       );
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 
@@ -41,9 +42,14 @@ export class Session {
         schoolId,
         status
       );
-      return successResponse(res, 200, "Session updated Successfully");
+      return successResponse(
+        res,
+        "Session updated Successfully",
+        null,
+        Constants.STATUS_CODE.NO_CONTENT
+      );
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 
@@ -52,14 +58,9 @@ export class Session {
       const schoolId = req.user.schoolId;
       const { active }: any = req.query;
       const sessions = await Services.Session.get(schoolId, active);
-      return successResponse(
-        res,
-        200,
-        "Session Fetched Successfully",
-        sessions
-      );
+      return successResponse(res, "Session Fetched Successfully", sessions);
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 }

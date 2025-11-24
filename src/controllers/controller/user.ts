@@ -3,6 +3,7 @@ import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
 import { usersTable } from "../../config/schema";
 import Services from "../../services";
+import Constants from "../../config/constants";
 
 export class User {
   static create = async (req: Request, res: Response) => {
@@ -17,9 +18,14 @@ export class User {
         firstName,
         lastName,
       });
-      return successResponse(res, 201, "User Created Successfully", userData);
+      return successResponse(
+        res,
+        "User Created Successfully",
+        userData,
+        Constants.STATUS_CODE.CREATED
+      );
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 
@@ -27,9 +33,9 @@ export class User {
     try {
       const userId = req.user.userId;
       const userData = await Services.User.getUserDetails(userId);
-      return successResponse(res, 200, "User Data fetched Successfully!", userData)
+      return successResponse(res, "User Data fetched Successfully!", userData);
     } catch (error: any) {
-      return errorResponse(res, 400, error.message || error);
+      return errorResponse(res, error.message || error);
     }
   };
 }

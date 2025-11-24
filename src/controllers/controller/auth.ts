@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
 import { Utils } from "../../utils";
+import Constants from "../../config/constants";
 
 export class Auth {
   static login = async (req: Request, res: Response) => {
@@ -15,11 +16,15 @@ export class Auth {
         role,
         userId
       );
-      return successResponse(res, 200, "Logged in Successfully!", {
+      return successResponse(res, "Logged in Successfully!", {
         generateJwt,
       });
     } catch (error: any) {
-      return errorResponse(res, 401, error.message || error);
+      return errorResponse(
+        res,
+        error.message || error,
+        Constants.STATUS_CODE.UNAUTHORIZED
+      );
     }
   };
 }

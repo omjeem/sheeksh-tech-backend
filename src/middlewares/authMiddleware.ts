@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../config/response";
 import { Utils } from "../utils";
+import Constants from "../config/constants";
 
 export const authMiddleware = async (
   req: Request,
@@ -30,6 +31,10 @@ export const authMiddleware = async (
     };
     next();
   } catch (error: any) {
-    return errorResponse(res, 401, error.message || error);
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.UNAUTHORIZED
+    );
   }
 };
