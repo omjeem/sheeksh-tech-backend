@@ -49,7 +49,7 @@ export class User {
     if (!userDetails) {
       throw new Error("Invalid user Email");
     }
-    console.log({password})
+    console.log({ password });
     if (!Utils.verifyPassword(password, email, userDetails.password)) {
       throw new Error("Invalid password");
     }
@@ -63,5 +63,21 @@ export class User {
       role: userDetails.role,
       userId: userDetails.id,
     };
+  };
+
+  static getUserDetails = async (userId: string) => {
+    return await db.query.usersTable.findFirst({
+      where: eq(usersTable.id, userId),
+      columns: {
+        id: true,
+        role: true,
+        email: true,
+        phone: true,
+        dateOfBirth: true,
+        firstName: true,
+        lastName: true,
+        createdAt: true,
+      },
+    });
   };
 }

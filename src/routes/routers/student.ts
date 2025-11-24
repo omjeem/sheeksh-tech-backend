@@ -13,7 +13,11 @@ studentRouter.post(
   Controllers.Student.feedStudents
 );
 
-studentRouter.get("/", Controllers.Student.getStudentClassData);
+studentRouter.get(
+  "/",
+  validateRequest(Validators.Student.getClassStudent),
+  Controllers.Student.getStudentClassData
+);
 
 studentRouter.get("/sr", Controllers.Student.getLastSrNo);
 

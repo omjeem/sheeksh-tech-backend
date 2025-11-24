@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import { db } from "../../config/db";
 import { usersTable } from "../../config/schema";
+import Services from "../../services";
 
 export class User {
   static create = async (req: Request, res: Response) => {
@@ -17,6 +18,16 @@ export class User {
         lastName,
       });
       return successResponse(res, 201, "User Created Successfully", userData);
+    } catch (error: any) {
+      return errorResponse(res, 400, error.message || error);
+    }
+  };
+
+  static getUserDetails = async (req: Request, res: Response) => {
+    try {
+      const userId = req.user.userId;
+      const userData = await Services.User.getUserDetails(userId);
+      return successResponse(res, 200, "User Data fetched Successfully!", userData)
     } catch (error: any) {
       return errorResponse(res, 400, error.message || error);
     }

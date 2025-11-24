@@ -51,6 +51,7 @@ export class Student {
         password: hashedPassword,
         firstName: d.firstName,
         lastName: d.lastName,
+        // parent : d.parent
       };
     });
     const emailsToCheck = dataToFeed.map((d) => d.email);
@@ -81,7 +82,15 @@ export class Student {
     await db.transaction(async (tx) => {
       const userFeed = await tx
         .insert(usersTable)
-        .values(dataToFeed.map(({ srNo, ...rest }) => rest))
+        .values(
+          dataToFeed.map(
+            ({
+              srNo,
+              //  parent,
+              ...rest
+            }) => rest
+          )
+        )
         .returning({
           userId: usersTable.id,
           email: usersTable.email,
@@ -92,6 +101,7 @@ export class Student {
           userId: u.userId,
           schoolId,
           srNo: dataToFeed[index]?.srNo,
+          // parent: dataToFeed[index]?.parent
         };
       });
 

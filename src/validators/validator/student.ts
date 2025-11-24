@@ -14,6 +14,16 @@ const studentFeedData = z.object({
       firstName: z.string(),
       lastName: z.string(),
       dateOfBirth: zodDateValidator,
+      // parent: z
+      //   .object({
+      //     email: z.email(),
+      //     password: z.string().optional(),
+      //     firstName: z.string(),
+      //     lastName: z.string().optional(),
+      //     phone: z.string(),
+      //     dateOfBirth: zodDateValidator.optional(),
+      //   })
+      //   .optional(),
     })
   ),
 });
