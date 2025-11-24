@@ -16,32 +16,32 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.delete("/flush", async (req, res) => {
-  try {
-    // if (process.env.NODE_ENV === "production") {
-    //   return res.status(403).json({ error: "Forbidden in production" });
-    // }
-    await db.execute(sql`TRUNCATE TABLE schools RESTART IDENTITY CASCADE`);
+// app.delete("/flush", async (req, res) => {
+//   try {
+//     // if (process.env.NODE_ENV === "production") {
+//     //   return res.status(403).json({ error: "Forbidden in production" });
+//     // }
+//     await db.execute(sql`TRUNCATE TABLE schools RESTART IDENTITY CASCADE`);
 
-    return successResponse(res, 200, "All data flushed successfully.");
-  } catch (error: any) {
-    console.error("Error while flushing data:", error);
-    return errorResponse(res, 400, error.message || error);
-  }
-});
-app.delete("/flush/db", async (req, res) => {
-  try {
-    // if (process.env.NODE_ENV === "production") {
-    //   return res.status(403).json({ error: "Forbidden in production" });
-    // }
-    await db.execute(sql`drop database`);
+//     return successResponse(res, "All data flushed successfully.", null);
+//   } catch (error: any) {
+//     console.error("Error while flushing data:", error);
+//     return errorResponse(res, 400, error.message || error);
+//   }
+// });
+// app.delete("/flush/db", async (req, res) => {
+//   try {
+//     // if (process.env.NODE_ENV === "production") {
+//     //   return res.status(403).json({ error: "Forbidden in production" });
+//     // }
+//     await db.execute(sql`drop database`);
 
-    return successResponse(res, 200, "All data flushed successfully.");
-  } catch (error: any) {
-    console.error("Error while flushing data:", error);
-    return errorResponse(res, 400, error.message || error);
-  }
-});
+//     return successResponse(res, "All data flushed successfully.", null);
+//   } catch (error: any) {
+//     console.error("Error while flushing data:", error);
+//     return errorResponse(res, 400, error.message || error);
+//   }
+// });
 
 app.use("/api", router);
 
