@@ -18,7 +18,7 @@ export const adminMiddleware = async (
     }
     next();
   } catch (error: any) {
-    return errorResponse(res, 401, error.message || error);
+    return errorResponse(res, 403, error.message || error);
   }
 };
 
@@ -36,6 +36,6 @@ export const superAdminMiddleware = async (
     }
     next();
   } catch (error: any) {
-    return errorResponse(res, 401, error.message || error);
+    return errorResponse(res, 403, error.message || error);
   }
 };
