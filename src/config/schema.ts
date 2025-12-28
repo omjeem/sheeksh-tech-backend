@@ -11,6 +11,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { jsonb } from "drizzle-orm/pg-core";
+import Constants from "./constants";
 
 // Enum for user roles
 
@@ -241,6 +242,120 @@ export const studentFeesTable = pgTable("student_fees", {
   createdAt: timestamp().defaultNow().notNull(),
 });
 
+
+export const notificationCategory_Table = pgTable("notification_category", {
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
+    .notNull(),
+  category: varchar().notNull(),
+  isDeleted: boolean().default(false),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const notificationTemplate_Table = pgTable("notification_template", {
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
+    .notNull(),
+  categoryId: uuid()
+    .references(() => notificationCategory_Table.id)
+    .notNull(),
+  name: varchar({ length: 191 }),
+  // template payload: { subject, bodyHtml, bodyText, defaultChannel, variables: {name, amount} }
+  templatePayload: jsonb().notNull(),
+  isDeleted: boolean().default(false),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const notification_Table = pgTable("notification", {
+  id: uuid().primaryKey().defaultRandom(),
+  schoolId: uuid()
+    .references(() => schoolsTable.id, { onDelete: "cascade" })
+    .notNull(),
+  templateId: uuid()
+    .references(() => notificationTemplate_Table.id)
+    .notNull(),
+  categoryId: uuid()
+    .references(() => notificationCategory_Table.id)
+    .notNull(),
+  payload: jsonb(),
+  channels: jsonb(),
+  isDeleted: boolean().default(false),
+  createdBy: uuid().references(() => usersTable.id),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const notificationStatus_Table = pgTable("notification_status", {
+  id: uuid().primaryKey().defaultRandom(),
+  notificationId: uuid()
+    .references(() => notification_Table.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  channel: varchar().notNull(),
+  totalRecipients: integer().default(0),
+  totalSuccess: integer().default(0),
+  totalFailure: integer().default(0),
+  isDeleted: boolean().default(false),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+export const notificationRecipient_Table = pgTable("notification_recipient", {
+  id: uuid().primaryKey().defaultRandom(),
+  notificationId: uuid()
+    .references(() => notification_Table.id, {
+      onDelete: "cascade",
+    })
+    .notNull(),
+  userId: uuid()
+    .references(() => usersTable.id, { onDelete: "cascade" })
+    .notNull(),
+
+  channel: varchar(),
+  payloadVariables: jsonb(),
+
+  status: varchar()
+    .default(Constants.NOTIFICATION.SENT_STATUS.PENDING)
+    .notNull(),
+  sentAt: timestamp(),
+  deliveredAt: timestamp(),
+  failedAt: timestamp(),
+
+  // provider identifiers (e.g., SES message-id, Twilio sid) and last error
+  // providerMessageId: varchar({ length: 255 }),
+  // lastError: jsonb(),
+
+  seenOnPortalAt: timestamp(),
+  isDeleted: boolean().default(false),
+  createdAt: timestamp().defaultNow().notNull(),
+  updatedAt: timestamp().defaultNow().notNull(),
+});
+
+// export const notificationDeliveryAttemptMaster = pgTable(
+//   "notification_delivery_attempt",
+//   {
+//     id: uuid().primaryKey().defaultRandom(),
+//     recipientId: uuid()
+//       .references(() => notificationAdminLogRecipient_Table.id, {
+//         onDelete: "cascade",
+//       })
+//       .notNull(),
+
+//     attemptNumber: integer().default(1).notNull(),
+//     attemptedAt: timestamp().defaultNow().notNull(),
+//     provider: varchar({ length: 100 }), // e.g., "twilio", "ses", "fcm"
+//     providerResponse: jsonb(),
+//     success: boolean().default(false).notNull(),
+
+//     createdAt: timestamp().defaultNow().notNull(),
+//   }
+// );
+
 // Relations
 export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   users: many(usersTable),
@@ -252,7 +367,80 @@ export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   subjects: many(subjectsTable),
   teacherClass: many(teacherClassSubjectSectionTable),
   studentClass: many(studentClassesTable),
+  notification: many(notification_Table),
+  notificationCategory: many(notificationCategory_Table),
+  notificationTemplate: many(notificationTemplate_Table),
 }));
+
+export const notificationRelations = relations(
+  notification_Table,
+  ({ one, many }) => ({
+    school: one(schoolsTable, {
+      fields: [notification_Table.schoolId],
+      references: [schoolsTable.id],
+    }),
+    template: one(notificationTemplate_Table, {
+      fields: [notification_Table.templateId],
+      references: [notificationTemplate_Table.id],
+    }),
+    category: one(notificationCategory_Table, {
+      fields: [notification_Table.categoryId],
+      references: [notificationCategory_Table.id],
+    }),
+    status: many(notificationStatus_Table),
+    recipents: many(notificationRecipient_Table),
+  })
+);
+
+export const notificationRecipient = relations(
+  notificationRecipient_Table,
+  ({ one, many }) => ({
+    notification: one(notification_Table, {
+      fields: [notificationRecipient_Table.notificationId],
+      references: [notification_Table.id],
+    }),
+    user: one(usersTable, {
+      fields: [notificationRecipient_Table.userId],
+      references: [usersTable.id],
+    }),
+  })
+);
+
+export const notificationStatusRelations = relations(
+  notificationStatus_Table,
+  ({ one, many }) => ({
+    notfication: one(notification_Table, {
+      fields: [notificationStatus_Table.notificationId],
+      references: [notification_Table.id],
+    }),
+  })
+);
+
+export const notificationCategoryRelations = relations(
+  notificationCategory_Table,
+  ({ one, many }) => ({
+    school: one(schoolsTable, {
+      fields: [notificationCategory_Table.schoolId],
+      references: [schoolsTable.id],
+    }),
+    template: many(notificationTemplate_Table),
+    notification: many(notification_Table),
+  })
+);
+
+export const notificationTemplateRelations = relations(
+  notificationTemplate_Table,
+  ({ one, many }) => ({
+    school: one(schoolsTable, {
+      fields: [notificationTemplate_Table.schoolId],
+      references: [schoolsTable.id],
+    }),
+    category: one(notificationCategory_Table, {
+      fields: [notificationTemplate_Table.categoryId],
+      references: [notificationCategory_Table.id],
+    }),
+  })
+);
 
 export const subjectRelations = relations(subjectsTable, ({ one, many }) => ({
   school: one(schoolsTable, {
@@ -275,6 +463,7 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     fields: [usersTable.id],
     references: [teachersTable.userId],
   }),
+  notificationRecipent : many(notificationRecipient_Table)
 }));
 
 export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
