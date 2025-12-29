@@ -17,4 +17,24 @@ notificationRouter.post(
 
 notificationRouter.get("/category", Controllers.Notification.getAllCategpries);
 
+notificationRouter.post(
+  "/template",
+  validateRequest(Validators.Notification.createTemplate),
+  adminMiddleware,
+  Controllers.Notification.createTemplate
+);
+
+notificationRouter.get("/template", Controllers.Notification.getAllTemplate);
+notificationRouter.get(
+  "/template/:templateId",
+  validateRequest(Validators.Notification.getTemplateByTemplateId),
+  Controllers.Notification.getTemplateByTemplateId
+);
+
+notificationRouter.get(
+  "/template/category/:categoryId",
+  validateRequest(Validators.Notification.getTemplateByCategoryId),
+  Controllers.Notification.getTemplateByCategory
+);
+
 export default notificationRouter;
