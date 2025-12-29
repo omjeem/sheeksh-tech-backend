@@ -49,7 +49,6 @@ export class User {
     if (!userDetails) {
       throw new Error("Invalid user Email");
     }
-    console.log({ password });
     if (!Utils.verifyPassword(password, email, userDetails.password)) {
       throw new Error("Invalid password");
     }

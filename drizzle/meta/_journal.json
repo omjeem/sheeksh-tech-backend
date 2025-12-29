@@ -57,6 +57,20 @@
       "when": 1766934473427,
       "tag": "0007_dazzling_nehzno",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1766935541421,
+      "tag": "0008_wooden_monster_badoon",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1766937002521,
+      "tag": "0009_parched_red_ghost",
+      "breakpoints": true
     }
   ]
 }

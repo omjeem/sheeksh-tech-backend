@@ -1,5 +1,6 @@
 import { Auth } from "./controller/auth";
 import { Class } from "./controller/class";
+import { Notification } from "./controller/notification";
 import { School } from "./controller/school";
 import { Section } from "./controller/section";
 import { Session } from "./controller/session";
@@ -17,7 +18,8 @@ const Controllers = {
   User,
   Student,
   Teacher,
-  Subject
+  Subject,
+  Notification
 };
 
 export default Controllers;

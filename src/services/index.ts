@@ -1,4 +1,5 @@
 import { Classes } from "./dbServices/class";
+import { Notification } from "./dbServices/notification";
 import { School } from "./dbServices/school";
 import { Section } from "./dbServices/section";
 import { Session } from "./dbServices/session";
@@ -15,7 +16,8 @@ const Services = {
   Session,
   Section,
   School,
-  Student
+  Student,
+  Notification
 };
 
 export default Services;

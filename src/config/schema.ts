@@ -242,13 +242,15 @@ export const studentFeesTable = pgTable("student_fees", {
   createdAt: timestamp().defaultNow().notNull(),
 });
 
-
 export const notificationCategory_Table = pgTable("notification_category", {
   id: uuid().primaryKey().defaultRandom(),
   schoolId: uuid()
     .references(() => schoolsTable.id, { onDelete: "cascade" })
     .notNull(),
   category: varchar().notNull(),
+  createdBy: uuid()
+    .references(() => usersTable.id, { onDelete: "cascade" })
+    .notNull(),
   isDeleted: boolean().default(false),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
@@ -284,7 +286,9 @@ export const notification_Table = pgTable("notification", {
   payload: jsonb(),
   channels: jsonb(),
   isDeleted: boolean().default(false),
-  createdBy: uuid().references(() => usersTable.id),
+  createdBy: uuid()
+    .references(() => usersTable.id)
+    .notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -389,6 +393,10 @@ export const notificationRelations = relations(
     }),
     status: many(notificationStatus_Table),
     recipents: many(notificationRecipient_Table),
+    createdBy: one(usersTable, {
+      fields: [notification_Table.createdBy],
+      references: [usersTable.id],
+    }),
   })
 );
 
@@ -425,6 +433,10 @@ export const notificationCategoryRelations = relations(
     }),
     template: many(notificationTemplate_Table),
     notification: many(notification_Table),
+    createdBy: one(usersTable, {
+      fields: [notificationCategory_Table.createdBy],
+      references: [usersTable.id],
+    }),
   })
 );
 
@@ -463,7 +475,9 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
     fields: [usersTable.id],
     references: [teachersTable.userId],
   }),
-  notificationRecipent : many(notificationRecipient_Table)
+  notificationRecipent: many(notificationRecipient_Table),
+  notificationCreated: many(notification_Table),
+  categoryCreated: many(notificationCategory_Table),
 }));
 
 export const studentsRelations = relations(studentsTable, ({ one, many }) => ({

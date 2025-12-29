@@ -1,5 +1,6 @@
 import { Auth } from "./validator/auth";
 import { Class } from "./validator/class";
+import { Notification } from "./validator/notification";
 import { School } from "./validator/school";
 import { Section } from "./validator/section";
 import { Session } from "./validator/session";
@@ -15,7 +16,8 @@ const Validators = {
   Session,
   Section,
   Class,
-  Teacher
+  Teacher,
+  Notification
 };
 
 export default Validators;
