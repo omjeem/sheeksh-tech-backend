@@ -1,0 +1,2 @@
+ALTER TABLE "notification_template" ADD COLUMN "createdBy" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "notification_template" ADD CONSTRAINT "notification_template_createdBy_users_id_fk" FOREIGN KEY ("createdBy") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;

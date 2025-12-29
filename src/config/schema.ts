@@ -268,6 +268,9 @@ export const notificationTemplate_Table = pgTable("notification_template", {
   // template payload: { subject, bodyHtml, bodyText, defaultChannel, variables: {name, amount} }
   templatePayload: jsonb().notNull(),
   isDeleted: boolean().default(false),
+  createdBy: uuid()
+    .references(() => usersTable.id, { onDelete: "cascade" })
+    .notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -451,6 +454,10 @@ export const notificationTemplateRelations = relations(
       fields: [notificationTemplate_Table.categoryId],
       references: [notificationCategory_Table.id],
     }),
+    createdBy: one(usersTable, {
+      fields: [notificationTemplate_Table.createdBy],
+      references: [usersTable.id],
+    }),
   })
 );
 
@@ -478,6 +485,7 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   notificationRecipent: many(notificationRecipient_Table),
   notificationCreated: many(notification_Table),
   categoryCreated: many(notificationCategory_Table),
+  templateCreated: many(notificationTemplate_Table),
 }));
 
 export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
