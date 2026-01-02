@@ -110,4 +110,21 @@ export class Notification {
       return errorResponse(res, error.message || error);
     }
   };
+
+  static updateTemplateByTemplateId = async (req: Request, res: Response) => {
+    try {
+      const { schoolId, userId } = req.user;
+      const { templateId } = req.params;
+      const body = req.body;
+      const updateData = await Services.Notification.updateTemplateById({
+        templateId: String(templateId),
+        schoolId,
+        userId,
+        payload: body,
+      });
+      return successResponse(res, "Template Updated Successfully!", updateData);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
 }

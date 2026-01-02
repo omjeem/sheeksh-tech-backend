@@ -119,6 +119,8 @@ export class Notification {
         id: true,
         name: true,
         templatePayload: true,
+        createdAt : true,
+        updatedAt : true
       },
       with: {
         category: {
@@ -155,5 +157,48 @@ export class Notification {
         },
       },
     });
+  };
+
+  static getTemplateByIdAndSchoolId = async (body: {
+    schoolId: string;
+    templateId: string;
+  }) => {
+    return await db.query.notificationTemplate_Table.findFirst({
+      where: and(
+        eq(notificationTemplate_Table.isDeleted, false),
+        eq(notificationTemplate_Table.id, body.templateId),
+        eq(notificationTemplate_Table.schoolId, body.schoolId)
+      ),
+    });
+  };
+
+  static updateTemplateById = async (body: {
+    templateId: string;
+    userId: string;
+    schoolId: string;
+    payload: Object;
+  }) => {
+    console.log({ body });
+    const isBelongsToSchool = await this.getTemplateByIdAndSchoolId({
+      templateId: body.templateId,
+      schoolId: body.schoolId,
+    });
+    if (!isBelongsToSchool) {
+      throw new Error("This template not exist or not belongs to this school");
+    }
+    return await db
+      .update(notificationTemplate_Table)
+      .set({
+        templatePayload: body.payload,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(notificationTemplate_Table.id, body.templateId)))
+      .returning({
+        id: notificationTemplate_Table.id,
+        name: notificationTemplate_Table.name,
+        templatePayload: notificationTemplate_Table.templatePayload,
+        createdAt: notificationTemplate_Table.createdAt,
+        updatedAt: notificationTemplate_Table.updatedAt,
+      });
   };
 }

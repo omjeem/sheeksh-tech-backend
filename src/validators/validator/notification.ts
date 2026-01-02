@@ -21,6 +21,13 @@ export class Notification {
     }),
   });
 
+  static updateTemplate = z.object({
+    params: z.object({
+      templateId: z.uuid(),
+    }),
+    body: z.object({}),
+  });
+
   static getTemplateByCategoryId = z.object({
     params: z.object({
       categoryId: z.uuid(),

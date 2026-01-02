@@ -10,8 +10,8 @@ notificationRouter.use(authMiddleware);
 
 notificationRouter.post(
   "/category",
-  validateRequest(Validators.Notification.createCategory),
   adminMiddleware,
+  validateRequest(Validators.Notification.createCategory),
   Controllers.Notification.createCategory
 );
 
@@ -19,8 +19,8 @@ notificationRouter.get("/category", Controllers.Notification.getAllCategpries);
 
 notificationRouter.post(
   "/template",
-  validateRequest(Validators.Notification.createTemplate),
   adminMiddleware,
+  validateRequest(Validators.Notification.createTemplate),
   Controllers.Notification.createTemplate
 );
 
@@ -29,6 +29,13 @@ notificationRouter.get(
   "/template/:templateId",
   validateRequest(Validators.Notification.getTemplateByTemplateId),
   Controllers.Notification.getTemplateByTemplateId
+);
+
+notificationRouter.put(
+  "/template/:templateId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.updateTemplate),
+  Controllers.Notification.updateTemplateByTemplateId
 );
 
 notificationRouter.get(
