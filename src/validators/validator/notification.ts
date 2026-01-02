@@ -1,4 +1,5 @@
 import z from "zod";
+import Constants from "../../config/constants";
 
 export class Notification {
   static createCategory = z.object({
@@ -7,11 +8,18 @@ export class Notification {
     }),
   });
 
+  static templatePayload = z.object({
+    subject: z.string().min(3).max(100),
+    bodyHtml: z.string().min(5),
+    bodyText: z.string().min(5),
+    variables: z.array(z.enum(Constants.NOTIFICATION.VARIABLES)),
+  });
+
   static createTemplate = z.object({
     body: z.object({
       name: z.string().min(3),
       categoryId: z.uuid(),
-      payload: z.object({}),
+      payload: this.templatePayload,
     }),
   });
 
@@ -25,7 +33,7 @@ export class Notification {
     params: z.object({
       templateId: z.uuid(),
     }),
-    body: z.object({}),
+    body: this.templatePayload,
   });
 
   static getTemplateByCategoryId = z.object({
