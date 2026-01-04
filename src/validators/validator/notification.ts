@@ -8,11 +8,15 @@ export class Notification {
     }),
   });
 
-  static templatePayload = z.object({
+  private static notificationVariables = z.array(
+    z.enum(Constants.NOTIFICATION.VARIABLES)
+  );
+
+  private static templatePayload = z.object({
     subject: z.string().min(3).max(100),
     bodyHtml: z.string().min(5),
     bodyText: z.string().min(5),
-    variables: z.array(z.enum(Constants.NOTIFICATION.VARIABLES)),
+    variables: this.notificationVariables,
   });
 
   static createTemplate = z.object({
@@ -23,10 +27,12 @@ export class Notification {
     }),
   });
 
+  private static paramsTemplateId = z.object({
+    templateId: z.uuid(),
+  });
+
   static getTemplateByTemplateId = z.object({
-    params: z.object({
-      templateId: z.uuid(),
-    }),
+    params: this.paramsTemplateId,
   });
 
   static updateTemplate = z.object({
@@ -40,5 +46,9 @@ export class Notification {
     params: z.object({
       categoryId: z.uuid(),
     }),
+  });
+
+  static sendNotification = z.object({
+    params : this.paramsTemplateId
   });
 }

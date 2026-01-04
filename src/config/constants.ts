@@ -22,7 +22,11 @@ const Constants = {
       FAILED: "FAILED",
       BOUNCED: "BOUNCED",
     },
-    VARIABLES: ["recipientName", "recipientRole"],
+    VARIABLES: {
+      recipientName: "recipientName",
+      recipientRole: "recipientRole",
+      recipientEmail : "recipientEmail"
+    },
   },
 };
 

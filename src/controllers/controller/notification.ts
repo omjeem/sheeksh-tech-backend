@@ -1,8 +1,39 @@
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
+import Constants from "../../config/constants";
+import { NotificationTemplatePayload } from "../../types/types";
 
 export class Notification {
+  static sendNotification = async (req: Request, res: Response) => {
+    try {
+      const { schoolId, userId } = req.user;
+      const { templateId }: any = req.params;
+      const templateData: any =
+        await Services.Notification.getTemplateByIdAndSchoolId({
+          templateId,
+          schoolId,
+        });
+      if (!templateData) {
+        throw new Error("Template not exists or not belongs to this school");
+      }
+      const payload: NotificationTemplatePayload = templateData.templatePayload;
+      
+      console.log("Payload Content ",payload)
+      
+      const tempPayLoad = Services.Helper.notification.buildNotificationPayload(
+        payload,
+        {
+          [Constants.NOTIFICATION.VARIABLES.recipientName]: "Om Mishra",
+          [Constants.NOTIFICATION.VARIABLES.recipientRole]: "Student",
+        }
+      );
+      return successResponse(res, "Notification Sent Successfully", tempPayLoad);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
   static createCategory = async (req: Request, res: Response) => {
     try {
       const { userId, schoolId } = req.user;

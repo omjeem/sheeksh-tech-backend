@@ -22,3 +22,10 @@ export enum TeacherDesignation {
   TGT = "TGT",
   PGT = "PGT",
 }
+
+export interface NotificationTemplatePayload {
+  subject: string;
+  bodyHtml: string;
+  bodyText: string;
+  variables: string[];
+}
