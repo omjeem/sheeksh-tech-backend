@@ -6,9 +6,10 @@ const NOTIFICATION_VARIABLE_LIST = [
   "recipientDob",
 ] as const;
 
-const NOTIFICATION_CHANNEL_LIST = ["PORTAL", "EMAIL", "SMS"] as const;
+export const NOTIFICATION_CHANNEL_LIST = ["EMAIL", "SMS"] as const;
 
 const NOTIFICATION_SENT_STATUS_LIST = [
+  "DRAFT",
   "PENDING",
   "SENT",
   "DELIVERED",

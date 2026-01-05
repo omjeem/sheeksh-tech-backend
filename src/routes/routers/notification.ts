@@ -9,10 +9,10 @@ const notificationRouter = express.Router();
 notificationRouter.use(authMiddleware);
 
 notificationRouter.post(
-  "/send/:templateId",
+  "/draft/:templateId",
   adminMiddleware,
-  validateRequest(Validators.Notification.sendNotification),
-  Controllers.Notification.sendNotification
+  validateRequest(Validators.Notification.draftNotification),
+  Controllers.Notification.draftNotification
 );
 
 notificationRouter.post(

@@ -4,11 +4,17 @@ import Services from "../../services";
 import Constants from "../../config/constants";
 import { NotificationTemplatePayload } from "../../types/types";
 import { SendNotificationInput } from "../../validators/types";
+import { db } from "../../config/db";
+import {
+  notificationRecipient_Table,
+  notificationStatus_Table,
+} from "../../config/schema";
 
 const VARIABLES = Constants.NOTIFICATION.VARIABLES;
 
 export class Notification {
-  static sendNotification = async (req: Request, res: Response) => {
+
+  static draftNotification = async (req: Request, res: Response) => {
     try {
       const { schoolId, userId } = req.user;
       const body: SendNotificationInput["body"] = req.body;
@@ -40,50 +46,83 @@ export class Notification {
         );
       console.log(allUsersInfo, "Total - ", allUsersInfo.length);
 
-      const notificationVariables: Record<string, string> = {};
-      const userInfo = await Services.User.getUserDetails(userId);
-
-      varibales.forEach((v) => {
-        if (v === VARIABLES.recipientEmail) {
-          notificationVariables[VARIABLES.recipientEmail] = userInfo?.email!;
-        }
-        if (v === VARIABLES.recipientName) {
-          notificationVariables[VARIABLES.recipientName] = userInfo?.firstName!;
-        }
-        if (v === VARIABLES.recipientRole) {
-          notificationVariables[VARIABLES.recipientRole] = userInfo?.role!;
-        }
-      });
+      const channels = body.channels;
 
       console.log("Payload Content ", payload);
-      const tempPayLoad = Services.Helper.notification.buildNotificationPayload(
-        payload,
-        notificationVariables
-      );
+      // const tempPayLoad = Services.Helper.notification.buildNotificationPayload(
+      //   payload,
+      //   notificationVariables
+      // );
 
-      // const sendNotification = await db.transaction(async (tx) => {
-      //   const newNotification =
-      //     await Services.Notification.createNewNotification(tx, {
-      //       templateId,
-      //       categoryId,
-      //       schoolId,
-      //       payload: payload,
-      //       channels: [Constants.NOTIFICATION.CHANNEL.EMAIL],
-      //       userId,
-      //     });
-      //   const notificationId = newNotification[0]?.id;
-      //   const recepientObj = {
-      //     notificationId,
-      //     userId,
-      //     channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
-      //   };
-      //   console.log({ newNotification });
-      // });
+      await db.transaction(async (tx) => {
+        const newNotification =
+          await Services.Notification.createNewNotification(tx, {
+            templateId,
+            categoryId,
+            schoolId,
+            payload: payload,
+            channels: [Constants.NOTIFICATION.CHANNEL.EMAIL],
+            userId,
+          });
+        console.log({ newNotification });
 
-      return successResponse(res, "Notification Sent Successfully", {
+        const notificationId = newNotification[0]?.id;
+        const bulkRecipents: any = [];
+        const notificationStatus: any = [];
+
+        channels.forEach((c) => {
+          notificationStatus.push({
+            notificationId,
+            channel: c,
+            totalRecipients: allUsersInfo.length,
+          });
+          bulkRecipents.push(
+            ...allUsersInfo.map((u: any) => {
+              const notificationVariables: Record<string, string> = {};
+              varibales.forEach((v) => {
+                if (v === VARIABLES.recipientEmail) {
+                  notificationVariables[VARIABLES.recipientEmail] = u.email;
+                }
+                if (v === VARIABLES.recipientName) {
+                  notificationVariables[VARIABLES.recipientName] = u.firstName;
+                }
+                if (v === VARIABLES.recipientRole) {
+                  notificationVariables[VARIABLES.recipientRole] = u.role;
+                }
+                if (v === VARIABLES.recipientDob) {
+                  notificationVariables[VARIABLES.recipientDob] = u.dateOfBirth;
+                }
+                if (v === VARIABLES.recipientPhone) {
+                  notificationVariables[VARIABLES.recipientPhone] = u.phone;
+                }
+              });
+              return {
+                notificationId,
+                userId: u.id,
+                channel: c,
+                status: Constants.NOTIFICATION.SENT_STATUS.DRAFT,
+                payloadVariables: notificationVariables,
+              };
+            })
+          );
+        });
+        const notificationStatusData = await tx
+          .insert(notificationStatus_Table)
+          .values(notificationStatus)
+          .returning();
+
+        console.dir({ notificationStatusData }, { depth: null });
+
+        const notificationRecipentData = await tx
+          .insert(notificationRecipient_Table)
+          .values(bulkRecipents)
+          .returning();
+
+        console.dir({ notificationRecipentData }, { depth: null });
+      });
+
+      return successResponse(res, "Notification Drafted Successfully", {
         allUsersInfo,
-        sendNotification: null,
-        tempPayLoad,
       });
     } catch (error: any) {
       return errorResponse(res, error.message || error);

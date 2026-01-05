@@ -1,5 +1,5 @@
 import z from "zod";
-import Constants from "../../config/constants";
+import Constants, { NOTIFICATION_CHANNEL_LIST } from "../../config/constants";
 
 export class Notification {
   static createCategory = z.object({
@@ -56,21 +56,24 @@ export class Notification {
     })
     .optional();
 
-  static sendNotification = z.object({
+  static draftNotification = z.object({
     params: this.paramsTemplateId,
     body: z.object({
       sessionId: z.uuid().optional(),
+      channels: z.array(z.enum(Constants.NOTIFICATION.CHANNEL)).nonempty(),
       users: this.sendAllOrExclude,
       students: this.sendAllOrExclude,
       teachers: this.sendAllOrExclude,
-      sections: z.array(
-        z.object({
-          id: z.uuid(),
-          sentAll: z.boolean(),
-          isInclude: z.boolean(),
-          values: z.array(z.uuid()),
-        })
-      ).optional(),
+      sections: z
+        .array(
+          z.object({
+            id: z.uuid(),
+            sentAll: z.boolean(),
+            isInclude: z.boolean(),
+            values: z.array(z.uuid()),
+          })
+        )
+        .optional(),
     }),
   });
 }
