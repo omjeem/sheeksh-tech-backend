@@ -13,6 +13,23 @@ import {
 const VARIABLES = Constants.NOTIFICATION.VARIABLES;
 
 export class Notification {
+  
+  static getAdminNotifications = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.user;
+
+      const notifications =
+        await Services.Notification.getAllSchoolNotification(schoolId);
+
+      return successResponse(
+        res,
+        "All Notification Fetched Successfully",
+        notifications
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
 
   static draftNotification = async (req: Request, res: Response) => {
     try {

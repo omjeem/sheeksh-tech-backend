@@ -76,4 +76,10 @@ export class Notification {
         .optional(),
     }),
   });
+
+  static getAdminNotifications = z.object({
+    params: z.object({
+      notificationId: z.uuid(),
+    }),
+  });
 }

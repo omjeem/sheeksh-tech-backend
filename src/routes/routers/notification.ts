@@ -8,8 +8,21 @@ import Validators from "../../validators";
 const notificationRouter = express.Router();
 notificationRouter.use(authMiddleware);
 
+notificationRouter.get(
+  "/admin",
+  adminMiddleware,
+  Controllers.Notification.getAdminNotifications
+);
+
 notificationRouter.post(
   "/draft/:templateId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.draftNotification),
+  Controllers.Notification.draftNotification
+);
+
+notificationRouter.post(
+  "/send/:notificationId",
   adminMiddleware,
   validateRequest(Validators.Notification.draftNotification),
   Controllers.Notification.draftNotification

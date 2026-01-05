@@ -242,7 +242,7 @@ export class Notification {
     sessionId: string
   ) => {
     console.log({ body, schoolId, variables });
-   
+
     const requiredUserFields: Record<string, boolean> = {
       id: true,
       email: true,
@@ -390,5 +390,11 @@ export class Notification {
       }
     }
     return userInfo;
+  };
+
+  static getAllSchoolNotification = async (schoolId: string) => {
+    return await db.query.notification_Table.findMany({
+      where: and(eq(notification_Table.schoolId, schoolId)),
+    });
   };
 }
