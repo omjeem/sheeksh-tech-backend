@@ -3,6 +3,7 @@ import { db } from "../../config/db";
 import {
   notification_Table,
   notificationCategory_Table,
+  notificationRecipient_Table,
   notificationTemplate_Table,
   studentClassesTable,
   teachersTable,
@@ -392,9 +393,61 @@ export class Notification {
     return userInfo;
   };
 
-  static getAllSchoolNotification = async (schoolId: string) => {
+  static getNotification = async (body: {
+    schoolId: string;
+    notificationId?: string;
+    categoryId?: string;
+    templateId?: string;
+  }) => {
+    const whereConditions = [eq(notification_Table.schoolId, body.schoolId)];
+    if (body.notificationId) {
+      whereConditions.push(eq(notification_Table.id, body.notificationId));
+    }
+    if (body.categoryId) {
+      whereConditions.push(eq(notification_Table.categoryId, body.categoryId));
+    }
+    if (body.templateId) {
+      whereConditions.push(eq(notification_Table.templateId, body.templateId));
+    }
     return await db.query.notification_Table.findMany({
-      where: and(eq(notification_Table.schoolId, schoolId)),
+      where: and(...whereConditions),
+      columns: {
+        id: true,
+        templateId: true,
+        categoryId: true,
+        payload: true,
+        channels: true,
+        createdAt: true,
+      },
+    });
+  };
+
+  static getDraftedNotifications = async (body: {
+    notificationId: string;
+    status?: string;
+  }) => {
+    const whereConditions = [
+      eq(notificationRecipient_Table.notificationId, body.notificationId),
+    ];
+    if (body.status) {
+      whereConditions.push(eq(notificationRecipient_Table.status, body.status));
+    }
+    return await db.query.notificationRecipient_Table.findMany({
+      where: and(...whereConditions),
+      columns: {
+        id: true,
+        channel: true,
+        payloadVariables: true,
+        status: true,
+      },
+      with: {
+        user: {
+          columns: {
+            id: true,
+            email: true,
+          },
+        },
+      },
     });
   };
 }

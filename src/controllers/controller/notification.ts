@@ -14,12 +14,63 @@ const VARIABLES = Constants.NOTIFICATION.VARIABLES;
 
 export class Notification {
   
+  static sendDraftedNotification = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.user;
+      const { notificationId }: any = req.params;
+      const notficationData = await Services.Notification.getNotification({
+        schoolId,
+        notificationId,
+      });
+      if (notficationData.length === 0) {
+        throw new Error(`This notification is not belongs to your School!`);
+      }
+      const orginalPayload: any = notficationData[0]?.payload;
+      const isDynamicEmail = orginalPayload.variables.length > 0;
+      const draftedNotification =
+        await Services.Notification.getDraftedNotifications({
+          notificationId,
+          status: Constants.NOTIFICATION.SENT_STATUS.DRAFT,
+        });
+      const emailTeamplates: any = [];
+      if (isDynamicEmail) {
+        emailTeamplates.push(
+          ...draftedNotification.map((d: any) => {
+            const tempPayLoad =
+              Services.Helper.notification.buildNotificationPayload(
+                orginalPayload,
+                d.payloadVariables
+              );
+            return {
+              email: [d.user.email],
+              ...tempPayLoad,
+            };
+          })
+        );
+      } else {
+        emailTeamplates.push({
+          email: draftedNotification.map((n) => n.user.email),
+          ...orginalPayload
+        });
+      }
+    
+      return successResponse(
+        res,
+        "Notifications Sent Successfully",
+        emailTeamplates
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
   static getAdminNotifications = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
 
-      const notifications =
-        await Services.Notification.getAllSchoolNotification(schoolId);
+      const notifications = await Services.Notification.getNotification({
+        schoolId,
+      });
 
       return successResponse(
         res,
@@ -66,10 +117,6 @@ export class Notification {
       const channels = body.channels;
 
       console.log("Payload Content ", payload);
-      // const tempPayLoad = Services.Helper.notification.buildNotificationPayload(
-      //   payload,
-      //   notificationVariables
-      // );
 
       await db.transaction(async (tx) => {
         const newNotification =

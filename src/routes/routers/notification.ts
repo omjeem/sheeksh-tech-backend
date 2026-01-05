@@ -15,6 +15,13 @@ notificationRouter.get(
 );
 
 notificationRouter.post(
+  "/send/draft/:notificationId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.paramsNotificationId),
+  Controllers.Notification.sendDraftedNotification
+);
+
+notificationRouter.post(
   "/draft/:templateId",
   adminMiddleware,
   validateRequest(Validators.Notification.draftNotification),
