@@ -1,3 +1,5 @@
+import { db } from "../config/db";
+
 export interface UserTokenPayload {
   user: {
     userId: string;
@@ -29,3 +31,7 @@ export interface NotificationTemplatePayload {
   bodyText: string;
   variables: string[];
 }
+
+export type PostgressTransaction_Type = Parameters<
+  Parameters<typeof db.transaction>[0]
+>[0];

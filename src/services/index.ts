@@ -7,7 +7,7 @@ import { Student } from "./dbServices/student";
 import { Subject } from "./dbServices/subject";
 import { Teacher } from "./dbServices/teacher";
 import { User } from "./dbServices/user";
-import { notification } from "./helper/notification";
+import { notification } from "./helper/notificationPayload";
 
 const Services = {
   User,

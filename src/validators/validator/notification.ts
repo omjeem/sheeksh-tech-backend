@@ -48,7 +48,29 @@ export class Notification {
     }),
   });
 
+  private static sendAllOrExclude = z
+    .object({
+      sentAll: z.boolean(),
+      isInclude: z.boolean(),
+      values: z.array(z.uuid()),
+    })
+    .optional();
+
   static sendNotification = z.object({
-    params : this.paramsTemplateId
+    params: this.paramsTemplateId,
+    body: z.object({
+      sessionId: z.uuid().optional(),
+      users: this.sendAllOrExclude,
+      students: this.sendAllOrExclude,
+      teachers: this.sendAllOrExclude,
+      sections: z.array(
+        z.object({
+          id: z.uuid(),
+          sentAll: z.boolean(),
+          isInclude: z.boolean(),
+          values: z.array(z.uuid()),
+        })
+      ).optional(),
+    }),
   });
 }

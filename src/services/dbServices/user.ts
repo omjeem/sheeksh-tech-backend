@@ -1,4 +1,4 @@
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { db } from "../../config/db";
 import { usersTable } from "../../config/schema";
 import { UserRolesType } from "../../types/types";
@@ -62,6 +62,24 @@ export class User {
       role: userDetails.role,
       userId: userDetails.id,
     };
+  };
+
+  static getBulkUserInfo = async (users: string[], schoolId: string) => {
+    return await db.query.usersTable.findMany({
+      where: and(
+        eq(usersTable.schoolId, schoolId),
+        inArray(usersTable.id, users)
+      ),
+      columns: {
+        id: true,
+        email: true,
+        phone: true,
+        firstName: true,
+        lastName: true,
+        dateOfBirth: true,
+        role: true,
+      },
+    });
   };
 
   static getUserDetails = async (userId: string) => {

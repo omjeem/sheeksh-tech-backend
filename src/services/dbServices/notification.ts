@@ -1,9 +1,18 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { db } from "../../config/db";
 import {
+  notification_Table,
   notificationCategory_Table,
   notificationTemplate_Table,
+  studentClassesTable,
+  teachersTable,
+  usersTable,
 } from "../../config/schema";
+import { PostgressTransaction_Type } from "../../types/types";
+import { SendNotificationInput } from "../../validators/types";
+import Constants from "../../config/constants";
+
+const notificationVar = Constants.NOTIFICATION.VARIABLES;
 
 export class Notification {
   static createCategory = async (body: {
@@ -119,8 +128,8 @@ export class Notification {
         id: true,
         name: true,
         templatePayload: true,
-        createdAt : true,
-        updatedAt : true
+        createdAt: true,
+        updatedAt: true,
       },
       with: {
         category: {
@@ -200,5 +209,186 @@ export class Notification {
         createdAt: notificationTemplate_Table.createdAt,
         updatedAt: notificationTemplate_Table.updatedAt,
       });
+  };
+
+  static createNewNotification = async (
+    tx: PostgressTransaction_Type,
+    body: {
+      schoolId: string;
+      templateId: string;
+      categoryId: string;
+      payload: any;
+      channels: string[];
+      userId: string;
+    }
+  ) => {
+    return await tx
+      .insert(notification_Table)
+      .values({
+        schoolId: body.schoolId,
+        templateId: body.templateId,
+        categoryId: body.categoryId,
+        payload: body.payload,
+        channels: body.channels,
+        createdBy: body.userId,
+      })
+      .returning();
+  };
+
+  static getAndValidateUsersDetailsToSentNotification = async (
+    body: SendNotificationInput["body"],
+    schoolId: string,
+    variables: string[],
+    sessionId: string
+  ) => {
+    console.log({ body, schoolId, variables });
+   
+    const requiredUserFields: Record<string, boolean> = {
+      id: true,
+      email: true,
+    };
+
+    variables.forEach((v) => {
+      if (v === notificationVar.recipientName) {
+        requiredUserFields.firstName = true;
+      } else if (v === notificationVar.recipientDob) {
+        requiredUserFields.dateOfBirth = true;
+      } else if (v === notificationVar.recipientPhone) {
+        requiredUserFields.phone = true;
+      } else if (v === notificationVar.recipientRole) {
+        requiredUserFields.role = true;
+      }
+    });
+
+    const userInfo = [];
+
+    if (body.users) {
+      const whereConditions = [eq(usersTable.schoolId, schoolId)];
+      if (!body.users.sentAll) {
+        if (body.users.isInclude) {
+          whereConditions.push(inArray(usersTable.id, [...body.users.values]));
+        } else {
+          whereConditions.push(
+            notInArray(usersTable.id, [...body.users.values])
+          );
+        }
+      }
+      const users = await db.query.usersTable.findMany({
+        where: and(...whereConditions),
+        columns: { ...requiredUserFields },
+      });
+      userInfo.push(...users);
+    } else {
+      if (body.students) {
+        const studentsWhereConditions = [
+          eq(studentClassesTable.schoolId, schoolId),
+          eq(studentClassesTable.sessionId, sessionId),
+        ];
+        const students = await db.query.studentClassesTable.findMany({
+          where: and(...studentsWhereConditions),
+          columns: {
+            id: true,
+          },
+          with: {
+            student: {
+              columns: {
+                id: true,
+              },
+              with: {
+                user: {
+                  columns: {
+                    ...requiredUserFields,
+                  },
+                },
+              },
+            },
+          },
+        });
+        const studentsIdSet = new Set(...body.students.values);
+
+        const studentsInfo = students.map((s) => {
+          if (body?.students?.sentAll) {
+            return s.student.user;
+          } else if (body.students?.isInclude) {
+            if (studentsIdSet.has(s.student.id)) return s.student.user;
+          } else {
+            if (!studentsIdSet.has(s.student.id)) return s.student.user;
+          }
+        });
+
+        userInfo.push(...studentsInfo);
+      } else if (body.sections) {
+        for (const s of body.sections) {
+          const whereConditions = [
+            eq(studentClassesTable.sessionId, sessionId),
+            eq(studentClassesTable.schoolId, schoolId),
+          ];
+          if (!s.sentAll) {
+            if (s.isInclude) {
+              console.log("Is Include data");
+              whereConditions.push(
+                inArray(studentClassesTable.studentId, [...s.values])
+              );
+            } else {
+              whereConditions.push(
+                notInArray(studentClassesTable.studentId, [...s.values])
+              );
+            }
+          }
+          const sectionsData = await db.query.studentClassesTable.findMany({
+            where: and(...whereConditions),
+            columns: {
+              sectionId: true,
+            },
+            with: {
+              student: {
+                columns: {
+                  id: true,
+                },
+                with: {
+                  user: {
+                    columns: {
+                      ...requiredUserFields,
+                    },
+                  },
+                },
+              },
+            },
+          });
+          console.dir({ sectionsData }, { depth: null });
+          userInfo.push(...sectionsData.map((s) => s.student.user));
+        }
+      }
+      if (body.teachers) {
+        const whereConditions = [eq(teachersTable.schoolId, schoolId)];
+        if (!body.teachers.sentAll) {
+          if (body.teachers.isInclude) {
+            whereConditions.push(
+              inArray(teachersTable.id, [...body.teachers.values])
+            );
+          } else {
+            whereConditions.push(
+              notInArray(teachersTable.id, [...body.teachers.values])
+            );
+          }
+        }
+        const teachersInfo = await db.query.teachersTable.findMany({
+          where: and(...whereConditions),
+          columns: {
+            id: true,
+          },
+          with: {
+            user: {
+              columns: {
+                ...requiredUserFields,
+              },
+            },
+          },
+        });
+        console.dir({ teachersInfo }, { depth: null });
+        userInfo.push(...teachersInfo.map((t) => t.user));
+      }
+    }
+    return userInfo;
   };
 }
