@@ -14,6 +14,14 @@ notificationRouter.get(
   Controllers.Notification.getAdminNotifications
 );
 
+notificationRouter.get("/user", Controllers.Notification.userNotifications);
+
+notificationRouter.put(
+  "/user/seen/:notificationRecipentId",
+  validateRequest(Validators.Notification.seenNotification),
+  Controllers.Notification.seenNotification
+);
+
 notificationRouter.post(
   "/send/draft/:notificationId",
   adminMiddleware,

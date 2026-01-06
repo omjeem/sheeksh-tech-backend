@@ -82,4 +82,10 @@ export class Notification {
       notificationId: z.uuid(),
     }),
   });
+
+  static seenNotification = z.object({
+    params: z.object({
+      notificationRecipentId: z.uuid(),
+    }),
+  });
 }

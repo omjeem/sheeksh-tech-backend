@@ -476,4 +476,67 @@ export class Notification {
         )
       );
   };
+
+  static getUserNotification = async (body: {
+    userId: string;
+    schoolId: string;
+  }) => {
+    return await db.query.notificationRecipient_Table.findMany({
+      where: and(
+        eq(notificationRecipient_Table.userId, body.userId),
+        eq(
+          notificationRecipient_Table.status,
+          Constants.NOTIFICATION.SENT_STATUS.SENT
+        ),
+        eq(notificationRecipient_Table.isDeleted, false)
+      ),
+      columns: {
+        id: true,
+        channel: true,
+        deliveredAt: true,
+        seenOnPortalAt: true,
+        createdAt: true,
+        payloadVariables: true,
+      },
+      with: {
+        notification: {
+          columns: {
+            payload: true,
+          },
+        },
+      },
+    });
+  };
+
+  static seenNotification = async (body: {
+    notificationRecipentId: string;
+    userId: string;
+  }) => {
+    const isAlreadySeen = await db.query.notificationRecipient_Table.findFirst({
+      where: and(
+        eq(notificationRecipient_Table.id, body.notificationRecipentId),
+        eq(notificationRecipient_Table.userId, body.userId)
+      ),
+      columns: {
+        seenOnPortalAt: true,
+      },
+    });
+    if (!isAlreadySeen) {
+      throw new Error("Notitifcation not exists or not belongs to you!");
+    }
+    if (isAlreadySeen.seenOnPortalAt) {
+      return;
+    }
+    return await db
+      .update(notificationRecipient_Table)
+      .set({
+        seenOnPortalAt: new Date(),
+      })
+      .where(
+        and(
+          eq(notificationRecipient_Table.id, body.notificationRecipentId),
+          eq(notificationRecipient_Table.userId, body.userId)
+        )
+      );
+  };
 }

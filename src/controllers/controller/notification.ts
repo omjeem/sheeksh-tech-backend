@@ -324,4 +324,45 @@ export class Notification {
       return errorResponse(res, error.message || error);
     }
   };
+
+  static userNotifications = async (req: Request, res: Response) => {
+    try {
+      const { userId, schoolId } = req.user;
+      const data = await Services.Notification.getUserNotification({
+        userId,
+        schoolId,
+      });
+      const formatedNotification = data.map((d: any) => {
+        const { payloadVariables, notification, ...rest } = d;
+        return {
+          ...rest,
+          notification: Services.Helper.notification.buildNotificationPayload(
+            notification.payload,
+            payloadVariables
+          ),
+        };
+      });
+      return successResponse(
+        res,
+        "User notifcation fetched Successfully",
+        formatedNotification
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static seenNotification = async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.user;
+      const { notificationRecipentId }: any = req.params;
+      await Services.Notification.seenNotification({
+        userId,
+        notificationRecipentId,
+      });
+      return successResponse(res, "Notification Seen Successfully", null);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
 }
