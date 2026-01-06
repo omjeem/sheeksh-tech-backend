@@ -13,7 +13,6 @@ import {
 const VARIABLES = Constants.NOTIFICATION.VARIABLES;
 
 export class Notification {
-  
   static sendDraftedNotification = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
@@ -32,33 +31,41 @@ export class Notification {
           notificationId,
           status: Constants.NOTIFICATION.SENT_STATUS.DRAFT,
         });
-      const emailTeamplates: any = [];
+      const emailTeamplates = [];
       if (isDynamicEmail) {
         emailTeamplates.push(
           ...draftedNotification.map((d: any) => {
-            const tempPayLoad =
+            const tempPayLoad: any =
               Services.Helper.notification.buildNotificationPayload(
                 orginalPayload,
                 d.payloadVariables
               );
             return {
-              email: [d.user.email],
+              user: [{ userId: d.user.id, email: d.user.email }],
               ...tempPayLoad,
             };
           })
         );
       } else {
         emailTeamplates.push({
-          email: draftedNotification.map((n) => n.user.email),
-          ...orginalPayload
+          user: draftedNotification.map((n) => {
+            return {
+              userId: n.user.id,
+              email: n.user.email,
+            };
+          }),
+          ...orginalPayload,
         });
       }
-    
-      return successResponse(
-        res,
-        "Notifications Sent Successfully",
-        emailTeamplates
-      );
+      const response = await Services.Helper.email.sendEmail({
+        emailTeamplates,
+        notificationId,
+      });
+
+      return successResponse(res, "Notifications Sent Successfully", {
+        emailTeamplates,
+        response,
+      });
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }

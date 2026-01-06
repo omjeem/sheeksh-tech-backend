@@ -450,4 +450,30 @@ export class Notification {
       },
     });
   };
+
+  static updateRecipentsNotifications = async (body: {
+    userIds: string[];
+    notificationId: string;
+    status: string;
+    channel: string;
+  }) => {
+    const updateObj: any = {
+      status: body.status,
+    };
+    if (body.status === Constants.NOTIFICATION.SENT_STATUS.SENT) {
+      updateObj.deliveredAt = new Date();
+    } else {
+      updateObj.failedAt = new Date();
+    }
+    return await db
+      .update(notificationRecipient_Table)
+      .set(updateObj)
+      .where(
+        and(
+          eq(notificationRecipient_Table.notificationId, body.notificationId),
+          eq(notificationRecipient_Table.channel, body.channel),
+          inArray(notificationRecipient_Table.userId, body.userIds)
+        )
+      );
+  };
 }

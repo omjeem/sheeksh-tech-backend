@@ -44,6 +44,7 @@ const Constants = {
     ) as {
       readonly [K in (typeof NOTIFICATION_VARIABLE_LIST)[number]]: K;
     },
+    SENT_SIZE: 50,
   },
 };
 
