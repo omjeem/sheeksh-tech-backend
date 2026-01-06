@@ -14,6 +14,8 @@ export class email {
   }) => {
     let delivered: string[] = [];
     let failed: string[] = [];
+    let totalSuccess = 0;
+    let totalFailure = 0;
 
     const updateNotificationInChunk = async (proceedDirectly: boolean) => {
       if (
@@ -28,6 +30,7 @@ export class email {
             status: Constants.NOTIFICATION.SENT_STATUS.SENT,
             channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
           });
+        totalSuccess += delivered.length;
         console.log({ deliveredUp });
         delivered = [];
       }
@@ -44,6 +47,7 @@ export class email {
             channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
           });
         console.log({ failedUp });
+        totalFailure += failed.length;
         failed = [];
       }
     };
@@ -66,6 +70,12 @@ export class email {
       }
     }
     await updateNotificationInChunk(true);
+    await Services.Notification.updateNotificationStatus({
+      notificationId: body.notificationId,
+      totalFailure,
+      totalSuccess,
+      channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
+    });
   };
 
   private static sendWithResend = async (body: {

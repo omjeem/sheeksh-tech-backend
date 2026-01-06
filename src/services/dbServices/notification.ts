@@ -4,6 +4,7 @@ import {
   notification_Table,
   notificationCategory_Table,
   notificationRecipient_Table,
+  notificationStatus_Table,
   notificationTemplate_Table,
   studentClassesTable,
   teachersTable,
@@ -536,6 +537,27 @@ export class Notification {
         and(
           eq(notificationRecipient_Table.id, body.notificationRecipentId),
           eq(notificationRecipient_Table.userId, body.userId)
+        )
+      );
+  };
+
+  static updateNotificationStatus = async (body: {
+    notificationId: string;
+    totalSuccess: number;
+    totalFailure: number;
+    channel: string;
+  }) => {
+    return await db
+      .update(notificationStatus_Table)
+      .set({
+        totalFailure: body.totalFailure,
+        totalSuccess: body.totalSuccess,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(notificationStatus_Table.notificationId, body.notificationId),
+          eq(notificationStatus_Table.channel, body.channel)
         )
       );
   };
