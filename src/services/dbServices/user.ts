@@ -1,9 +1,16 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import { db } from "../../config/db";
-import { usersTable } from "../../config/schema";
+import {
+  studentClassesTable,
+  studentsTable,
+  teacherClassSubjectSectionTable,
+  teachersTable,
+  usersTable,
+} from "../../config/schema";
 import { UserRolesType } from "../../types/types";
 import { UsersTable_Type } from "../../config/schemaTypes";
 import { Utils } from "../../utils";
+import { BulkUserSearch } from "../../validators/types";
 
 export class User {
   static isUsersExists = async (emails: string[]) => {
@@ -59,7 +66,7 @@ export class User {
     }
     return {
       schoolId: userDetails.schoolId,
-      role: userDetails.role,
+      role: userDetails.role as UserRolesType,
       userId: userDetails.id,
     };
   };
@@ -96,5 +103,110 @@ export class User {
         createdAt: true,
       },
     });
+  };
+
+  static studentSearch = async (
+    schoolId: string,
+    body: Omit<BulkUserSearch["body"], "type">
+  ) => {
+    const whereConditions: any = [eq(studentClassesTable.schoolId, schoolId)];
+    if (body.classId) {
+      whereConditions.push(eq(studentClassesTable.classId, body.classId));
+    }
+    if (body.sectionId) {
+      whereConditions.push(eq(studentClassesTable.sectionId, body.sectionId));
+    }
+    if (body.sessionId) {
+      whereConditions.push(eq(studentClassesTable.sessionId, body.sessionId));
+    }
+    if (body.studentId) {
+      whereConditions.push(eq(studentClassesTable.studentId, body.studentId));
+    }
+    if (body.searchQuery) {
+      const pattern = `%${body.searchQuery}%`;
+      console.log({ pattern });
+      whereConditions.push(
+        or(
+          sql`LOWER(${usersTable.firstName}) LIKE LOWER(${pattern})`,
+          sql`LOWER(${usersTable.lastName}) LIKE LOWER(${pattern})`,
+          sql`LOWER(${usersTable.email}) LIKE LOWER(${pattern})`
+        )
+      );
+    }
+    return await db
+      .select({
+        studentId: studentsTable.id,
+        userId: usersTable.id,
+        firstName: usersTable.firstName,
+        lastName: usersTable.lastName,
+        email: usersTable.email,
+      })
+      .from(studentClassesTable)
+      .leftJoin(
+        studentsTable,
+        eq(studentClassesTable.studentId, studentsTable.id)
+      )
+      .leftJoin(usersTable, eq(studentsTable.userId, usersTable.id))
+      .where(and(...whereConditions));
+  };
+
+  static teacherSearch = async (
+    schoolId: string,
+    body: Omit<BulkUserSearch["body"], "type">
+  ) => {
+    const whereConditions: any = [
+      eq(teacherClassSubjectSectionTable.schoolId, schoolId),
+    ];
+    if (body.classId) {
+      whereConditions.push(
+        eq(teacherClassSubjectSectionTable.classId, body.classId)
+      );
+    }
+    if (body.sectionId) {
+      whereConditions.push(
+        eq(teacherClassSubjectSectionTable.sectionId, body.sectionId)
+      );
+    }
+    if (body.sessionId) {
+      whereConditions.push(
+        eq(teacherClassSubjectSectionTable.sessionId, body.sessionId)
+      );
+    }
+    if (body.subjectId) {
+      whereConditions.push(
+        eq(teacherClassSubjectSectionTable.subjectId, body.subjectId)
+      );
+    }
+    if (body.teacherId) {
+      whereConditions.push(
+        eq(teacherClassSubjectSectionTable.teacherId, body.teacherId)
+      );
+    }
+    if (body.searchQuery) {
+      const pattern = `%${body.searchQuery}%`;
+      console.log({ pattern });
+      whereConditions.push(
+        or(
+          sql`LOWER(${usersTable.firstName}) LIKE LOWER(${pattern})`,
+          sql`LOWER(${usersTable.lastName}) LIKE LOWER(${pattern})`,
+          sql`LOWER(${usersTable.email}) LIKE LOWER(${pattern})`
+        )
+      );
+    }
+    return await db
+      .select({
+        teacherId: teachersTable.id,
+        userId: usersTable.id,
+        firstName: usersTable.firstName,
+        lastName: usersTable.lastName,
+        email: usersTable.email,
+      })
+      .from(teacherClassSubjectSectionTable)
+      .leftJoin(
+        teachersTable,
+        eq(teacherClassSubjectSectionTable.teacherId, teachersTable.id)
+      )
+      .leftJoin(usersTable, eq(teachersTable.userId, usersTable.id))
+      .where(and(...whereConditions));
   };
 }

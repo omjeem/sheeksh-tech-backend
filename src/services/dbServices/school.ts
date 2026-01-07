@@ -4,7 +4,7 @@ import { schoolsTable } from "../../config/schema";
 import { CreateSchool_Type } from "../../validators/validator/school";
 import { Utils } from "../../utils";
 import Services from "..";
-import { UserRoles } from "../../types/types";
+import Constants from "../../config/constants";
 
 export class School {
   
@@ -76,7 +76,7 @@ export class School {
         [
           {
             schoolId,
-            role: UserRoles.SUPER_ADMIN,
+            role: Constants.USER_ROLES.SUPER_ADMIN,
             email: superAdminEmail,
             password: Utils.hashPassword(superAdminPassword, superAdminEmail),
             phone: superAdminPhone,

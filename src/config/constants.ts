@@ -6,6 +6,15 @@ const NOTIFICATION_VARIABLE_LIST = [
   "recipientDob",
 ] as const;
 
+const USER_ROLES = [
+  "ADMIN",
+  "TEACHER",
+  "STUDENT",
+  "PARENT",
+  "ACCOUNTANT",
+  "SUPER_ADMIN",
+] as const;
+
 export const NOTIFICATION_CHANNEL_LIST = ["EMAIL", "SMS"] as const;
 
 const NOTIFICATION_SENT_STATUS_LIST = [
@@ -18,6 +27,9 @@ const NOTIFICATION_SENT_STATUS_LIST = [
 ] as const;
 
 const Constants = {
+  USER_ROLES: Object.fromEntries(USER_ROLES.map((v) => [v, v])) as {
+    readonly [K in (typeof USER_ROLES)[number]]: K;
+  },
   STATUS_CODE: {
     SUCCESS: 200,
     CREATED: 201,

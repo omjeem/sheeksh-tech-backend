@@ -6,13 +6,13 @@ import {
   studentsTable,
   usersTable,
 } from "../../config/schema";
-import { UserRoles } from "../../types/types";
 import Services from "..";
 import {
   FeedStudents_Type,
   GetStudentClassSection_Type,
 } from "../../validators/validator/student";
 import { Utils } from "../../utils";
+import Constants from "../../config/constants";
 
 export class Student {
   static getLastSrNo = async (schoolId: string) => {
@@ -46,7 +46,7 @@ export class Student {
         srNo: selfAssignSr ? ++lastSrNo : d.srNo,
         dateOfBirth,
         schoolId,
-        role: UserRoles.STUDENT,
+        role: Constants.USER_ROLES.STUDENT,
         email: d.email,
         password: hashedPassword,
         firstName: d.firstName,

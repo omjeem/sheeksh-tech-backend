@@ -1,3 +1,4 @@
+import Constants from "../config/constants";
 import { db } from "../config/db";
 
 export interface UserTokenPayload {
@@ -9,16 +10,8 @@ export interface UserTokenPayload {
   };
 }
 
-export const UserRoles = {
-  ADMIN: "ADMIN",
-  TEACHER: "TEACHER",
-  STUDENT: "STUDENT",
-  PARENT: "PARENT",
-  ACCOUNTANT: "ACCOUNTANT",
-  SUPER_ADMIN: "SUPER_ADMIN",
-};
-
-export type UserRolesType = (typeof UserRoles)[keyof typeof UserRoles];
+export type UserRolesType =
+  (typeof Constants.USER_ROLES)[keyof typeof Constants.USER_ROLES];
 
 export enum TeacherDesignation {
   TGT = "TGT",
