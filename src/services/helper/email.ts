@@ -70,7 +70,7 @@ export class email {
       }
     }
     await updateNotificationInChunk(true);
-    await Services.Notification.updateNotificationStatus({
+    return await Services.Notification.updateNotificationStatus({
       notificationId: body.notificationId,
       totalFailure,
       totalSuccess,

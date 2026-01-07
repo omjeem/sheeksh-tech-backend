@@ -57,15 +57,15 @@ export class Notification {
           ...orginalPayload,
         });
       }
+      if (emailTeamplates.length === 0) {
+        throw new Error("No drafted Emails found for deliver!");
+      }
       const response = await Services.Helper.email.sendEmail({
         emailTeamplates,
         notificationId,
       });
-
-      return successResponse(res, "Notifications Sent Successfully", {
-        emailTeamplates,
-        response,
-      });
+      console.dir({ emailTeamplates }, { depth: null });
+      return successResponse(res, "Notifications Sent Successfully", response);
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }
@@ -125,7 +125,7 @@ export class Notification {
 
       console.log("Payload Content ", payload);
 
-      await db.transaction(async (tx) => {
+      const response = await db.transaction(async (tx) => {
         const newNotification =
           await Services.Notification.createNewNotification(tx, {
             templateId,
@@ -190,9 +190,11 @@ export class Notification {
           .returning();
 
         console.dir({ notificationRecipentData }, { depth: null });
+        return notificationStatusData;
       });
 
       return successResponse(res, "Notification Drafted Successfully", {
+        response,
         allUsersInfo,
       });
     } catch (error: any) {
@@ -332,20 +334,10 @@ export class Notification {
         userId,
         schoolId,
       });
-      const formatedNotification = data.map((d: any) => {
-        const { payloadVariables, notification, ...rest } = d;
-        return {
-          ...rest,
-          notification: Services.Helper.notification.buildNotificationPayload(
-            notification.payload,
-            payloadVariables
-          ),
-        };
-      });
       return successResponse(
         res,
         "User notifcation fetched Successfully",
-        formatedNotification
+        data
       );
     } catch (error: any) {
       return errorResponse(res, error.message || error);

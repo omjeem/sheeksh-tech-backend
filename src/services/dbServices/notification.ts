@@ -324,6 +324,7 @@ export class Notification {
           const whereConditions = [
             eq(studentClassesTable.sessionId, sessionId),
             eq(studentClassesTable.schoolId, schoolId),
+            eq(studentClassesTable.sectionId, s.id)
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
@@ -569,6 +570,6 @@ export class Notification {
           eq(notificationStatus_Table.notificationId, body.notificationId),
           eq(notificationStatus_Table.channel, body.channel)
         )
-      );
+      ).returning();
   };
 }
