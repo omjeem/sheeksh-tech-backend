@@ -324,6 +324,7 @@ export class Notification {
           const whereConditions = [
             eq(studentClassesTable.sessionId, sessionId),
             eq(studentClassesTable.schoolId, schoolId),
+            eq(studentClassesTable.sectionId, s.id)
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
@@ -419,6 +420,14 @@ export class Notification {
         payload: true,
         channels: true,
         createdAt: true,
+      },
+      with: {
+        status: {
+          columns: {
+            updatedAt: false,
+            isDeleted: false,
+          },
+        },
       },
     });
   };
@@ -546,12 +555,14 @@ export class Notification {
     totalSuccess: number;
     totalFailure: number;
     channel: string;
+    status: string;
   }) => {
     return await db
       .update(notificationStatus_Table)
       .set({
         totalFailure: body.totalFailure,
         totalSuccess: body.totalSuccess,
+        status: body.status,
         updatedAt: new Date(),
       })
       .where(
@@ -559,6 +570,6 @@ export class Notification {
           eq(notificationStatus_Table.notificationId, body.notificationId),
           eq(notificationStatus_Table.channel, body.channel)
         )
-      );
+      ).returning();
   };
 }
