@@ -75,6 +75,7 @@ export class email {
       totalFailure,
       totalSuccess,
       channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
+      status: Constants.NOTIFICATION.SENT_STATUS.SENT,
     });
   };
 

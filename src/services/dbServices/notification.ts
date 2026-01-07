@@ -420,6 +420,14 @@ export class Notification {
         channels: true,
         createdAt: true,
       },
+      with: {
+        status: {
+          columns: {
+            updatedAt: false,
+            isDeleted: false,
+          },
+        },
+      },
     });
   };
 
@@ -546,12 +554,14 @@ export class Notification {
     totalSuccess: number;
     totalFailure: number;
     channel: string;
+    status: string;
   }) => {
     return await db
       .update(notificationStatus_Table)
       .set({
         totalFailure: body.totalFailure,
         totalSuccess: body.totalSuccess,
+        status: body.status,
         updatedAt: new Date(),
       })
       .where(

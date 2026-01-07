@@ -304,6 +304,7 @@ export const notificationStatus_Table = pgTable("notification_status", {
     })
     .notNull(),
   channel: varchar().notNull(),
+  status: varchar().default(Constants.NOTIFICATION.SENT_STATUS.DRAFT),
   totalRecipients: integer().default(0),
   totalSuccess: integer().default(0),
   totalFailure: integer().default(0),
