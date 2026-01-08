@@ -1,4 +1,4 @@
-const NOTIFICATION_VARIABLE_LIST = [
+export const NOTIFICATION_VARIABLE_LIST = [
   "recipientName",
   "recipientRole",
   "recipientEmail",

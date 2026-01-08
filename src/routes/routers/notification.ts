@@ -9,6 +9,11 @@ const notificationRouter = express.Router();
 notificationRouter.use(authMiddleware);
 
 notificationRouter.get(
+  "/variables",
+  Controllers.Notification.getNotificationDynamicVariable
+);
+
+notificationRouter.get(
   "/admin",
   adminMiddleware,
   Controllers.Notification.getAdminNotifications

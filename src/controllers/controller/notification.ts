@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "../../config/response";
 import Services from "../../services";
-import Constants from "../../config/constants";
+import Constants, { NOTIFICATION_VARIABLE_LIST } from "../../config/constants";
 import { NotificationTemplatePayload } from "../../types/types";
 import { SendNotificationInput } from "../../validators/types";
 import { db } from "../../config/db";
@@ -225,6 +225,21 @@ export class Notification {
         response,
         allUsersInfo,
       });
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getNotificationDynamicVariable = async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      return successResponse(
+        res,
+        "Dynamic Variables Fetched Successfully!",
+        NOTIFICATION_VARIABLE_LIST
+      );
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }
