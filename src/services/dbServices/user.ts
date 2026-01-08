@@ -105,25 +105,37 @@ export class User {
     });
   };
 
-  static studentSearch = async (
-    schoolId: string,
-    body: Omit<BulkUserSearch["body"], "type">
-  ) => {
-    const whereConditions: any = [eq(studentClassesTable.schoolId, schoolId)];
-    if (body.classId) {
-      whereConditions.push(eq(studentClassesTable.classId, body.classId));
+  static studentSearch = async (body: {
+    schoolId: string;
+    searchObj: Omit<BulkUserSearch["body"], "type">;
+    offSet: number;
+    limit: number;
+  }) => {
+    const whereConditions: any = [
+      eq(studentClassesTable.schoolId, body.schoolId),
+    ];
+    if (body.searchObj.classId) {
+      whereConditions.push(
+        eq(studentClassesTable.classId, body.searchObj.classId)
+      );
     }
-    if (body.sectionId) {
-      whereConditions.push(eq(studentClassesTable.sectionId, body.sectionId));
+    if (body.searchObj.sectionId) {
+      whereConditions.push(
+        eq(studentClassesTable.sectionId, body.searchObj.sectionId)
+      );
     }
-    if (body.sessionId) {
-      whereConditions.push(eq(studentClassesTable.sessionId, body.sessionId));
+    if (body.searchObj.sessionId) {
+      whereConditions.push(
+        eq(studentClassesTable.sessionId, body.searchObj.sessionId)
+      );
     }
-    if (body.studentId) {
-      whereConditions.push(eq(studentClassesTable.studentId, body.studentId));
+    if (body.searchObj.studentId) {
+      whereConditions.push(
+        eq(studentClassesTable.studentId, body.searchObj.studentId)
+      );
     }
-    if (body.searchQuery) {
-      const pattern = `%${body.searchQuery}%`;
+    if (body.searchObj.searchQuery) {
+      const pattern = `%${body.searchObj.searchQuery}%`;
       console.log({ pattern });
       whereConditions.push(
         or(
@@ -147,43 +159,47 @@ export class User {
         eq(studentClassesTable.studentId, studentsTable.id)
       )
       .leftJoin(usersTable, eq(studentsTable.userId, usersTable.id))
-      .where(and(...whereConditions));
+      .where(and(...whereConditions))
+      .limit(body.limit)
+      .offset(body.offSet);
   };
 
-  static teacherSearch = async (
-    schoolId: string,
-    body: Omit<BulkUserSearch["body"], "type">
-  ) => {
+  static teacherSearch = async (body: {
+    schoolId: string;
+    searchObj: Omit<BulkUserSearch["body"], "type">;
+    offSet: number;
+    limit: number;
+  }) => {
     const whereConditions: any = [
-      eq(teacherClassSubjectSectionTable.schoolId, schoolId),
+      eq(teacherClassSubjectSectionTable.schoolId, body.schoolId),
     ];
-    if (body.classId) {
+    if (body.searchObj.classId) {
       whereConditions.push(
-        eq(teacherClassSubjectSectionTable.classId, body.classId)
+        eq(teacherClassSubjectSectionTable.classId, body.searchObj.classId)
       );
     }
-    if (body.sectionId) {
+    if (body.searchObj.sectionId) {
       whereConditions.push(
-        eq(teacherClassSubjectSectionTable.sectionId, body.sectionId)
+        eq(teacherClassSubjectSectionTable.sectionId, body.searchObj.sectionId)
       );
     }
-    if (body.sessionId) {
+    if (body.searchObj.sessionId) {
       whereConditions.push(
-        eq(teacherClassSubjectSectionTable.sessionId, body.sessionId)
+        eq(teacherClassSubjectSectionTable.sessionId, body.searchObj.sessionId)
       );
     }
-    if (body.subjectId) {
+    if (body.searchObj.subjectId) {
       whereConditions.push(
-        eq(teacherClassSubjectSectionTable.subjectId, body.subjectId)
+        eq(teacherClassSubjectSectionTable.subjectId, body.searchObj.subjectId)
       );
     }
-    if (body.teacherId) {
+    if (body.searchObj.teacherId) {
       whereConditions.push(
-        eq(teacherClassSubjectSectionTable.teacherId, body.teacherId)
+        eq(teacherClassSubjectSectionTable.teacherId, body.searchObj.teacherId)
       );
     }
-    if (body.searchQuery) {
-      const pattern = `%${body.searchQuery}%`;
+    if (body.searchObj.searchQuery) {
+      const pattern = `%${body.searchObj.searchQuery}%`;
       console.log({ pattern });
       whereConditions.push(
         or(
@@ -207,6 +223,8 @@ export class User {
         eq(teacherClassSubjectSectionTable.teacherId, teachersTable.id)
       )
       .leftJoin(usersTable, eq(teachersTable.userId, usersTable.id))
-      .where(and(...whereConditions));
+      .where(and(...whereConditions))
+      .limit(body.limit)
+      .offset(body.offSet);
   };
 }

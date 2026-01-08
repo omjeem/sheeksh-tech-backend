@@ -27,7 +27,7 @@ export class Teacher {
   static getAllTeachers = async (req: Request, res: Response) => {
     try {
       const schoolId = req.user.schoolId;
-      const { pageNo = 1, limit = 10 } = req.query;
+      const { pageNo = 1, limit = 50 } = req.query;
       const data = await Services.Teacher.getData(pageNo, limit, schoolId);
       return successResponse(
         res,

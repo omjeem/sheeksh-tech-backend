@@ -89,6 +89,34 @@ export class Notification {
     }
   };
 
+  static getAdminNotificationsDetailed = async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const { schoolId } = req.user;
+      const { notificationId }: any = req.params;
+      const { pageNo = "1", pageSize = "10" }: any = req.query;
+      const limit = parseInt(pageSize);
+      const offSet = (parseInt(pageNo) - 1) * limit;
+      const notifications = await Services.Notification.getNotificationDetailed(
+        {
+          schoolId,
+          notificationId,
+          limit,
+          offSet,
+        }
+      );
+      return successResponse(
+        res,
+        "Detailed Notification Fetched Successfully",
+        notifications
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
   static draftNotification = async (req: Request, res: Response) => {
     try {
       const { schoolId, userId } = req.user;

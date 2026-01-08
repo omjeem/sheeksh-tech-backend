@@ -43,6 +43,10 @@ export class User {
   static userSearch = async (req: Request, res: Response) => {
     try {
       const { userId, schoolId } = req.user;
+      const { pageNo, pageSize }: any = req.query;
+
+      const limit = parseInt(pageSize);
+      const offSet = (parseInt(pageNo) - 1) * limit;
       //@ts-ignore
       const query: BulkUserSearch["body"] = req.body;
       const finalResponse: any[] = [];
@@ -56,10 +60,12 @@ export class User {
         if (query.studentId) {
           searchObj.studentId = query.studentId;
         }
-        const responseData = await Services.User.studentSearch(
+        const responseData = await Services.User.studentSearch({
           schoolId,
-          searchObj
-        );
+          searchObj,
+          limit,
+          offSet,
+        });
         finalResponse.push(...responseData);
       } else if (query.type === Constants.USER_ROLES.TEACHER) {
         if (query.subjectId) {
@@ -68,10 +74,12 @@ export class User {
         if (query.teacherId) {
           searchObj.teacherId = query.teacherId;
         }
-        const responseData = await Services.User.teacherSearch(
+        const responseData = await Services.User.teacherSearch({
           schoolId,
-          searchObj
-        );
+          searchObj,
+          limit,
+          offSet,
+        });
         finalResponse.push(...responseData);
       }
       return successResponse(res, "User Searched Successfully", finalResponse);

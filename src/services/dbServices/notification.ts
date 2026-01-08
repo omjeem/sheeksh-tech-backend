@@ -324,7 +324,7 @@ export class Notification {
           const whereConditions = [
             eq(studentClassesTable.sessionId, sessionId),
             eq(studentClassesTable.schoolId, schoolId),
-            eq(studentClassesTable.sectionId, s.id)
+            eq(studentClassesTable.sectionId, s.id),
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
@@ -430,6 +430,45 @@ export class Notification {
         },
       },
     });
+  };
+
+  static getNotificationDetailed = async (body: {
+    schoolId: string;
+    notificationId: string;
+    offSet: number;
+    limit: number;
+  }) => {
+    const whereConditions = [
+      eq(notification_Table.schoolId, body.schoolId),
+      eq(notification_Table.id, body.notificationId),
+    ];
+
+    return await db
+      .select({
+        notificationId: notification_Table.id,
+        payload: notification_Table.payload,
+        recipentPayload: notificationRecipient_Table.payloadVariables,
+        status: notificationRecipient_Table.status,
+        seenOnPortal: notificationRecipient_Table.seenOnPortalAt,
+        userId: usersTable.id,
+        firstName: usersTable.firstName,
+      })
+      .from(notification_Table)
+      .leftJoin(
+        notificationRecipient_Table,
+        eq(notificationRecipient_Table.notificationId, notification_Table.id)
+      )
+      .leftJoin(
+        notificationStatus_Table,
+        eq(notificationStatus_Table.notificationId, notification_Table.id)
+      )
+      .leftJoin(
+        usersTable,
+        eq(notificationRecipient_Table.userId, usersTable.id)
+      )
+      .where(and(...whereConditions))
+      .limit(body.limit)
+      .offset(body.offSet);
   };
 
   static getDraftedNotifications = async (body: {
@@ -570,6 +609,7 @@ export class Notification {
           eq(notificationStatus_Table.notificationId, body.notificationId),
           eq(notificationStatus_Table.channel, body.channel)
         )
-      ).returning();
+      )
+      .returning();
   };
 }
