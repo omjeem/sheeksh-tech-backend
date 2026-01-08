@@ -56,10 +56,10 @@ export class User {
         if (query.studentId) {
           searchObj.studentId = query.studentId;
         }
-        const responseData = await Services.User.studentSearch(
+        const responseData = await Services.User.studentSearch({
           schoolId,
-          searchObj
-        );
+          searchObj,
+        });
         finalResponse.push(...responseData);
       } else if (query.type === Constants.USER_ROLES.TEACHER) {
         if (query.subjectId) {
@@ -68,10 +68,10 @@ export class User {
         if (query.teacherId) {
           searchObj.teacherId = query.teacherId;
         }
-        const responseData = await Services.User.teacherSearch(
+        const responseData = await Services.User.teacherSearch({
           schoolId,
-          searchObj
-        );
+          searchObj,
+        });
         finalResponse.push(...responseData);
       }
       return successResponse(res, "User Searched Successfully", finalResponse);
