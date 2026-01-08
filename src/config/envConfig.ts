@@ -14,6 +14,7 @@ const envVarsSchema = z.object({
     .string()
     .nonempty()
     .transform((str) => parseInt(str, 10)),
+  RENSEND_API_KEY: z.string().nonempty(),
 });
 
 const envVars = envVarsSchema.parse(process.env);
@@ -26,4 +27,7 @@ export const envConfigs = {
   },
   database_url: envVars.DATABASE_URL,
   backend_url: envVars.BACKEND_URL,
+  notification: {
+    resendApiKey: envVars.RENSEND_API_KEY,
+  },
 };

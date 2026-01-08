@@ -1,0 +1,1 @@
+ALTER TABLE "notification_status" ADD COLUMN "status" varchar DEFAULT 'DRAFT';

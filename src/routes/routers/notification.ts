@@ -8,10 +8,52 @@ import Validators from "../../validators";
 const notificationRouter = express.Router();
 notificationRouter.use(authMiddleware);
 
+notificationRouter.get(
+  "/admin",
+  adminMiddleware,
+  Controllers.Notification.getAdminNotifications
+);
+
+notificationRouter.get(
+  "/admin/:notificationId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.paramsNotificationId),
+  Controllers.Notification.getAdminNotificationsDetailed
+);
+
+notificationRouter.get("/user", Controllers.Notification.userNotifications);
+
+notificationRouter.put(
+  "/user/seen/:notificationRecipentId",
+  validateRequest(Validators.Notification.seenNotification),
+  Controllers.Notification.seenNotification
+);
+
+notificationRouter.post(
+  "/send/draft/:notificationId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.paramsNotificationId),
+  Controllers.Notification.sendDraftedNotification
+);
+
+notificationRouter.post(
+  "/draft/:templateId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.draftNotification),
+  Controllers.Notification.draftNotification
+);
+
+notificationRouter.post(
+  "/send/:notificationId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.draftNotification),
+  Controllers.Notification.draftNotification
+);
+
 notificationRouter.post(
   "/category",
-  validateRequest(Validators.Notification.createCategory),
   adminMiddleware,
+  validateRequest(Validators.Notification.createCategory),
   Controllers.Notification.createCategory
 );
 
@@ -19,8 +61,8 @@ notificationRouter.get("/category", Controllers.Notification.getAllCategpries);
 
 notificationRouter.post(
   "/template",
-  validateRequest(Validators.Notification.createTemplate),
   adminMiddleware,
+  validateRequest(Validators.Notification.createTemplate),
   Controllers.Notification.createTemplate
 );
 
@@ -29,6 +71,13 @@ notificationRouter.get(
   "/template/:templateId",
   validateRequest(Validators.Notification.getTemplateByTemplateId),
   Controllers.Notification.getTemplateByTemplateId
+);
+
+notificationRouter.put(
+  "/template/:templateId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.updateTemplate),
+  Controllers.Notification.updateTemplateByTemplateId
 );
 
 notificationRouter.get(

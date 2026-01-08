@@ -1,4 +1,35 @@
+const NOTIFICATION_VARIABLE_LIST = [
+  "recipientName",
+  "recipientRole",
+  "recipientEmail",
+  "recipientPhone",
+  "recipientDob",
+] as const;
+
+const USER_ROLES = [
+  "ADMIN",
+  "TEACHER",
+  "STUDENT",
+  "PARENT",
+  "ACCOUNTANT",
+  "SUPER_ADMIN",
+] as const;
+
+export const NOTIFICATION_CHANNEL_LIST = ["EMAIL", "SMS"] as const;
+
+const NOTIFICATION_SENT_STATUS_LIST = [
+  "DRAFT",
+  "PENDING",
+  "SENT",
+  "DELIVERED",
+  "FAILED",
+  "BOUNCED",
+] as const;
+
 const Constants = {
+  USER_ROLES: Object.fromEntries(USER_ROLES.map((v) => [v, v])) as {
+    readonly [K in (typeof USER_ROLES)[number]]: K;
+  },
   STATUS_CODE: {
     SUCCESS: 200,
     CREATED: 201,
@@ -10,18 +41,22 @@ const Constants = {
     INTERNAL_SERVER_ERROR: 500,
   },
   NOTIFICATION: {
-    CHANNEL: {
-      PORTAL: "PORTAL",
-      EMAIL: "EMAIL",
-      SMS: "SMS",
+    CHANNEL: Object.fromEntries(
+      NOTIFICATION_CHANNEL_LIST.map((v) => [v, v])
+    ) as {
+      readonly [K in (typeof NOTIFICATION_CHANNEL_LIST)[number]]: K;
     },
-    SENT_STATUS: {
-      PENDING: "PENDING",
-      SENT: "SENT",
-      DELIVERED: "DELIVERED",
-      FAILED: "FAILED",
-      BOUNCED: "BOUNCED",
+    SENT_STATUS: Object.fromEntries(
+      NOTIFICATION_SENT_STATUS_LIST.map((v) => [v, v])
+    ) as {
+      readonly [K in (typeof NOTIFICATION_SENT_STATUS_LIST)[number]]: K;
     },
+    VARIABLES: Object.fromEntries(
+      NOTIFICATION_VARIABLE_LIST.map((v) => [v, v])
+    ) as {
+      readonly [K in (typeof NOTIFICATION_VARIABLE_LIST)[number]]: K;
+    },
+    SENT_SIZE: 50,
   },
 };
 

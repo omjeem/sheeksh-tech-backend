@@ -7,6 +7,8 @@ import { Student } from "./dbServices/student";
 import { Subject } from "./dbServices/subject";
 import { Teacher } from "./dbServices/teacher";
 import { User } from "./dbServices/user";
+import { email } from "./helper/email";
+import { notification } from "./helper/notificationPayload";
 
 const Services = {
   User,
@@ -17,7 +19,11 @@ const Services = {
   Section,
   School,
   Student,
-  Notification
+  Notification,
+  Helper: {
+    notification,
+    email
+  },
 };
 
 export default Services;

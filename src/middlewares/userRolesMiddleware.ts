@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { errorResponse } from "../config/response";
-import { UserRoles, UserRolesType } from "../types/types";
+import { UserRolesType } from "../types/types";
 import Constants from "../config/constants";
 
 export const adminMiddleware = async (
@@ -10,7 +10,10 @@ export const adminMiddleware = async (
 ) => {
   try {
     const userRole: UserRolesType = req.user.role;
-    if (userRole !== UserRoles.SUPER_ADMIN && userRole !== UserRoles.ADMIN) {
+    if (
+      userRole !== Constants.USER_ROLES.SUPER_ADMIN &&
+      userRole !== Constants.USER_ROLES.ADMIN
+    ) {
       throw new Error(
         `This is Admin protected route ${userRole} role are not allowed for this route`
       );
@@ -32,7 +35,7 @@ export const superAdminMiddleware = async (
 ) => {
   try {
     const userRole: UserRolesType = req.user.role;
-    if (userRole !== UserRoles.SUPER_ADMIN) {
+    if (userRole !== Constants.USER_ROLES.SUPER_ADMIN) {
       throw new Error(
         `This is Super Admin protected route ${userRole} role are not allowed for this route`
       );

@@ -7,6 +7,7 @@ import { Session } from "./validator/session";
 import { Student } from "./validator/student";
 import { Subject } from "./validator/subject";
 import { Teacher } from "./validator/teacher";
+import { User } from "./validator/user";
 
 const Validators = {
   Auth,
@@ -17,7 +18,8 @@ const Validators = {
   Section,
   Class,
   Teacher,
-  Notification
+  Notification,
+  User
 };
 
 export default Validators;

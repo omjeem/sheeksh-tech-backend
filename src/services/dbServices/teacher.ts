@@ -11,7 +11,7 @@ import {
 import { Utils } from "../../utils";
 import { CreateTeachers_Type } from "../../validators/validator/teacher";
 import Services from "..";
-import { UserRoles } from "../../types/types";
+import Constants from "../../config/constants";
 
 export class Teacher {
   static createTeachers = async (
@@ -32,7 +32,7 @@ export class Teacher {
           schoolId: schoolId,
           email: d.email,
           password: hashedPassword,
-          role: UserRoles.TEACHER,
+          role: Constants.USER_ROLES.TEACHER,
           dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
           firstName: d.firstName,
           lastName: d.lastName,
