@@ -108,6 +108,8 @@ export class User {
   static studentSearch = async (body: {
     schoolId: string;
     searchObj: Omit<BulkUserSearch["body"], "type">;
+    offSet: number;
+    limit: number;
   }) => {
     const whereConditions: any = [
       eq(studentClassesTable.schoolId, body.schoolId),
@@ -157,12 +159,16 @@ export class User {
         eq(studentClassesTable.studentId, studentsTable.id)
       )
       .leftJoin(usersTable, eq(studentsTable.userId, usersTable.id))
-      .where(and(...whereConditions));
+      .where(and(...whereConditions))
+      .limit(body.limit)
+      .offset(body.offSet);
   };
 
   static teacherSearch = async (body: {
     schoolId: string;
     searchObj: Omit<BulkUserSearch["body"], "type">;
+    offSet: number;
+    limit: number;
   }) => {
     const whereConditions: any = [
       eq(teacherClassSubjectSectionTable.schoolId, body.schoolId),
@@ -217,6 +223,8 @@ export class User {
         eq(teacherClassSubjectSectionTable.teacherId, teachersTable.id)
       )
       .leftJoin(usersTable, eq(teachersTable.userId, usersTable.id))
-      .where(and(...whereConditions));
+      .where(and(...whereConditions))
+      .limit(body.limit)
+      .offset(body.offSet);
   };
 }

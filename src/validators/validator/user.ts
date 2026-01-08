@@ -13,5 +13,9 @@ export class User {
       teacherId: z.uuid().optional(),
       subjectId: z.uuid().optional(),
     }),
+    query: z.object({
+      pageNo: z.coerce.number().int().positive(),
+      pageSize: z.coerce.number().int().positive(),
+    }),
   });
 }
