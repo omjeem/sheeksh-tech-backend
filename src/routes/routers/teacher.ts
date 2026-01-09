@@ -1,8 +1,8 @@
 import express from "express";
-import Controllers from "../../controllers";
-import { validateRequest } from "../../middlewares/zodMiddleware";
-import Validators from "../../validators";
-import { adminMiddleware } from "../../middlewares/userRolesMiddleware";
+import Controllers from "@/controllers";
+import { validateRequest } from "@/middlewares/zodMiddleware";
+import { adminMiddleware } from "@/middlewares/userRolesMiddleware";
+import Validators from "@/validators";
 
 const teacherRouter = express.Router();
 

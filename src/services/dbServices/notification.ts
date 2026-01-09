@@ -1,18 +1,18 @@
 import { and, eq, inArray, notInArray } from "drizzle-orm";
-import { db } from "../../config/db";
+import { db } from "@/db";
 import {
   notification_Table,
   notificationCategory_Table,
   notificationRecipient_Table,
   notificationStatus_Table,
   notificationTemplate_Table,
-  studentClassesTable,
+  studentClassSectionTable,
   teachersTable,
   usersTable,
-} from "../../config/schema";
-import { PostgressTransaction_Type } from "../../types/types";
-import { SendNotificationInput } from "../../validators/types";
-import Constants from "../../config/constants";
+} from "@/db/schema";
+import { PostgressTransaction_Type } from "@/types/types";
+import { SendNotificationInput } from "@/validators/types";
+import Constants from "@/config/constants";
 
 const notificationVar = Constants.NOTIFICATION.VARIABLES;
 
@@ -283,10 +283,10 @@ export class Notification {
     } else {
       if (body.students) {
         const studentsWhereConditions = [
-          eq(studentClassesTable.schoolId, schoolId),
-          eq(studentClassesTable.sessionId, sessionId),
+          eq(studentClassSectionTable.schoolId, schoolId),
+          eq(studentClassSectionTable.sessionId, sessionId),
         ];
-        const students = await db.query.studentClassesTable.findMany({
+        const students = await db.query.studentClassSectionTable.findMany({
           where: and(...studentsWhereConditions),
           columns: {
             id: true,
@@ -322,23 +322,23 @@ export class Notification {
       } else if (body.sections) {
         for (const s of body.sections) {
           const whereConditions = [
-            eq(studentClassesTable.sessionId, sessionId),
-            eq(studentClassesTable.schoolId, schoolId),
-            eq(studentClassesTable.sectionId, s.id),
+            eq(studentClassSectionTable.sessionId, sessionId),
+            eq(studentClassSectionTable.schoolId, schoolId),
+            eq(studentClassSectionTable.sectionId, s.id),
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
               console.log("Is Include data");
               whereConditions.push(
-                inArray(studentClassesTable.studentId, [...s.values])
+                inArray(studentClassSectionTable.studentId, [...s.values])
               );
             } else {
               whereConditions.push(
-                notInArray(studentClassesTable.studentId, [...s.values])
+                notInArray(studentClassSectionTable.studentId, [...s.values])
               );
             }
           }
-          const sectionsData = await db.query.studentClassesTable.findMany({
+          const sectionsData = await db.query.studentClassSectionTable.findMany({
             where: and(...whereConditions),
             columns: {
               sectionId: true,

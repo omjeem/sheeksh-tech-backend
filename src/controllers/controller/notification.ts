@@ -1,14 +1,14 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../../config/response";
-import Services from "../../services";
-import Constants, { NOTIFICATION_VARIABLE_LIST } from "../../config/constants";
-import { NotificationTemplatePayload } from "../../types/types";
-import { SendNotificationInput } from "../../validators/types";
-import { db } from "../../config/db";
+import { errorResponse, successResponse } from "@/config/response";
+import Services from "@/services";
+import Constants, { NOTIFICATION_VARIABLE_LIST } from "@/config/constants";
+import { NotificationTemplatePayload } from "@/types/types";
+import { SendNotificationInput } from "@/validators/types";
+import { db } from "@/db";
 import {
   notificationRecipient_Table,
   notificationStatus_Table,
-} from "../../config/schema";
+} from "@/db/schema";
 
 const VARIABLES = Constants.NOTIFICATION.VARIABLES;
 

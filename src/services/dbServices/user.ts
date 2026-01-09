@@ -1,16 +1,15 @@
 import { and, eq, inArray, or, sql } from "drizzle-orm";
-import { db } from "../../config/db";
+import { db } from "@/db";
 import {
-  studentClassesTable,
+  studentClassSectionTable,
   studentsTable,
   teacherClassSubjectSectionTable,
   teachersTable,
   usersTable,
-} from "../../config/schema";
-import { UserRolesType } from "../../types/types";
-import { UsersTable_Type } from "../../config/schemaTypes";
-import { Utils } from "../../utils";
-import { BulkUserSearch } from "../../validators/types";
+} from "@/db/schema";
+import { UserRolesType } from "@/types/types";
+import { UsersTable_Type } from "@/db/types";
+import { BulkUserSearch } from "@/validators/types";
 
 export class User {
   static isUsersExists = async (emails: string[]) => {
@@ -112,26 +111,26 @@ export class User {
     limit: number;
   }) => {
     const whereConditions: any = [
-      eq(studentClassesTable.schoolId, body.schoolId),
+      eq(studentClassSectionTable.schoolId, body.schoolId),
     ];
     if (body.searchObj.classId) {
       whereConditions.push(
-        eq(studentClassesTable.classId, body.searchObj.classId)
+        eq(studentClassSectionTable.classId, body.searchObj.classId)
       );
     }
     if (body.searchObj.sectionId) {
       whereConditions.push(
-        eq(studentClassesTable.sectionId, body.searchObj.sectionId)
+        eq(studentClassSectionTable.sectionId, body.searchObj.sectionId)
       );
     }
     if (body.searchObj.sessionId) {
       whereConditions.push(
-        eq(studentClassesTable.sessionId, body.searchObj.sessionId)
+        eq(studentClassSectionTable.sessionId, body.searchObj.sessionId)
       );
     }
     if (body.searchObj.studentId) {
       whereConditions.push(
-        eq(studentClassesTable.studentId, body.searchObj.studentId)
+        eq(studentClassSectionTable.studentId, body.searchObj.studentId)
       );
     }
     if (body.searchObj.searchQuery) {
@@ -153,10 +152,10 @@ export class User {
         lastName: usersTable.lastName,
         email: usersTable.email,
       })
-      .from(studentClassesTable)
+      .from(studentClassSectionTable)
       .leftJoin(
         studentsTable,
-        eq(studentClassesTable.studentId, studentsTable.id)
+        eq(studentClassSectionTable.studentId, studentsTable.id)
       )
       .leftJoin(usersTable, eq(studentsTable.userId, usersTable.id))
       .where(and(...whereConditions))

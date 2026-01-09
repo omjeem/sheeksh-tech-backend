@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import { errorResponse } from "../config/response";
-import { UserRolesType } from "../types/types";
-import Constants from "../config/constants";
+import { errorResponse } from "@/config/response";
+import { UserRolesType } from "@/types/types";
+import Constants from "@/config/constants";
 
 export const adminMiddleware = async (
   req: Request,

@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && node dist/index.js",
+    "build" : "tsc && tsc-alias",
+    "start": "npm run build && node dist/index.js",
     "dev": "nodemon --exec npx tsx src/index.ts",
     "d:generate": "drizzle-kit generate",
     "d:migrate": "drizzle-kit migrate",
@@ -34,6 +34,7 @@
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/pg": "^8.15.5"
+    "@types/pg": "^8.15.5",
+    "tsc-alias": "^1.8.16"
   }
 }

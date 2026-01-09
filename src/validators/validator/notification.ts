@@ -1,5 +1,5 @@
 import z from "zod";
-import Constants, { NOTIFICATION_CHANNEL_LIST } from "../../config/constants";
+import Constants from "@/config/constants";
 
 export class Notification {
   static createCategory = z.object({

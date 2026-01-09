@@ -1,7 +1,7 @@
 import express from "express";
-import { School } from "../../controllers/controller/school";
-import { validateRequest } from "../../middlewares/zodMiddleware";
-import Validators from "../../validators";
+import { School } from "@/controllers/controller/school";
+import { validateRequest } from "@/middlewares/zodMiddleware";
+import Validators from "@/validators";
 
 const schoolRouter = express.Router();
 

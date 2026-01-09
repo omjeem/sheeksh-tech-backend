@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "../../config/db";
-import { classesTable } from "../../config/schema";
+import { db } from "@/db";
+import { classesTable } from "@/db/schema";
 
 export class Classes {
   static create = async (schoolId: string, name: string) => {

@@ -10,7 +10,7 @@ import {
   sessionsTable,
   classesTable,
   sectionsTable,
-  studentClassesTable,
+  studentClassSectionTable,
   feeStructuresTable,
   studentFeesTable,
 } from "./schema";
@@ -29,8 +29,8 @@ export type TeacherSchoolHistoryTable_Type = InferSelectModel<
 export type SessionsTable_Type = InferSelectModel<typeof sessionsTable>;
 export type SectionsTable_Type = InferSelectModel<typeof sectionsTable>;
 export type ClassesTable_Type = InferSelectModel<typeof classesTable>;
-export type StudentClassesTable_Type = InferSelectModel<
-  typeof studentClassesTable
+export type studentClassSectionTable_Type = InferSelectModel<
+  typeof studentClassSectionTable
 >;
 export type FeeStructuresTable_Type = InferSelectModel<
   typeof feeStructuresTable

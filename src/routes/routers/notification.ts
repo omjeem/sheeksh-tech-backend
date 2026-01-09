@@ -1,9 +1,9 @@
 import express from "express";
-import { adminMiddleware } from "../../middlewares/userRolesMiddleware";
-import { authMiddleware } from "../../middlewares/authMiddleware";
-import Controllers from "../../controllers";
-import { validateRequest } from "../../middlewares/zodMiddleware";
-import Validators from "../../validators";
+import { adminMiddleware } from "@/middlewares/userRolesMiddleware";
+import { authMiddleware } from "@/middlewares/authMiddleware";
+import Controllers from "@/controllers";
+import { validateRequest } from "@/middlewares/zodMiddleware";
+import Validators from "@/validators";
 
 const notificationRouter = express.Router();
 notificationRouter.use(authMiddleware);

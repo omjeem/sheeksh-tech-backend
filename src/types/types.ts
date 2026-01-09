@@ -1,5 +1,5 @@
 import Constants from "../config/constants";
-import { db } from "../config/db";
+import { db } from "@/db";
 
 export interface UserTokenPayload {
   user: {

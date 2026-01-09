@@ -1,18 +1,13 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { db } from "../../config/db";
-import {
-  schoolsTable,
-  studentClassesTable,
-  studentsTable,
-  usersTable,
-} from "../../config/schema";
+import { db } from "@/db";
+import { studentClassSectionTable, studentsTable, usersTable } from "@/db/schema";
 import Services from "..";
 import {
   FeedStudents_Type,
   GetStudentClassSection_Type,
-} from "../../validators/validator/student";
-import { Utils } from "../../utils";
-import Constants from "../../config/constants";
+} from "@/validators/validator/student";
+import { Utils } from "@/utils";
+import Constants from "@/config/constants";
 
 export class Student {
   static getLastSrNo = async (schoolId: string) => {
@@ -122,7 +117,7 @@ export class Student {
         };
       });
 
-      await tx.insert(studentClassesTable).values(studentClassFeed);
+      await tx.insert(studentClassSectionTable).values(studentClassFeed);
     });
   };
 
@@ -154,20 +149,20 @@ export class Student {
     conditions: GetStudentClassSection_Type
   ) => {
     const { sectionId, sessionId, classId, studentId } = conditions;
-    const whereCondition = [eq(studentClassesTable.schoolId, schoolId)];
+    const whereCondition = [eq(studentClassSectionTable.schoolId, schoolId)];
     if (sectionId) {
-      whereCondition.push(eq(studentClassesTable.sectionId, sectionId));
+      whereCondition.push(eq(studentClassSectionTable.sectionId, sectionId));
     }
     if (sessionId) {
-      whereCondition.push(eq(studentClassesTable.sessionId, sessionId));
+      whereCondition.push(eq(studentClassSectionTable.sessionId, sessionId));
     }
     if (classId) {
-      whereCondition.push(eq(studentClassesTable.classId, classId));
+      whereCondition.push(eq(studentClassSectionTable.classId, classId));
     }
     if (studentId) {
-      whereCondition.push(eq(studentClassesTable.studentId, studentId));
+      whereCondition.push(eq(studentClassSectionTable.studentId, studentId));
     }
-    return await db.query.studentClassesTable.findMany({
+    return await db.query.studentClassSectionTable.findMany({
       where: and(...whereCondition),
       columns: {
         id: true,

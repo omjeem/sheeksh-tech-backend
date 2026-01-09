@@ -1,9 +1,8 @@
 import express from "express";
-import { subjectRelations } from "../../config/schema";
-import Controllers from "../../controllers";
-import { validateRequest } from "../../middlewares/zodMiddleware";
-import Validators from "../../validators";
-import { adminMiddleware } from "../../middlewares/userRolesMiddleware";
+import Controllers from "@/controllers";
+import { validateRequest } from "@/middlewares/zodMiddleware";
+import Validators from "@/validators";
+import { adminMiddleware } from "@/middlewares/userRolesMiddleware";
 
 const subjectRouter = express.Router();
 
