@@ -1,18 +1,27 @@
-export * from "./schema/class";
-export * from "./schema/feeStructure";
-export * from "./schema/notification";
-export * from "./schema/notificationCategory";
-export * from "./schema/notificationRecipent";
-export * from "./schema/notificationStatus";
-export * from "./schema/notificationTemplate";
-export * from "./schema/school";
-export * from "./schema/sections";
-export * from "./schema/sessions";
-export * from "./schema/student";
-export * from "./schema/studentClass";
-export * from "./schema/studentFee";
-export * from "./schema/subject";
-export * from "./schema/teacher";
-export * from "./schema/teacherClassSubSec";
-export * from "./schema/teacherSchoolHis";
-export * from "./schema/user";
+// Class Section Related Schema's
+export * from "./schema/classSection/class";
+export * from "./schema/classSection/sections";
+
+// Notification Related Schema's
+export * from "./schema/notification/notification";
+export * from "./schema/notification/notificationCategory";
+export * from "./schema/notification/notificationRecipent";
+export * from "./schema/notification/notificationStatus";
+export * from "./schema/notification/notificationTemplate";
+
+// School Related Schema's
+export * from "./schema/school/feeStructure";
+export * from "./schema/school/school";
+export * from "./schema/school/sessions";
+export * from "./schema/school/subject";
+export * from "./schema/school/user";
+
+// Student Related Schema's
+export * from "./schema/student/student";
+export * from "./schema/student/studentClassSec";
+export * from "./schema/student/studentFee";
+
+// Teachers Realated Schema's
+export * from "./schema/teacher/teacher";
+export * from "./schema/teacher/teacherClassSubSec";
+export * from "./schema/teacher/teacherSchoolHis";

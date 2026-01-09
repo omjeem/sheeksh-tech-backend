@@ -1,8 +1,8 @@
 import { pgTable, uuid, timestamp, integer, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
-import { usersTable } from "./user";
-import { studentClassesTable } from "./studentClass";
+import { schoolsTable } from "../school/school";
+import { usersTable } from "../school/user";
+import { studentClassSectionTable } from "./studentClassSec";
 import { studentFeesTable } from "./studentFee";
 
 export const studentsTable = pgTable(
@@ -37,6 +37,6 @@ export const studentsRelations = relations(studentsTable, ({ one, many }) => ({
     fields: [studentsTable.schoolId],
     references: [schoolsTable.id],
   }),
-  studentClasses: many(studentClassesTable),
+  studentClasses: many(studentClassSectionTable),
   studentFees: many(studentFeesTable),
 }));

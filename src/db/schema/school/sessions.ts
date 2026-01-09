@@ -7,9 +7,9 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { schoolsTable } from "./school";
-import { teacherClassSubjectSectionTable } from "./teacherClassSubSec";
+import { teacherClassSubjectSectionTable } from "../teacher/teacherClassSubSec";
 import { feeStructuresTable } from "./feeStructure";
-import { studentClassesTable } from "./studentClass";
+import { studentClassSectionTable } from "../student/studentClassSec";
 
 // Academic sessions (e.g., 2025-2026)
 export const sessionsTable = pgTable("sessions", {
@@ -29,7 +29,7 @@ export const sessionsRelations = relations(sessionsTable, ({ one, many }) => ({
     fields: [sessionsTable.schoolId],
     references: [schoolsTable.id],
   }),
-  studentClasses: many(studentClassesTable),
+  studentClasses: many(studentClassSectionTable),
   feeStructures: many(feeStructuresTable),
   teacherClassSubject: many(teacherClassSubjectSectionTable),
 }));

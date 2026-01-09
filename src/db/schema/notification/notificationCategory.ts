@@ -6,8 +6,8 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
-import { usersTable } from "./user";
+import { schoolsTable } from "../school/school";
+import { usersTable } from "../school/user";
 import { notification_Table } from "./notification";
 import { notificationTemplate_Table } from "./notificationTemplate";
 

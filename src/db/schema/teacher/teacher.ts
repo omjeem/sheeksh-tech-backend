@@ -1,7 +1,7 @@
 import { pgTable, uuid, varchar, timestamp } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
-import { usersTable } from "./user";
+import { schoolsTable } from "../school/school";
+import { usersTable } from "../school/user";
 import { teacherSchoolHistoryTable } from "./teacherSchoolHis";
 import { teacherClassSubjectSectionTable } from "./teacherClassSubSec";
 

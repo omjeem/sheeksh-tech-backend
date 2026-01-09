@@ -6,10 +6,10 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
+import { schoolsTable } from "../school/school";
 import { classesTable } from "./class";
-import { teacherClassSubjectSectionTable } from "./teacherClassSubSec";
-import { studentClassesTable } from "./studentClass";
+import { teacherClassSubjectSectionTable } from "../teacher/teacherClassSubSec";
+import { studentClassSectionTable } from "../student/studentClassSec";
 
 // Sections (e.g., 10A, 10B)
 export const sectionsTable = pgTable("sections", {
@@ -34,6 +34,6 @@ export const sectionsRelations = relations(sectionsTable, ({ one, many }) => ({
     fields: [sectionsTable.schoolId],
     references: [schoolsTable.id],
   }),
-  studentClasses: many(studentClassesTable),
+  studentClasses: many(studentClassSectionTable),
   classSubjectSection: many(teacherClassSubjectSectionTable),
 }));

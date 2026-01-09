@@ -6,7 +6,7 @@ import {
   notificationRecipient_Table,
   notificationStatus_Table,
   notificationTemplate_Table,
-  studentClassesTable,
+  studentClassSectionTable,
   teachersTable,
   usersTable,
 } from "@/db/schema";
@@ -283,10 +283,10 @@ export class Notification {
     } else {
       if (body.students) {
         const studentsWhereConditions = [
-          eq(studentClassesTable.schoolId, schoolId),
-          eq(studentClassesTable.sessionId, sessionId),
+          eq(studentClassSectionTable.schoolId, schoolId),
+          eq(studentClassSectionTable.sessionId, sessionId),
         ];
-        const students = await db.query.studentClassesTable.findMany({
+        const students = await db.query.studentClassSectionTable.findMany({
           where: and(...studentsWhereConditions),
           columns: {
             id: true,
@@ -322,23 +322,23 @@ export class Notification {
       } else if (body.sections) {
         for (const s of body.sections) {
           const whereConditions = [
-            eq(studentClassesTable.sessionId, sessionId),
-            eq(studentClassesTable.schoolId, schoolId),
-            eq(studentClassesTable.sectionId, s.id),
+            eq(studentClassSectionTable.sessionId, sessionId),
+            eq(studentClassSectionTable.schoolId, schoolId),
+            eq(studentClassSectionTable.sectionId, s.id),
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
               console.log("Is Include data");
               whereConditions.push(
-                inArray(studentClassesTable.studentId, [...s.values])
+                inArray(studentClassSectionTable.studentId, [...s.values])
               );
             } else {
               whereConditions.push(
-                notInArray(studentClassesTable.studentId, [...s.values])
+                notInArray(studentClassSectionTable.studentId, [...s.values])
               );
             }
           }
-          const sectionsData = await db.query.studentClassesTable.findMany({
+          const sectionsData = await db.query.studentClassSectionTable.findMany({
             where: and(...whereConditions),
             columns: {
               sectionId: true,

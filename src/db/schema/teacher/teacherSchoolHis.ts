@@ -1,7 +1,7 @@
 import { pgTable, uuid, timestamp, serial } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { teachersTable } from "./teacher";
-import { schoolsTable } from "./school";
+import { schoolsTable } from "../school/school";
 
 export const teacherSchoolHistoryTable = pgTable("teacher_school_history", {
   id: serial().primaryKey(),

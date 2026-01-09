@@ -8,7 +8,7 @@ import {
 import { relations } from "drizzle-orm";
 import { schoolsTable } from "./school";
 import { sessionsTable } from "./sessions";
-import { studentFeesTable } from "./studentFee";
+import { studentFeesTable } from "../student/studentFee";
 
 // Fees structure (per school)
 export const feeStructuresTable = pgTable("fee_structures", {

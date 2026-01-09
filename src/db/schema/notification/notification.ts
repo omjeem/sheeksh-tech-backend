@@ -1,8 +1,8 @@
 import { pgTable, uuid, timestamp, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { jsonb } from "drizzle-orm/pg-core";
-import { schoolsTable } from "./school";
-import { usersTable } from "./user";
+import { schoolsTable } from "../school/school";
+import { usersTable } from "../school/user";
 import { notificationCategory_Table } from "./notificationCategory";
 import { notificationTemplate_Table } from "./notificationTemplate";
 import { notificationStatus_Table } from "./notificationStatus";

@@ -6,9 +6,9 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
+import { schoolsTable } from "../school/school";
 import { sectionsTable } from "./sections";
-import { teacherClassSubjectSectionTable } from "./teacherClassSubSec";
+import { teacherClassSubjectSectionTable } from "../teacher/teacherClassSubSec";
 
 // Classes (e.g., Grade 10)
 export const classesTable = pgTable("classes", {

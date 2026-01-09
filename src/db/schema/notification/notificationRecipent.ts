@@ -7,7 +7,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { jsonb } from "drizzle-orm/pg-core";
-import { usersTable } from "./user";
+import { usersTable } from "../school/user";
 import { notification_Table } from "./notification";
 import Constants from "@/config/constants";
 

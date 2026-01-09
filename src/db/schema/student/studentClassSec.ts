@@ -1,12 +1,12 @@
 import { pgTable, uuid, timestamp, unique } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
-import { classesTable } from "./class";
-import { sessionsTable } from "./sessions";
-import { sectionsTable } from "./sections";
+import { schoolsTable } from "../school/school";
+import { classesTable } from "../classSection/class";
+import { sessionsTable } from "../school/sessions";
+import { sectionsTable } from "../classSection/sections";
 import { studentsTable } from "./student";
 
-export const studentClassesTable = pgTable(
+export const studentClassSectionTable = pgTable(
   "student_classes",
   {
     id: uuid().primaryKey().defaultRandom(),
@@ -36,26 +36,26 @@ export const studentClassesTable = pgTable(
 );
 
 export const studentClassesRelations = relations(
-  studentClassesTable,
+  studentClassSectionTable,
   ({ one }) => ({
     student: one(studentsTable, {
-      fields: [studentClassesTable.studentId],
+      fields: [studentClassSectionTable.studentId],
       references: [studentsTable.id],
     }),
     class: one(classesTable, {
-      fields: [studentClassesTable.classId],
+      fields: [studentClassSectionTable.classId],
       references: [classesTable.id],
     }),
     section: one(sectionsTable, {
-      fields: [studentClassesTable.sectionId],
+      fields: [studentClassSectionTable.sectionId],
       references: [sectionsTable.id],
     }),
     session: one(sessionsTable, {
-      fields: [studentClassesTable.sessionId],
+      fields: [studentClassSectionTable.sessionId],
       references: [sessionsTable.id],
     }),
     school: one(schoolsTable, {
-      fields: [studentClassesTable.schoolId],
+      fields: [studentClassSectionTable.schoolId],
       references: [schoolsTable.id],
     }),
   })

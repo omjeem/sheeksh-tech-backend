@@ -1,11 +1,11 @@
 import { pgTable, uuid, timestamp, boolean } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
+import { schoolsTable } from "../school/school";
 import { teachersTable } from "./teacher";
-import { classesTable } from "./class";
-import { sessionsTable } from "./sessions";
-import { sectionsTable } from "./sections";
-import { subjectsTable } from "./subject";
+import { classesTable } from "../classSection/class";
+import { sessionsTable } from "../school/sessions";
+import { sectionsTable } from "../classSection/sections";
+import { subjectsTable } from "../school/subject";
 
 export const teacherClassSubjectSectionTable = pgTable(
   "teacherClassSubjectSection",

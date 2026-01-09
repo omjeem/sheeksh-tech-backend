@@ -1,7 +1,7 @@
 import { pgTable, uuid, timestamp, integer, serial } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { studentsTable } from "./student";
-import { feeStructuresTable } from "./feeStructure";
+import { studentsTable } from "../student/student";
+import { feeStructuresTable } from "../school/feeStructure";
 
 // Student fee assignments
 export const studentFeesTable = pgTable("student_fees", {

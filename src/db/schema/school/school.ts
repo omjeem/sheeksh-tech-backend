@@ -9,18 +9,18 @@ import {
 import { relations } from "drizzle-orm";
 import { jsonb } from "drizzle-orm/pg-core";
 
-import { classesTable } from "./class";
+import { classesTable } from "../classSection/class";
 import { sessionsTable } from "./sessions";
-import { subjectsTable } from "./subject";
+import { subjectsTable } from "../school/subject";
 import { usersTable } from "./user";
-import { teacherClassSubjectSectionTable } from "./teacherClassSubSec";
-import { studentsTable } from "./student";
+import { teacherClassSubjectSectionTable } from "../teacher/teacherClassSubSec";
+import { studentsTable } from "../student/student";
 import { feeStructuresTable } from "./feeStructure";
-import { studentClassesTable } from "./studentClass";
-import { teachersTable } from "./teacher";
-import { notification_Table } from "./notification";
-import { notificationCategory_Table } from "./notificationCategory";
-import { notificationTemplate_Table } from "./notificationTemplate";
+import { studentClassSectionTable } from "../student/studentClassSec";
+import { teachersTable } from "../teacher/teacher";
+import { notification_Table } from "../notification/notification";
+import { notificationCategory_Table } from "../notification/notificationCategory";
+import { notificationTemplate_Table } from "../notification/notificationTemplate";
 
 export const schoolsTable = pgTable("schools", {
   id: uuid().primaryKey().defaultRandom(),
@@ -48,7 +48,7 @@ export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   feeStructures: many(feeStructuresTable),
   subjects: many(subjectsTable),
   teacherClass: many(teacherClassSubjectSectionTable),
-  studentClass: many(studentClassesTable),
+  studentClass: many(studentClassSectionTable),
   notification: many(notification_Table),
   notificationCategory: many(notificationCategory_Table),
   notificationTemplate: many(notificationTemplate_Table),

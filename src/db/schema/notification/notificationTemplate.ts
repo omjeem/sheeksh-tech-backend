@@ -7,8 +7,8 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { jsonb } from "drizzle-orm/pg-core";
-import { schoolsTable } from "./school";
-import { usersTable } from "./user";
+import { schoolsTable } from "../school/school";
+import { usersTable } from "../school/user";
 import { notificationCategory_Table } from "./notificationCategory";
 
 export const notificationTemplate_Table = pgTable("notification_template", {

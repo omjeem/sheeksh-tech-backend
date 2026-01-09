@@ -6,8 +6,8 @@ import {
   boolean,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
-import { schoolsTable } from "./school";
-import { teacherClassSubjectSectionTable } from "./teacherClassSubSec";
+import { schoolsTable } from "../school/school";
+import { teacherClassSubjectSectionTable } from "../teacher/teacherClassSubSec";
 
 export const subjectsTable = pgTable("subjects", {
   id: uuid().primaryKey().defaultRandom(),

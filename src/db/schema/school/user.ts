@@ -7,12 +7,12 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 import { schoolsTable } from "./school";
-import { studentsTable } from "./student";
-import { teachersTable } from "./teacher";
-import { notificationRecipient_Table } from "./notificationRecipent";
-import { notification_Table } from "./notification";
-import { notificationCategory_Table } from "./notificationCategory";
-import { notificationTemplate_Table } from "./notificationTemplate";
+import { studentsTable } from "../student/student";
+import { teachersTable } from "../teacher/teacher";
+import { notificationRecipient_Table } from "../notification/notificationRecipent";
+import { notification_Table } from "../notification/notification";
+import { notificationCategory_Table } from "../notification/notificationCategory";
+import { notificationTemplate_Table } from "../notification/notificationTemplate";
 
 export const usersTable = pgTable("users", {
   id: uuid().primaryKey().defaultRandom(),
