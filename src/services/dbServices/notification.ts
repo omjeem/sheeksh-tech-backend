@@ -1,5 +1,5 @@
 import { and, eq, inArray, notInArray } from "drizzle-orm";
-import { db } from "../../config/db";
+import { db } from "@/db";
 import {
   notification_Table,
   notificationCategory_Table,
@@ -9,10 +9,10 @@ import {
   studentClassesTable,
   teachersTable,
   usersTable,
-} from "../../config/schema";
-import { PostgressTransaction_Type } from "../../types/types";
-import { SendNotificationInput } from "../../validators/types";
-import Constants from "../../config/constants";
+} from "@/db/schema";
+import { PostgressTransaction_Type } from "@/types/types";
+import { SendNotificationInput } from "@/validators/types";
+import Constants from "@/config/constants";
 
 const notificationVar = Constants.NOTIFICATION.VARIABLES;
 

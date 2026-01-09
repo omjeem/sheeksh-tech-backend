@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../../config/response";
-import Services from "../../services";
+import { errorResponse, successResponse } from "@/config/response";
+import Services from "@/services";
 
 export class Subject {
   static create = async (req: Request, res: Response) => {

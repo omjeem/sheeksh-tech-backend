@@ -19,7 +19,7 @@ const Controllers = {
   Student,
   Teacher,
   Subject,
-  Notification
+  Notification,
 };
 
 export default Controllers;

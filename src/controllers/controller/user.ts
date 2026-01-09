@@ -1,10 +1,10 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../../config/response";
-import { db } from "../../config/db";
-import { usersTable } from "../../config/schema";
-import Services from "../../services";
-import Constants from "../../config/constants";
-import { BulkUserSearch } from "../../validators/types";
+import { errorResponse, successResponse } from "@/config/response";
+import { db } from "@/db";
+import { usersTable } from "@/db/schema";
+import Services from "@/services";
+import Constants from "@/config/constants";
+import { BulkUserSearch } from "@/validators/types";
 
 export class User {
   static create = async (req: Request, res: Response) => {

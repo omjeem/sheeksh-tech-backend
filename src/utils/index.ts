@@ -1,6 +1,6 @@
 import { envConfigs } from "../config/envConfig";
-import jwt, { decode, JwtPayload } from "jsonwebtoken";
-import { UserRolesType, UserTokenPayload } from "../types/types";
+import jwt from "jsonwebtoken";
+import { UserRolesType, UserTokenPayload } from "@/types/types";
 import crypto from "crypto";
 
 type VerifyTokenSuccess = {

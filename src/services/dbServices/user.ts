@@ -1,16 +1,15 @@
 import { and, eq, inArray, or, sql } from "drizzle-orm";
-import { db } from "../../config/db";
+import { db } from "@/db";
 import {
   studentClassesTable,
   studentsTable,
   teacherClassSubjectSectionTable,
   teachersTable,
   usersTable,
-} from "../../config/schema";
-import { UserRolesType } from "../../types/types";
-import { UsersTable_Type } from "../../config/schemaTypes";
-import { Utils } from "../../utils";
-import { BulkUserSearch } from "../../validators/types";
+} from "@/db/schema";
+import { UserRolesType } from "@/types/types";
+import { UsersTable_Type } from "@/db/types";
+import { BulkUserSearch } from "@/validators/types";
 
 export class User {
   static isUsersExists = async (emails: string[]) => {

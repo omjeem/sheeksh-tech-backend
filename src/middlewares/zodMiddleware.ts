@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { errorResponse } from "../config/response";
-import Constants from "../config/constants";
+import { errorResponse } from "@/config/response";
+import Constants from "@/config/constants";
 
 export const validateRequest =
   (schema: any) => async (req: Request, res: Response, next: NextFunction) => {

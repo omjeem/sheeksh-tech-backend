@@ -1,10 +1,10 @@
 import { eq, or } from "drizzle-orm";
-import { db } from "../../config/db";
-import { schoolsTable } from "../../config/schema";
-import { CreateSchool_Type } from "../../validators/validator/school";
-import { Utils } from "../../utils";
+import { db } from "@/db";
+import { schoolsTable } from "@/db/schema";
+import { CreateSchool_Type } from "@/validators/validator/school";
+import { Utils } from "@/utils";
 import Services from "..";
-import Constants from "../../config/constants";
+import Constants from "@/config/constants";
 
 export class School {
   

@@ -1,7 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "../../config/db";
-import { sessionsTable } from "../../config/schema";
-import { Utils } from "../../utils";
+import { db } from "@/db";
+import { sessionsTable } from "@/db/schema";
 
 export class Session {
   static create = async (

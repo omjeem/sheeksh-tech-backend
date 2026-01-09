@@ -1,18 +1,13 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { db } from "../../config/db";
-import {
-  schoolsTable,
-  studentClassesTable,
-  studentsTable,
-  usersTable,
-} from "../../config/schema";
+import { db } from "@/db";
+import { studentClassesTable, studentsTable, usersTable } from "@/db/schema";
 import Services from "..";
 import {
   FeedStudents_Type,
   GetStudentClassSection_Type,
-} from "../../validators/validator/student";
-import { Utils } from "../../utils";
-import Constants from "../../config/constants";
+} from "@/validators/validator/student";
+import { Utils } from "@/utils";
+import Constants from "@/config/constants";
 
 export class Student {
   static getLastSrNo = async (schoolId: string) => {

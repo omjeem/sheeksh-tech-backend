@@ -1,6 +1,6 @@
-import z, { email } from "zod";
+import z from "zod";
 import { zodDateValidator } from "./common";
-import { TeacherDesignation } from "../../types/types";
+import { TeacherDesignation } from "@/types/types";
 
 const createZod = z.array(
   z.object({
@@ -18,7 +18,7 @@ export class Teacher {
   static create = z.object({
     body: createZod,
   });
-  
+
   static teacherClassSectionMap = z.object({
     body: z.object({
       teacherId: z.uuid(),

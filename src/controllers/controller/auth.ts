@@ -1,8 +1,8 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../../config/response";
-import Services from "../../services";
-import { Utils } from "../../utils";
-import Constants from "../../config/constants";
+import { errorResponse, successResponse } from "@/config/response";
+import Services from "@/services";
+import { Utils } from "@/utils";
+import Constants from "@/config/constants";
 
 export class Auth {
   static login = async (req: Request, res: Response) => {

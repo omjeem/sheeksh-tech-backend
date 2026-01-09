@@ -1,6 +1,6 @@
 import Services from "..";
-import Constants from "../../config/constants";
-import { resend } from "../../config/emailClients";
+import Constants from "@/config/constants";
+import { resend } from "@/config/emailClients";
 
 export class email {
   static sendEmail = async (body: {
