@@ -11,4 +11,15 @@ systemAdminRouter.put(
   Controllers.SystemAdmin.updatePassword
 );
 
+systemAdminRouter.post(
+  "/notification/plan",
+  validateRequest(Validators.SystemAdmin.createNotificationPlan),
+  Controllers.SystemAdmin.createNotificationPlan
+);
+
+systemAdminRouter.get(
+  "/notification/plan",
+  Controllers.SystemAdmin.getAllNotificationPlan
+);
+
 export default systemAdminRouter;

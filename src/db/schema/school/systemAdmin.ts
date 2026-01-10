@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   uuid,
@@ -5,6 +6,7 @@ import {
   timestamp,
   boolean,
 } from "drizzle-orm/pg-core";
+import { notifPlans_Table } from "../notificationBilling/plans";
 
 export const systemAdmin_Table = pgTable("system_admin", {
   id: uuid().primaryKey().defaultRandom(),
@@ -17,3 +19,10 @@ export const systemAdmin_Table = pgTable("system_admin", {
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
+
+export const systemAdmin_Relations = relations(
+  systemAdmin_Table,
+  ({ one, many }) => ({
+    plans: many(notifPlans_Table),
+  })
+);

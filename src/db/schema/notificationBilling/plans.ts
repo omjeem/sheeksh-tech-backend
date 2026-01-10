@@ -13,6 +13,8 @@ import { notifPlanFeatures_Table } from "./planFeatures";
 import { notifPlanTrans_Table } from "./planTransaction";
 import { notifPurchasedChannelWise_Table } from "./planPurchased";
 import { notifPlanInstance_Table } from "./planInstance";
+import { systemAdmin_Table } from "../school/systemAdmin";
+import { boolean } from "drizzle-orm/pg-core";
 
 export const notifPlans_Table = pgTable("notif_plans", {
   id: uuid().primaryKey().defaultRandom(),
@@ -25,6 +27,10 @@ export const notifPlans_Table = pgTable("notif_plans", {
   basePrice: integer().notNull(),
   currency: varchar({ length: 10 }).default("INR"),
   metadata: jsonb(),
+  isActive: boolean().default(false),
+  createdBy: uuid()
+    .references(() => systemAdmin_Table.id)
+    .notNull(),
   createdAt: timestamp().defaultNow().notNull(),
   updatedAt: timestamp().defaultNow().notNull(),
 });
@@ -36,5 +42,9 @@ export const notifPlans_Relations = relations(
     transaction: many(notifPlanTrans_Table),
     channelWise: many(notifPurchasedChannelWise_Table),
     instance: many(notifPlanInstance_Table),
+    createdBy: one(systemAdmin_Table, {
+      fields: [notifPlans_Table.createdBy],
+      references: [systemAdmin_Table.id],
+    }),
   })
 );

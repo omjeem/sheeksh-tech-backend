@@ -1,6 +1,6 @@
 import { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
 import { db } from "@/db";
-import { systemAdmin_Table } from "@/db/schema";
+import { notifPlans_Table, systemAdmin_Table } from "@/db/schema";
 import { Utils } from "@/utils";
 import { eq } from "drizzle-orm";
 
@@ -61,5 +61,25 @@ export class SystemAdmin {
       .update(systemAdmin_Table)
       .set(updateObj)
       .where(eq(systemAdmin_Table.id, userId));
+  };
+
+  static createNotificationPlan = async (body: any) => {
+    return await db.insert(notifPlans_Table).values(body).returning();
+  };
+
+  static getAllNotificationPlans = async () => {
+    return await db.query.notifPlans_Table.findMany({
+      columns: {
+        updatedAt : false
+      },
+      with: {
+        createdBy: {
+          columns: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
   };
 }

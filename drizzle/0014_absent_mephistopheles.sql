@@ -1,0 +1,2 @@
+ALTER TABLE "notif_plans" ADD COLUMN "createdBy" uuid NOT NULL;--> statement-breakpoint
+ALTER TABLE "notif_plans" ADD CONSTRAINT "notif_plans_createdBy_system_admin_id_fk" FOREIGN KEY ("createdBy") REFERENCES "public"."system_admin"("id") ON DELETE no action ON UPDATE no action;
