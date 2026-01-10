@@ -18,6 +18,7 @@ export const notifPlanFeatures_Table = pgTable("notif_plan_features", {
   planId: uuid()
     .references(() => notifPlans_Table.id)
     .notNull(),
+  units: integer().default(0).notNull(),
   channel: varchar({ length: 20 }).notNull(),
   metadata: jsonb(),
   createdAt: timestamp().defaultNow().notNull(),

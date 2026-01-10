@@ -1,4 +1,4 @@
-import { NextFunction, Request, Response } from "express";
+import e, { NextFunction, Request, Response } from "express";
 import { errorResponse } from "@/config/response";
 import Constants from "@/config/constants";
 

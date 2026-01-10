@@ -24,13 +24,14 @@ export class SystemAdmin {
     try {
       const { userId } = req.user;
       const body = req.body;
-      const obj = {
-        ...body,
-        createdBy: userId,
-      };
-      const plan = await Services.SystemAdmin.createNotificationPlan(obj);
+      console.log({ body });
+      const plan = await Services.SystemAdmin.createNotificationPlan(
+        body,
+        userId
+      );
       return successResponse(res, "Plan Created Successfully!", plan);
     } catch (error: any) {
+      console.log("Error While create Notification Plan", error);
       return errorResponse(res, error.message || error);
     }
   };
