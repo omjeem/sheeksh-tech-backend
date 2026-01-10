@@ -6,7 +6,8 @@ export const NOTIFICATION_VARIABLE_LIST = [
   "recipientDob",
 ] as const;
 
-export const SYSTEM_ADMIN_ACCESS = ["READ", "WRITE", "ROOT"] as const;
+const SYSTEM_ADMIN_ACCESS = ["READ", "WRITE", "ROOT"] as const;
+export type SYSTEM_ADMIN_ACCESS_TYPES = typeof SYSTEM_ADMIN_ACCESS
 
 const USER_ROLES = [
   "ADMIN",

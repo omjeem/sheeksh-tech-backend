@@ -2,6 +2,7 @@ import { envConfigs } from "../config/envConfig";
 import jwt from "jsonwebtoken";
 import { UserRolesType, UserTokenPayload } from "@/types/types";
 import crypto from "crypto";
+import Constants, { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
 
 type VerifyTokenSuccess = {
   valid: true;
@@ -23,7 +24,7 @@ export class Utils {
     return new Date(`${year}-${month}-${day}T00:00:00+05:30`);
   };
 
-  static generateJwt = async (
+  static generateJwtForUser = async (
     email: string,
     schoolId: string,
     role: UserRolesType,
@@ -35,6 +36,24 @@ export class Utils {
         email,
         schoolId,
         role,
+      },
+    };
+    return jwt.sign(jwtPayload, envConfigs.jwt.secret, {
+      expiresIn: `${envConfigs.jwt.expiresIn}d`,
+    });
+  };
+
+  static generateJwtForSystemAdmin = async (body: {
+    email: string;
+    access: SYSTEM_ADMIN_ACCESS_TYPES;
+    userId: string;
+  }) => {
+    const jwtPayload = {
+      user: {
+        email: body.email,
+        access: body.access,
+        userId: body.userId,
+        role: Constants.SYSTEM_ADMIN.ROLE,
       },
     };
     return jwt.sign(jwtPayload, envConfigs.jwt.secret, {

@@ -6,6 +6,7 @@ import { Section } from "./validator/section";
 import { Session } from "./validator/session";
 import { Student } from "./validator/student";
 import { Subject } from "./validator/subject";
+import { SystemAdmin } from "./validator/systemAdmin";
 import { Teacher } from "./validator/teacher";
 import { User } from "./validator/user";
 
@@ -19,7 +20,8 @@ const Validators = {
   Class,
   Teacher,
   Notification,
-  User
+  User,
+  SystemAdmin
 };
 
 export default Validators;

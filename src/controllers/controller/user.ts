@@ -32,8 +32,13 @@ export class User {
 
   static getUserDetails = async (req: Request, res: Response) => {
     try {
-      const userId = req.user.userId;
-      const userData = await Services.User.getUserDetails(userId);
+      const { role, userId } = req.user;
+      let userData;
+      if (role === Constants.SYSTEM_ADMIN.ROLE) {
+        userData = await Services.SystemAdmin.getUserDetails(userId);
+      } else {
+        userData = await Services.User.getUserDetails(userId);
+      }
       return successResponse(res, "User Data fetched Successfully!", userData);
     } catch (error: any) {
       return errorResponse(res, error.message || error);
