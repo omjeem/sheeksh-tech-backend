@@ -6,6 +6,8 @@ export const NOTIFICATION_VARIABLE_LIST = [
   "recipientDob",
 ] as const;
 
+export const SYSTEM_ADMIN_ACCESS = ["READ", "WRITE", "ROOT"] as const;
+
 const USER_ROLES = [
   "ADMIN",
   "TEACHER",
@@ -42,6 +44,12 @@ const N_BILLING = {
 };
 
 const Constants = {
+  SYSTEM_ADMIN: {
+    ROLE: "SYSTEM_ADMIN",
+    ACCESS: Object.fromEntries(SYSTEM_ADMIN_ACCESS.map((v) => [v, v])) as {
+      readonly [K in (typeof SYSTEM_ADMIN_ACCESS)[number]]: K;
+    },
+  },
   USER_ROLES: Object.fromEntries(USER_ROLES.map((v) => [v, v])) as {
     readonly [K in (typeof USER_ROLES)[number]]: K;
   },
@@ -73,7 +81,9 @@ const Constants = {
     },
     SENT_SIZE: 50,
     BILLING: {
-      PLAN_TYPES: Object.fromEntries(N_BILLING.PLAN_TYPES.map((v) => [v, v])) as {
+      PLAN_TYPES: Object.fromEntries(
+        N_BILLING.PLAN_TYPES.map((v) => [v, v])
+      ) as {
         readonly [K in (typeof N_BILLING.PLAN_TYPES)[number]]: K;
       },
       USAGE_LIMIT: Object.fromEntries(

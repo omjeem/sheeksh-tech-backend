@@ -15,6 +15,7 @@ export * from "./schema/school/school";
 export * from "./schema/school/sessions";
 export * from "./schema/school/subject";
 export * from "./schema/school/user";
+export * from "./schema/school/systemAdmin";
 
 // Student Related Schema's
 export * from "./schema/student/student";
