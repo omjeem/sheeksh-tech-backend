@@ -120,6 +120,13 @@
       "when": 1768069319399,
       "tag": "0016_aspiring_grim_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1768134054658,
+      "tag": "0017_broken_psynapse",
+      "breakpoints": true
     }
   ]
 }

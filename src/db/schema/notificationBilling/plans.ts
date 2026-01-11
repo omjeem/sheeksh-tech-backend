@@ -39,8 +39,6 @@ export const notifPlans_Relations = relations(
   notifPlans_Table,
   ({ one, many }) => ({
     feature: many(notifPlanFeatures_Table),
-    transaction: many(notifPlanTrans_Table),
-    channelWise: many(notifPurchasedChannelWise_Table),
     instance: many(notifPlanInstance_Table),
     createdBy: one(systemAdmin_Table, {
       fields: [notifPlans_Table.createdBy],

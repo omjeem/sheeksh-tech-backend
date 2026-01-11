@@ -13,14 +13,12 @@ import { notifPlans_Table } from "./plans";
 import { usersTable } from "../school/user";
 import Constants from "@/config/constants";
 import { relations } from "drizzle-orm";
+import { notifPlanInstance_Table } from "./planInstance";
 
 export const notifPlanTrans_Table = pgTable("notif_plan_transactions", {
   id: uuid().primaryKey().defaultRandom(),
-  schoolId: uuid()
-    .references(() => schoolsTable.id)
-    .notNull(),
-  planId: uuid()
-    .references(() => notifPlans_Table.id)
+  planInstanceId: uuid()
+    .references(() => notifPlanInstance_Table.id)
     .notNull(),
   purchasedBy: uuid().references(() => usersTable.id),
   totalPrice: integer().notNull(),
@@ -37,14 +35,5 @@ export const notifPlanTrans_Table = pgTable("notif_plan_transactions", {
 
 export const notifPlanTrans_Relations = relations(
   notifPlanTrans_Table,
-  ({ one }) => ({
-    school: one(schoolsTable, {
-      fields: [notifPlanTrans_Table.schoolId],
-      references: [schoolsTable.id],
-    }),
-    plan: one(notifPlans_Table, {
-      fields: [notifPlanTrans_Table.planId],
-      references: [notifPlans_Table.id],
-    }),
-  })
+  ({ one }) => ({})
 );
