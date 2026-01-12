@@ -8,6 +8,12 @@ export class SystemAdmin {
     }),
   });
 
+  private static limitFeature = z.object({
+    period: z.enum(Constants.NOTIFICATION.BILLING.USAGE_LIMIT),
+    maxUnits: z.number().min(1),
+    metadata: z.any().optional(),
+  });
+
   static createNotificationPlan = z.object({
     body: z.object({
       key: z.string().min(3),
@@ -23,16 +29,18 @@ export class SystemAdmin {
             channel: z.enum(Constants.NOTIFICATION.CHANNEL),
             units: z.number().min(1),
             metadata: z.any().optional(),
-            limit: z.array(
-              z.object({
-                period: z.enum(Constants.NOTIFICATION.BILLING.USAGE_LIMIT),
-                maxUnits: z.number().min(1),
-                metadata: z.any().optional(),
-              })
-            ),
+            limit: z.array(this.limitFeature),
           })
         )
         .nonempty(),
+    }),
+  });
+
+  static purchaseNotificationPlanBySystemAdmin = z.object({
+    body: z.object({
+      planId: z.uuid(),
+      schoolId: z.uuid(),
+      price: z.number().optional(),
     }),
   });
 }

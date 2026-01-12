@@ -127,6 +127,13 @@
       "when": 1768134054658,
       "tag": "0017_broken_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1768159362587,
+      "tag": "0018_narrow_azazel",
+      "breakpoints": true
     }
   ]
 }

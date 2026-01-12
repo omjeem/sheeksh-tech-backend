@@ -1,16 +1,21 @@
-import { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
+import Constants, { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
 import { db } from "@/db";
 import {
   notifPlanFeatureLimit_Table,
   notifPlanFeatures_Table,
+  notifPlanInstance_Table,
   notifPlans_Table,
+  notifPlanTrans_Table,
+  notifPurchasedChannelWise_Table,
   systemAdmin_Table,
 } from "@/db/schema";
-import { PostgressTransaction_Type } from "@/types/types";
 import { Utils } from "@/utils";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import Services from "..";
-import { CreateNotificationPlan_Type } from "@/validators/types";
+import {
+  CreateNotificationPlan_Type,
+  PurchaseNotificationPlanBySystemAdmin_Type,
+} from "@/validators/types";
 
 export class SystemAdmin {
   static validateUserIdAndPassword = async (
@@ -148,6 +153,140 @@ export class SystemAdmin {
           },
         },
       },
+    });
+  };
+
+  static getPlanInstances = async (body: {
+    schoolId?: string;
+    id?: string;
+    planId?: string;
+    isActive?: boolean;
+    isQueued?: boolean;
+  }) => {
+    const whereConditions = [];
+    if (body.schoolId) {
+      whereConditions.push(eq(notifPlanInstance_Table.schoolId, body.schoolId));
+    }
+    if (body.id) {
+      whereConditions.push(eq(notifPlanInstance_Table.id, body.id));
+    }
+    if (body.planId) {
+      whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
+    }
+    if (body.isActive) {
+      whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
+    }
+    if (body.isQueued) {
+      whereConditions.push(eq(notifPlanInstance_Table.isQueued, body.isQueued));
+    }
+    return await db.query.notifPlanInstance_Table.findMany({
+      where: and(...whereConditions),
+      orderBy: (t) => sql`${t.queuedOrder} desc`,
+    });
+  };
+
+  static purchasePlanForSchool = async (
+    adminId: string,
+    body: PurchaseNotificationPlanBySystemAdmin_Type["body"]
+  ) => {
+    const { schoolId, planId, price } = body;
+    const schoolDetails = await Services.School.getAllSchoolsDetails(schoolId);
+    if (
+      !schoolDetails ||
+      schoolDetails.length === 0 ||
+      schoolDetails[0]?.isDeleted
+    ) {
+      throw new Error("School not exists with the given Id");
+    } else if (!schoolDetails[0]?.isApproved) {
+      throw new Error("School is not approved yet!");
+    } else if (schoolDetails[0].isSuspended) {
+      throw new Error("School is suspended currently!");
+    }
+    const { users } = schoolDetails[0];
+    const schoolSuperAdminId = users[0]?.id;
+    const planDetailsArray = await this.getAllNotificationPlans(planId);
+    if (!planDetailsArray || planDetailsArray.length === 0) {
+      throw new Error("Plan not exists");
+    } else if (!planDetailsArray[0]?.isActive) {
+      throw new Error("Given plan status is not active anymore");
+    }
+    const planDetails = planDetailsArray[0];
+
+    return await db.transaction(async (tx) => {
+      let lastQueuedOrder = -1;
+      let isPLanActive = false;
+      const previouslyActivePlans = await this.getPlanInstances({
+        schoolId,
+        isActive: true,
+      });
+      console.dir({ previouslyActivePlans }, { depth: null });
+      if (previouslyActivePlans.length > 0) {
+        isPLanActive = true;
+        const getQueuedPlan = await this.getPlanInstances({
+          schoolId,
+          isQueued: true,
+        });
+        console.dir({ getQueuedPlan }, { depth: null });
+        lastQueuedOrder = getQueuedPlan[0]?.queuedOrder ?? 0;
+      }
+      lastQueuedOrder++;
+      const newPlanInstance = {
+        planId,
+        schoolId,
+        key: planDetails.key,
+        name: planDetails.name,
+        description: planDetails.description,
+        metadata: planDetails.metadata,
+        isActive: isPLanActive === false,
+        isQueued: isPLanActive,
+        queuedOrder: lastQueuedOrder,
+      };
+
+      const createPlanInstance = await tx
+        .insert(notifPlanInstance_Table)
+        .values(newPlanInstance)
+        .returning();
+
+      console.dir({ createPlanInstance }, { depth: null });
+      const planInstanceId = createPlanInstance[0]?.id!;
+
+      const planTransactionObj = {
+        planInstanceId,
+        purchasedBy: schoolSuperAdminId,
+        totalPrice: price ?? planDetails.basePrice,
+        paymentProvider: "CASH",
+        status: Constants.NOTIFICATION.BILLING.PURCHASE_STATUS.SUCCEEDED,
+        requestedActivateAt: new Date(),
+      };
+
+      const purchaseTrans = await tx
+        .insert(notifPlanTrans_Table)
+        .values(planTransactionObj)
+        .returning();
+
+      console.dir({ purchaseTrans }, { depth: null });
+
+      const transactionId = purchaseTrans[0]?.id;
+      const { feature } = planDetails;
+
+      for (const f of feature) {
+        const channelWiseObj = {
+          planInstanceId,
+          channel: f.channel,
+          unitsTotal: f.units,
+          limits: f.featureLimit,
+          metadata: f.metadata,
+        };
+        const channelWiseData = await tx
+          .insert(notifPurchasedChannelWise_Table)
+          .values(channelWiseObj)
+          .returning();
+        console.dir({ channelWiseData }, { depth: null });
+
+        return await this.getPlanInstances({
+          schoolId,
+        });
+      }
     });
   };
 }

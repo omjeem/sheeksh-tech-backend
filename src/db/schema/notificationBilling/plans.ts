@@ -27,7 +27,7 @@ export const notifPlans_Table = pgTable("notif_plans", {
   basePrice: integer().notNull(),
   currency: varchar({ length: 10 }).default("INR"),
   metadata: jsonb(),
-  isActive: boolean().default(false),
+  isActive: boolean().default(true),
   createdBy: uuid()
     .references(() => systemAdmin_Table.id)
     .notNull(),

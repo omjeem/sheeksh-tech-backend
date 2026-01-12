@@ -44,4 +44,36 @@ export class SystemAdmin {
       return errorResponse(res, error.message || error);
     }
   };
+
+  static getAllSchoolList = async (req: Request, res: Response) => {
+    try {
+      const plan = await Services.School.getAllSchoolsDetails();
+      return successResponse(
+        res,
+        "All School List fetched Successfully!",
+        plan
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static purchasePlanForSchool = async (req: Request, res: Response) => {
+    try {
+      const { userId } = req.user;
+      const body = req.body;
+      const purchasedPlan = await Services.SystemAdmin.purchasePlanForSchool(
+        userId,
+        body
+      );
+      return successResponse(
+        res,
+        "Plan purchased successfully!",
+        purchasedPlan
+      );
+    } catch (error: any) {
+      console.log("Error While Purchasing plan", error);
+      return errorResponse(res, error.message || error);
+    }
+  };
 }

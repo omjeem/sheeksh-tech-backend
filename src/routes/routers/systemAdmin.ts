@@ -11,6 +11,8 @@ systemAdminRouter.put(
   Controllers.SystemAdmin.updatePassword
 );
 
+systemAdminRouter.get("/school", Controllers.SystemAdmin.getAllSchoolList);
+
 systemAdminRouter.post(
   "/notification/plan",
   validateRequest(Validators.SystemAdmin.createNotificationPlan),
@@ -20,6 +22,12 @@ systemAdminRouter.post(
 systemAdminRouter.get(
   "/notification/plan",
   Controllers.SystemAdmin.getAllNotificationPlan
+);
+
+systemAdminRouter.post(
+  "/notification/plan/purchase",
+  validateRequest(Validators.SystemAdmin.purchaseNotificationPlanBySystemAdmin),
+  Controllers.SystemAdmin.purchasePlanForSchool
 );
 
 export default systemAdminRouter;
