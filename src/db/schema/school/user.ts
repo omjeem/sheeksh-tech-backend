@@ -13,6 +13,7 @@ import { notificationRecipient_Table } from "../notification/notificationRecipen
 import { notification_Table } from "../notification/notification";
 import { notificationCategory_Table } from "../notification/notificationCategory";
 import { notificationTemplate_Table } from "../notification/notificationTemplate";
+import { notifPlanTrans_Table } from "../notificationBilling/planTransaction";
 
 export const usersTable = pgTable("users", {
   id: uuid().primaryKey().defaultRandom(),
@@ -48,4 +49,5 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   notificationCreated: many(notification_Table),
   categoryCreated: many(notificationCategory_Table),
   templateCreated: many(notificationTemplate_Table),
+  purchasedPlan: many(notifPlanTrans_Table),
 }));

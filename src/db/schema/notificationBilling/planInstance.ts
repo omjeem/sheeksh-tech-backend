@@ -13,6 +13,7 @@ import { notifPlans_Table } from "./plans";
 import { relations } from "drizzle-orm";
 import { schoolsTable } from "../school/school";
 import { notifPurchasedChannelWise_Table } from "./planPurchased";
+import { notifPlanTrans_Table } from "./planTransaction";
 
 export const notifPlanInstance_Table = pgTable("notif_plan_instance", {
   id: uuid().primaryKey().defaultRandom(),
@@ -29,7 +30,8 @@ export const notifPlanInstance_Table = pgTable("notif_plan_instance", {
   // durationDays: integer(),
   // startAt: timestamp(),
   // endAt: timestamp(),
-  isActive: boolean().default(false).notNull(),
+  isInActive: boolean().default(false).notNull(),
+  isLive: boolean().default(false).notNull(),
   isQueued: boolean().default(false).notNull(),
   queuedOrder: integer().default(0).notNull(),
   createdAt: timestamp().defaultNow().notNull(),
@@ -48,5 +50,6 @@ export const notifPlanInstance_Relations = relations(
       references: [schoolsTable.id],
     }),
     puchansedChannels: many(notifPurchasedChannelWise_Table),
+    transaction: many(notifPlanTrans_Table),
   })
 );

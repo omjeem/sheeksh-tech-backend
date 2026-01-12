@@ -35,5 +35,14 @@ export const notifPlanTrans_Table = pgTable("notif_plan_transactions", {
 
 export const notifPlanTrans_Relations = relations(
   notifPlanTrans_Table,
-  ({ one }) => ({})
+  ({ one }) => ({
+    planInstance: one(notifPlanInstance_Table, {
+      fields: [notifPlanTrans_Table.planInstanceId],
+      references: [notifPlanInstance_Table.id],
+    }),
+    purchasedBy: one(usersTable, {
+      fields: [notifPlanTrans_Table.purchasedBy],
+      references: [usersTable.id],
+    }),
+  })
 );

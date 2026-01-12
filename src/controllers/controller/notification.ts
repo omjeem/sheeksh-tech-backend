@@ -400,4 +400,53 @@ export class Notification {
       return errorResponse(res, error.message || error);
     }
   };
+
+  static getAllNotificationPlans = async (req: Request, res: Response) => {
+    try {
+      const plans = await Services.SystemAdmin.getAllNotificationPlans({
+        isActive: true,
+        planType: Constants.NOTIFICATION.BILLING.PLAN_TYPES.PUBLIC,
+      });
+      return successResponse(
+        res,
+        "All Active Plan fetched Successfully!",
+        plans
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getAllPurchasedPlans = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.user;
+      const plans = await Services.SystemAdmin.getPlanInstances({ schoolId });
+      return successResponse(
+        res,
+        "All Purchased Plan fetched Successfully!",
+        plans
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getAllPurchasedPlansDetail = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.user;
+      const { planInstanceId } = req.params;
+      const plans = await Services.SystemAdmin.getPlanInstances({
+        schoolId,
+        id: planInstanceId!,
+        showAllDetail: true,
+      });
+      return successResponse(
+        res,
+        "All Purchased Plan fetched Successfully!",
+        plans
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
 }

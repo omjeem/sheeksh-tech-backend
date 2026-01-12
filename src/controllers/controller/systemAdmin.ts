@@ -38,7 +38,7 @@ export class SystemAdmin {
 
   static getAllNotificationPlan = async (req: Request, res: Response) => {
     try {
-      const plan = await Services.SystemAdmin.getAllNotificationPlans();
+      const plan = await Services.SystemAdmin.getAllNotificationPlans({});
       return successResponse(res, "All Plans fetched Successfully!", plan);
     } catch (error: any) {
       return errorResponse(res, error.message || error);

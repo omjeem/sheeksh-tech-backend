@@ -83,6 +83,12 @@ export class Notification {
     }),
   });
 
+  static planInstanceId = z.object({
+    params: z.object({
+      planInstanceId: z.uuid(),
+    }),
+  });
+
   static seenNotification = z.object({
     params: z.object({
       notificationRecipentId: z.uuid(),

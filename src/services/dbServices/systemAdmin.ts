@@ -117,14 +117,24 @@ export class SystemAdmin {
           .values(planFeatureLimits)
           .returning();
       }
-      return await this.getAllNotificationPlans(planId);
+      return await this.getAllNotificationPlans({ planId });
     });
   };
 
-  static getAllNotificationPlans = async (planId?: string) => {
+  static getAllNotificationPlans = async (body: {
+    planId?: string;
+    isActive?: boolean;
+    planType?: string;
+  }) => {
     const whereConditions = [];
-    if (planId) {
-      whereConditions.push(eq(notifPlans_Table.id, planId));
+    if (body.planId) {
+      whereConditions.push(eq(notifPlans_Table.id, body.planId));
+    }
+    if (body.isActive) {
+      whereConditions.push(eq(notifPlans_Table.isActive, body.isActive));
+    }
+    if (body.planType) {
+      whereConditions.push(eq(notifPlans_Table.planType, body.planType));
     }
     return await db.query.notifPlans_Table.findMany({
       where: and(...whereConditions),
@@ -160,8 +170,9 @@ export class SystemAdmin {
     schoolId?: string;
     id?: string;
     planId?: string;
-    isActive?: boolean;
+    isLive?: boolean;
     isQueued?: boolean;
+    showAllDetail?: boolean;
   }) => {
     const whereConditions = [];
     if (body.schoolId) {
@@ -173,8 +184,8 @@ export class SystemAdmin {
     if (body.planId) {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
-    if (body.isActive) {
-      whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
+    if (body.isLive) {
+      whereConditions.push(eq(notifPlanInstance_Table.isLive, body.isLive));
     }
     if (body.isQueued) {
       whereConditions.push(eq(notifPlanInstance_Table.isQueued, body.isQueued));
@@ -182,6 +193,34 @@ export class SystemAdmin {
     return await db.query.notifPlanInstance_Table.findMany({
       where: and(...whereConditions),
       orderBy: (t) => sql`${t.queuedOrder} desc`,
+      columns: {
+        planId: false,
+        schoolId: false,
+      },
+      ...(body.showAllDetail && {
+        with: {
+          transaction: {
+            columns: {
+              planInstanceId: false,
+            },
+            with: {
+              purchasedBy: {
+                columns: {
+                  id: true,
+                  role: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+          puchansedChannels: {
+            columns: {
+              planInstanceId: false,
+            },
+          },
+        },
+      }),
     });
   };
 
@@ -204,7 +243,7 @@ export class SystemAdmin {
     }
     const { users } = schoolDetails[0];
     const schoolSuperAdminId = users[0]?.id;
-    const planDetailsArray = await this.getAllNotificationPlans(planId);
+    const planDetailsArray = await this.getAllNotificationPlans({ planId });
     if (!planDetailsArray || planDetailsArray.length === 0) {
       throw new Error("Plan not exists");
     } else if (!planDetailsArray[0]?.isActive) {
@@ -217,7 +256,7 @@ export class SystemAdmin {
       let isPLanActive = false;
       const previouslyActivePlans = await this.getPlanInstances({
         schoolId,
-        isActive: true,
+        isLive: true,
       });
       console.dir({ previouslyActivePlans }, { depth: null });
       if (previouslyActivePlans.length > 0) {
@@ -285,6 +324,8 @@ export class SystemAdmin {
 
         return await this.getPlanInstances({
           schoolId,
+          showAllDetail: true,
+          id: planInstanceId,
         });
       }
     });
