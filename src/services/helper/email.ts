@@ -2,8 +2,11 @@ import Services from "..";
 import Constants, { NOTIFICATION_CHANNEL_TYPES } from "@/config/constants";
 import { resend } from "@/config/emailClients";
 import { db } from "@/db";
-import { notifPurchasedChannelWise_Table } from "@/db/schema";
-import { and, eq } from "drizzle-orm";
+import {
+  notifPlanInstance_Table,
+  notifPurchasedChannelWise_Table,
+} from "@/db/schema";
+import { and, eq, sql } from "drizzle-orm";
 
 export class Broadcast {
   static broadcastNotification = async (body: {
@@ -91,6 +94,28 @@ export class Broadcast {
       }
     }
     await updateNotificationInChunk(true);
+    const markPlanInstanceExhaustedIfAllChannelsExhausted = async (
+      planInstanceId: string
+    ) => {
+      await db
+        .update(notifPlanInstance_Table)
+        .set({
+          isExhausted: true,
+          updatedAt: new Date(),
+        })
+        .where(
+          and(
+            eq(notifPlanInstance_Table.id, planInstanceId),
+
+            sql`NOT EXISTS (
+              SELECT 1
+              FROM ${notifPurchasedChannelWise_Table}
+              WHERE ${notifPurchasedChannelWise_Table.planInstanceId} = ${planInstanceId}
+                AND ${notifPurchasedChannelWise_Table.isExhausted} = false
+             )`
+          )
+        );
+    };
     for (const ch of body.updateChannels) {
       const update = await db
         .update(notifPurchasedChannelWise_Table)
@@ -101,16 +126,18 @@ export class Broadcast {
         })
         .where(eq(notifPurchasedChannelWise_Table.id, ch.channelId))
         .returning();
-        
+
+      await markPlanInstanceExhaustedIfAllChannelsExhausted(ch.planInstanceId);
+
       const schoolLedger = await Services.Notification.addLogsIntoSchoolLedger({
         schoolId: body.schoolId,
         planInstanceId: ch.planInstanceId,
         operation: Constants.NOTIFICATION.BILLING.LEDGER_REASON.USAGE,
         channelId: ch.channelId,
         notificationId: body.notificationId,
-        creditsUsed : totalSuccess
+        creditsUsed: totalSuccess,
       });
-      console.dir({ update, schoolLedger }, { depth: null });
+      // console.dir({ update, schoolLedger }, { depth: null });
     }
     return await Services.Notification.updateNotificationStatus({
       notificationId: body.notificationId,

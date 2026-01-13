@@ -665,7 +665,12 @@ export class Notification {
   static getAllPurchasedPlans = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
-      const plans = await Services.SystemAdmin.getPlanInstances({ schoolId });
+      const { showAll } = req.query;
+      const plans = await Services.SystemAdmin.getPlanInstances({
+        schoolId,
+        showAllDetail: true,
+        isExhausted: showAll === '1',
+      });
       return successResponse(
         res,
         "All Purchased Plan fetched Successfully!",
