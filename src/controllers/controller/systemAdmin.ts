@@ -76,4 +76,23 @@ export class SystemAdmin {
       return errorResponse(res, error.message || error);
     }
   };
+
+  static getSystemNotificationLedger = async (req: Request, res: Response) => {
+    try {
+      const { pageNo = 1, pageSize = 15, id }: any = req.query;
+      console.log("Hit ---- ", req.query)
+      const ledgerInfo = await Services.Notification.getLedger({
+        id,
+        pageNo,
+        pageSize,
+      });
+      return successResponse(
+        res,
+        "System Notification Ledger fetched",
+        ledgerInfo
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
 }

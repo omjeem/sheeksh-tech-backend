@@ -650,19 +650,65 @@ export class Notification {
   };
 
   static getLedger = async (body: {
-    schoolId: string;
-    limit: number;
-    offSet: number;
+    schoolId?: string;
+    id?: string;
+    pageNo: string;
+    pageSize: string;
   }) => {
+    const limit = parseInt(body.pageSize);
+    const offSet = (parseInt(body.pageNo) - 1) * limit;
     const whereConditions = [];
     if (body.schoolId) {
       whereConditions.push(eq(notifSchoolLedger_table.schoolId, body.schoolId));
     }
+    if (body.id) {
+      whereConditions.push(eq(notifSchoolLedger_table.id, body.id));
+    }
     return await db.query.notifSchoolLedger_table.findMany({
       where: and(...whereConditions),
+      columns: {
+        id: true,
+        operation: true,
+        creditsUsed: true,
+        metadata: true,
+        createdAt: true,
+      },
       orderBy: (t) => sql`${t.createdAt} desc`,
-      limit: body.limit,
-      offset: body.offSet,
+      limit: limit,
+      offset: offSet,
+      with: {
+        channel: {
+          columns: {
+            id: true,
+            channel: true,
+          },
+        },
+        planInstance: {
+          columns: {
+            id: true,
+            key: true,
+            name: true,
+          },
+        },
+        ...(!body.schoolId && {
+          school: {
+            columns: {
+              id: true,
+              name: true,
+              url: true,
+            },
+          },
+        }),
+        ...(body.id && {
+          notification: {
+            columns: {
+              id: true,
+              payload: true,
+              channels: true,
+            },
+          },
+        }),
+      },
     });
   };
 }

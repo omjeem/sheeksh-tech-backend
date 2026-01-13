@@ -96,8 +96,9 @@ export class Notification {
   });
 
   private static paginationQuery = z.object({
-    pageNo: z.coerce.number().int().positive(),
-    pageSize: z.coerce.number().int().positive(),
+    pageNo: z.coerce.number().int().positive().optional(),
+    pageSize: z.coerce.number().int().positive().optional(),
+    id: z.uuid().optional(),
   });
 
   static getLedgerInfo = z.object({

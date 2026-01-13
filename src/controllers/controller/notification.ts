@@ -253,13 +253,12 @@ export class Notification {
   static getLedger = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
-      const { pageNo, pageSize }: any = req.query;
-      const limit = parseInt(pageSize);
-      const offSet = (parseInt(pageNo) - 1) * limit;
+      const { pageNo = 1, pageSize = 15, id }: any = req.query;
       const ledgerInfo = await Services.Notification.getLedger({
         schoolId,
-        limit,
-        offSet
+        id,
+        pageNo,
+        pageSize,
       });
       return successResponse(res, "Notification Ledger fetched", ledgerInfo);
     } catch (error: any) {

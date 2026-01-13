@@ -20,6 +20,12 @@ systemAdminRouter.post(
 );
 
 systemAdminRouter.get(
+  "/notification/ledger",
+  validateRequest(Validators.Notification.getLedgerInfo),
+  Controllers.SystemAdmin.getSystemNotificationLedger
+);
+
+systemAdminRouter.get(
   "/notification/plan",
   Controllers.SystemAdmin.getAllNotificationPlan
 );
