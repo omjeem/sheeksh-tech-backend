@@ -83,9 +83,25 @@ export class Notification {
     }),
   });
 
+  static planInstanceId = z.object({
+    params: z.object({
+      planInstanceId: z.uuid(),
+    }),
+  });
+
   static seenNotification = z.object({
     params: z.object({
       notificationRecipentId: z.uuid(),
     }),
+  });
+
+  private static paginationQuery = z.object({
+    pageNo: z.coerce.number().int().positive().optional(),
+    pageSize: z.coerce.number().int().positive().optional(),
+    id: z.uuid().optional(),
+  });
+
+  static getLedgerInfo = z.object({
+    query: this.paginationQuery,
   });
 }

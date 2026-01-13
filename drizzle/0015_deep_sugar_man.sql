@@ -1,0 +1,1 @@
+ALTER TABLE "notif_plans" ADD COLUMN "isActive" boolean DEFAULT false;

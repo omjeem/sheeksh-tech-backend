@@ -1,4 +1,4 @@
-import { and, eq, inArray, notInArray } from "drizzle-orm";
+import { and, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   notification_Table,
@@ -6,13 +6,16 @@ import {
   notificationRecipient_Table,
   notificationStatus_Table,
   notificationTemplate_Table,
+  notifSchoolLedger_table,
   studentClassSectionTable,
   teachersTable,
   usersTable,
 } from "@/db/schema";
 import { PostgressTransaction_Type } from "@/types/types";
 import { SendNotificationInput } from "@/validators/types";
-import Constants from "@/config/constants";
+import Constants, {
+  NOTIFICATION_LEDGER_REASONS_TYPE,
+} from "@/config/constants";
 
 const notificationVar = Constants.NOTIFICATION.VARIABLES;
 
@@ -338,26 +341,28 @@ export class Notification {
               );
             }
           }
-          const sectionsData = await db.query.studentClassSectionTable.findMany({
-            where: and(...whereConditions),
-            columns: {
-              sectionId: true,
-            },
-            with: {
-              student: {
-                columns: {
-                  id: true,
-                },
-                with: {
-                  user: {
-                    columns: {
-                      ...requiredUserFields,
+          const sectionsData = await db.query.studentClassSectionTable.findMany(
+            {
+              where: and(...whereConditions),
+              columns: {
+                sectionId: true,
+              },
+              with: {
+                student: {
+                  columns: {
+                    id: true,
+                  },
+                  with: {
+                    user: {
+                      columns: {
+                        ...requiredUserFields,
+                      },
                     },
                   },
                 },
               },
-            },
-          });
+            }
+          );
           console.dir({ sectionsData }, { depth: null });
           userInfo.push(...sectionsData.map((s) => s.student.user));
         }
@@ -424,6 +429,7 @@ export class Notification {
       with: {
         status: {
           columns: {
+            notificationId: false,
             updatedAt: false,
             isDeleted: false,
           },
@@ -494,6 +500,7 @@ export class Notification {
           columns: {
             id: true,
             email: true,
+            phone: true,
           },
         },
       },
@@ -611,5 +618,97 @@ export class Notification {
         )
       )
       .returning();
+  };
+
+  static addLogsIntoSchoolLedger = async (
+    body: {
+      schoolId: string;
+      operation: NOTIFICATION_LEDGER_REASONS_TYPE;
+      planInstanceId?: string;
+      channelId?: string;
+      notificationId?: string;
+      creditsUsed?: number;
+      metadata?: string;
+    },
+    tx?: PostgressTransaction_Type
+  ) => {
+    const dbObj = tx ?? db;
+    const logObj = {
+      schoolId: body.schoolId,
+      operation: body.operation,
+      ...(body.planInstanceId && { planInstanceId: body.planInstanceId }),
+      ...(body.channelId && { channelId: body.channelId }),
+      ...(body.notificationId && { notificationId: body.notificationId }),
+      ...(body.creditsUsed && { creditsUsed: body.creditsUsed }),
+      ...(body.metadata && { metadata: body.metadata }),
+    };
+    console.dir({ logObj }, { depth: null });
+    return await dbObj
+      .insert(notifSchoolLedger_table)
+      .values(logObj)
+      .returning();
+  };
+
+  static getLedger = async (body: {
+    schoolId?: string;
+    id?: string;
+    pageNo: string;
+    pageSize: string;
+  }) => {
+    const limit = parseInt(body.pageSize);
+    const offSet = (parseInt(body.pageNo) - 1) * limit;
+    const whereConditions = [];
+    if (body.schoolId) {
+      whereConditions.push(eq(notifSchoolLedger_table.schoolId, body.schoolId));
+    }
+    if (body.id) {
+      whereConditions.push(eq(notifSchoolLedger_table.id, body.id));
+    }
+    return await db.query.notifSchoolLedger_table.findMany({
+      where: and(...whereConditions),
+      columns: {
+        id: true,
+        operation: true,
+        creditsUsed: true,
+        metadata: true,
+        createdAt: true,
+      },
+      orderBy: (t) => sql`${t.createdAt} desc`,
+      limit: limit,
+      offset: offSet,
+      with: {
+        channel: {
+          columns: {
+            id: true,
+            channel: true,
+          },
+        },
+        planInstance: {
+          columns: {
+            id: true,
+            key: true,
+            name: true,
+          },
+        },
+        ...(!body.schoolId && {
+          school: {
+            columns: {
+              id: true,
+              name: true,
+              url: true,
+            },
+          },
+        }),
+        ...(body.id && {
+          notification: {
+            columns: {
+              id: true,
+              payload: true,
+              channels: true,
+            },
+          },
+        }),
+      },
+    });
   };
 }

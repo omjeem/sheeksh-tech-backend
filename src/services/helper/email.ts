@@ -1,22 +1,33 @@
 import Services from "..";
-import Constants from "@/config/constants";
+import Constants, { NOTIFICATION_CHANNEL_TYPES } from "@/config/constants";
 import { resend } from "@/config/emailClients";
+import { db } from "@/db";
+import { notifPurchasedChannelWise_Table } from "@/db/schema";
+import { and, eq } from "drizzle-orm";
 
-export class email {
-  static sendEmail = async (body: {
-    emailTeamplates: {
-      user: { userId: string; email: string }[];
+export class Broadcast {
+  static broadcastNotification = async (body: {
+    notificationBody: {
+      user: { userId: string; email: string; phone: any; channel: string }[];
       subject: string;
       bodyHtml: string;
       bodyText: string;
     }[];
     notificationId: string;
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    updateChannels: {
+      channelId: string;
+      planInstanceId: string;
+      unitsConsumed: number;
+      isExhaushed: boolean;
+    }[];
+    schoolId: string;
   }) => {
     let delivered: string[] = [];
     let failed: string[] = [];
     let totalSuccess = 0;
     let totalFailure = 0;
-
+    // console.dir({ body }, { depth: null });
     const updateNotificationInChunk = async (proceedDirectly: boolean) => {
       if (
         (proceedDirectly ||
@@ -28,10 +39,10 @@ export class email {
             userIds: [...delivered],
             notificationId: body.notificationId,
             status: Constants.NOTIFICATION.SENT_STATUS.SENT,
-            channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
+            channel: body.channel,
           });
         totalSuccess += delivered.length;
-        console.log({ deliveredUp });
+        // console.log({ deliveredUp });
         delivered = [];
       }
       if (
@@ -44,23 +55,33 @@ export class email {
             userIds: [...failed],
             notificationId: body.notificationId,
             status: Constants.NOTIFICATION.SENT_STATUS.FAILED,
-            channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
+            channel: body.channel,
           });
-        console.log({ failedUp });
+        // console.log({ failedUp });
         totalFailure += failed.length;
         failed = [];
       }
     };
 
-    for (const email of body.emailTeamplates) {
-      console.dir({ email }, { depth: null });
-      const sendData = await this.sendWithResend({
-        to: [...email.user.map((u) => u.email)],
-        from: "no-reply@shikshatech.org",
-        subject: email.subject,
-        body: email.bodyHtml,
-      });
-      const userIds = [...email.user.map((u) => u.userId)];
+    for (const notif of body.notificationBody) {
+      // console.dir({ notif }, { depth: null });
+      let sendData: any;
+      if (body.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
+        sendData = await this.sendWithResend({
+          to: [...notif.user.map((u) => u.email)],
+          from: "no-reply@shikshatech.org",
+          subject: notif.subject,
+          body: notif.bodyHtml,
+        });
+      } else if (body.channel === Constants.NOTIFICATION.CHANNEL.SMS) {
+        sendData = await this.sendSms({
+          to: [...notif.user.map((u) => u.phone)],
+          from: "9999999999",
+          subject: notif.subject,
+          body: notif.bodyText,
+        });
+      }
+      const userIds = [...notif.user.map((u) => u.userId)];
       if (sendData.success) {
         delivered.push(...userIds);
         await updateNotificationInChunk(false);
@@ -70,11 +91,32 @@ export class email {
       }
     }
     await updateNotificationInChunk(true);
+    for (const ch of body.updateChannels) {
+      const update = await db
+        .update(notifPurchasedChannelWise_Table)
+        .set({
+          unitsConsumed: ch.unitsConsumed,
+          isExhausted: ch.isExhaushed,
+          updatedAt: new Date(),
+        })
+        .where(eq(notifPurchasedChannelWise_Table.id, ch.channelId))
+        .returning();
+        
+      const schoolLedger = await Services.Notification.addLogsIntoSchoolLedger({
+        schoolId: body.schoolId,
+        planInstanceId: ch.planInstanceId,
+        operation: Constants.NOTIFICATION.BILLING.LEDGER_REASON.USAGE,
+        channelId: ch.channelId,
+        notificationId: body.notificationId,
+        creditsUsed : totalSuccess
+      });
+      console.dir({ update, schoolLedger }, { depth: null });
+    }
     return await Services.Notification.updateNotificationStatus({
       notificationId: body.notificationId,
       totalFailure,
       totalSuccess,
-      channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
+      channel: body.channel,
       status: Constants.NOTIFICATION.SENT_STATUS.SENT,
     });
   };
@@ -85,7 +127,29 @@ export class email {
     subject: string;
     body: string;
   }) => {
-    console.dir({ body }, { depth: null });
+    try {
+      // const { data, error } = await resend.emails.send({
+      //   from: body.from,
+      //   to: [...body.to],
+      //   subject: body.subject,
+      //   html: body.body,
+      // });
+      // if (error) {
+      //   return { success: false, message: error.message };
+      // }
+      return { success: true, data: {} };
+    } catch (error: any) {
+      console.log("Error In resend Api", error);
+      return { success: false, message: error.message };
+    }
+  };
+
+  private static sendSms = async (body: {
+    to: number[];
+    from: string;
+    subject: string;
+    body: string;
+  }) => {
     try {
       // const { data, error } = await resend.emails.send({
       //   from: body.from,

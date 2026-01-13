@@ -1,0 +1,1 @@
+ALTER TABLE "notif_plan_features" ADD COLUMN "units" integer DEFAULT 0 NOT NULL;

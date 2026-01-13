@@ -49,3 +49,25 @@ export const superAdminMiddleware = async (
     );
   }
 };
+
+export const systemAdminMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userRole = req.user.role;
+    if (userRole !== Constants.SYSTEM_ADMIN.ROLE) {
+      throw new Error(
+        `This is System Admin protected route ${userRole} role are not allowed for this route`
+      );
+    }
+    next();
+  } catch (error: any) {
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.FORBIDDEN
+    );
+  }
+};

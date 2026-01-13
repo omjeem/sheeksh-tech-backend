@@ -10,6 +10,8 @@ import { authMiddleware } from "../middlewares/authMiddleware";
 import subjectRouter from "./routers/subject";
 import userRouter from "./routers/user";
 import notificationRouter from "./routers/notification";
+import systemAdminRouter from "./routers/systemAdmin";
+import { systemAdminMiddleware } from "@/middlewares/userRolesMiddleware";
 
 const router = express.Router();
 
@@ -23,5 +25,6 @@ router.use("/teacher", authMiddleware, teacherRouter);
 router.use("/subject", authMiddleware, subjectRouter);
 router.use("/user", authMiddleware, userRouter);
 router.use("/notification", authMiddleware, notificationRouter);
+router.use("/admin", authMiddleware, systemAdminMiddleware, systemAdminRouter);
 
 export default router;

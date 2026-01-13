@@ -1,13 +1,12 @@
-import { eq, or } from "drizzle-orm";
+import { and, eq, or } from "drizzle-orm";
 import { db } from "@/db";
-import { schoolsTable } from "@/db/schema";
+import { schoolsTable, usersTable } from "@/db/schema";
 import { CreateSchool_Type } from "@/validators/validator/school";
 import { Utils } from "@/utils";
 import Services from "..";
 import Constants from "@/config/constants";
 
 export class School {
-  
   static create = async (body: CreateSchool_Type) => {
     const { name, email, url, address, meta, phone, admin, city, state } = body;
 
@@ -99,5 +98,24 @@ export class School {
       throw new Error("School not exists");
     }
     return isExists;
+  };
+
+  static getAllSchoolsDetails = async (schoolId?: string) => {
+    const whereConditions = [];
+    if (schoolId) {
+      whereConditions.push(eq(schoolsTable.id, schoolId));
+    }
+    return await db.query.schoolsTable.findMany({
+      where: and(...whereConditions),
+      with: {
+        users: {
+          where: eq(usersTable.role, Constants.USER_ROLES.SUPER_ADMIN),
+          columns: {
+            password: false,
+            schoolId: false,
+          },
+        },
+      },
+    });
   };
 }

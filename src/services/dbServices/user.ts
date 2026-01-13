@@ -10,6 +10,7 @@ import {
 import { UserRolesType } from "@/types/types";
 import { UsersTable_Type } from "@/db/types";
 import { BulkUserSearch } from "@/validators/types";
+import { Utils } from "@/utils";
 
 export class User {
   static isUsersExists = async (emails: string[]) => {
@@ -55,9 +56,9 @@ export class User {
     if (!userDetails) {
       throw new Error("Invalid user Email");
     }
-    // if (!Utils.verifyPassword(password, email, userDetails.password)) {
-    //   throw new Error("Invalid password");
-    // }
+    if (!Utils.verifyPassword(password, email, userDetails.password)) {
+      throw new Error("Invalid password");
+    }
     if (userDetails.isSuspended) {
       throw new Error(
         "Your account is being suspended please contact your organization admin!"

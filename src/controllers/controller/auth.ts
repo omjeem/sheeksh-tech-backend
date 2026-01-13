@@ -7,18 +7,28 @@ import Constants from "@/config/constants";
 export class Auth {
   static login = async (req: Request, res: Response) => {
     try {
-      const { email, password } = req.body;
-      const { schoolId, role, userId } =
-        await Services.User.validateUserIdAndPassword(email, password);
-      const generateJwt = await Utils.generateJwt(
-        email,
-        schoolId,
-        role,
-        userId
-      );
-      return successResponse(res, "Logged in Successfully!", {
-        generateJwt,
-      });
+      const { email, password, isSystemAdmin = false } = req.body;
+      let generateJwt;
+      if (isSystemAdmin) {
+        const { userId, access } =
+          await Services.SystemAdmin.validateUserIdAndPassword(email, password);
+        generateJwt = await Utils.generateJwtForSystemAdmin({
+          email,
+          access,
+          userId,
+        });
+      } else {
+        const { schoolId, role, userId } =
+          await Services.User.validateUserIdAndPassword(email, password);
+        generateJwt = await Utils.generateJwtForUser(
+          email,
+          schoolId,
+          role,
+          userId
+        );
+      }
+
+      return successResponse(res, "Logged in Successfully!", generateJwt);
     } catch (error: any) {
       return errorResponse(
         res,

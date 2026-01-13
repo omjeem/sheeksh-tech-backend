@@ -9,7 +9,7 @@ import { BulkUserSearch } from "@/validators/types";
 export class User {
   static create = async (req: Request, res: Response) => {
     try {
-      const { role, password, email, firstName, lastName } = req.body;
+      const { role, password, email, firstName, lastName, phone } = req.body;
       const schoolId = req.user.schoolId;
       const userData = await db.insert(usersTable).values({
         schoolId,
@@ -18,6 +18,7 @@ export class User {
         email,
         firstName,
         lastName,
+        phone
       });
       return successResponse(
         res,
@@ -32,8 +33,13 @@ export class User {
 
   static getUserDetails = async (req: Request, res: Response) => {
     try {
-      const userId = req.user.userId;
-      const userData = await Services.User.getUserDetails(userId);
+      const { role, userId } = req.user;
+      let userData;
+      if (role === Constants.SYSTEM_ADMIN.ROLE) {
+        userData = await Services.SystemAdmin.getUserDetails(userId);
+      } else {
+        userData = await Services.User.getUserDetails(userId);
+      }
       return successResponse(res, "User Data fetched Successfully!", userData);
     } catch (error: any) {
       return errorResponse(res, error.message || error);
