@@ -184,11 +184,11 @@ export class SystemAdmin {
     if (body.planId) {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
-    if (body.isExhausted) {
+    // if (body.isExhausted) {
       whereConditions.push(
-        eq(notifPlanInstance_Table.isExhausted, body.isExhausted)
+        eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
       );
-    }
+    // }
     if (body.isActive) {
       whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
     }
@@ -218,7 +218,7 @@ export class SystemAdmin {
             },
           },
           purchasedChannels: {
-            where: eq(notifPurchasedChannelWise_Table.isExhausted, false),
+            // where: eq(notifPurchasedChannelWise_Table.isExhausted, false),
             columns: {
               planInstanceId: false,
             },
