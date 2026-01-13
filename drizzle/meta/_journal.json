@@ -141,6 +141,34 @@
       "when": 1768213215814,
       "tag": "0019_calm_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1768243943038,
+      "tag": "0020_ordinary_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1768280517039,
+      "tag": "0021_concerned_caretaker",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1768290410762,
+      "tag": "0022_organic_karma",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1768299345158,
+      "tag": "0023_glamorous_energizer",
+      "breakpoints": true
     }
   ]
 }

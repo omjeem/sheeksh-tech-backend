@@ -25,6 +25,7 @@ import { notifPurchasedChannelWise_Table } from "../notificationBilling/planPurc
 import { notifPlanTrans_Table } from "../notificationBilling/planTransaction";
 import { notifAggregateBal_Table } from "../notificationUsages/aggregateBalance";
 import { notifPlanInstance_Table } from "../notificationBilling/planInstance";
+import { notifSchoolLedger_table } from "../notificationUsages/schoolLedger";
 
 export const schoolsTable = pgTable("schools", {
   id: uuid().primaryKey().defaultRandom(),
@@ -57,5 +58,6 @@ export const schoolsRelations = relations(schoolsTable, ({ many }) => ({
   notificationCategory: many(notificationCategory_Table),
   notificationTemplate: many(notificationTemplate_Table),
   notifAggBal : many(notifAggregateBal_Table),
-  planInstances : many(notifPlanInstance_Table)
+  planInstances : many(notifPlanInstance_Table),
+  notifLedger : many(notifSchoolLedger_table)
 }));

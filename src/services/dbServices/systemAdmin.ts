@@ -10,7 +10,7 @@ import {
   systemAdmin_Table,
 } from "@/db/schema";
 import { Utils } from "@/utils";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import Services from "..";
 import {
   CreateNotificationPlan_Type,
@@ -170,9 +170,9 @@ export class SystemAdmin {
     schoolId?: string;
     id?: string;
     planId?: string;
-    isLive?: boolean;
-    isQueued?: boolean;
     showAllDetail?: boolean;
+    isExhausted?: boolean;
+    isActive?: boolean;
   }) => {
     const whereConditions = [];
     if (body.schoolId) {
@@ -184,15 +184,18 @@ export class SystemAdmin {
     if (body.planId) {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
-    if (body.isLive) {
-      whereConditions.push(eq(notifPlanInstance_Table.isLive, body.isLive));
+    if (body.isExhausted) {
+      whereConditions.push(
+        eq(notifPlanInstance_Table.isExhausted, body.isExhausted)
+      );
     }
-    if (body.isQueued) {
-      whereConditions.push(eq(notifPlanInstance_Table.isQueued, body.isQueued));
+    if (body.isActive) {
+      whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
     }
+
     return await db.query.notifPlanInstance_Table.findMany({
       where: and(...whereConditions),
-      orderBy: (t) => sql`${t.queuedOrder} desc`,
+      orderBy: (t) => sql`${t.createdAt} asc`,
       columns: {
         planId: false,
         schoolId: false,
@@ -214,7 +217,8 @@ export class SystemAdmin {
               },
             },
           },
-          puchansedChannels: {
+          purchasedChannels: {
+            where: eq(notifPurchasedChannelWise_Table.isExhausted, false),
             columns: {
               planInstanceId: false,
             },
@@ -252,23 +256,6 @@ export class SystemAdmin {
     const planDetails = planDetailsArray[0];
 
     return await db.transaction(async (tx) => {
-      let lastQueuedOrder = -1;
-      let isPLanActive = false;
-      const previouslyActivePlans = await this.getPlanInstances({
-        schoolId,
-        isLive: true,
-      });
-      console.dir({ previouslyActivePlans }, { depth: null });
-      if (previouslyActivePlans.length > 0) {
-        isPLanActive = true;
-        const getQueuedPlan = await this.getPlanInstances({
-          schoolId,
-          isQueued: true,
-        });
-        console.dir({ getQueuedPlan }, { depth: null });
-        lastQueuedOrder = getQueuedPlan[0]?.queuedOrder ?? 0;
-      }
-      lastQueuedOrder++;
       const newPlanInstance = {
         planId,
         schoolId,
@@ -276,9 +263,6 @@ export class SystemAdmin {
         name: planDetails.name,
         description: planDetails.description,
         metadata: planDetails.metadata,
-        isActive: isPLanActive === false,
-        isQueued: isPLanActive,
-        queuedOrder: lastQueuedOrder,
       };
 
       const createPlanInstance = await tx
@@ -321,13 +305,21 @@ export class SystemAdmin {
           .values(channelWiseObj)
           .returning();
         console.dir({ channelWiseData }, { depth: null });
-
-        return await this.getPlanInstances({
-          schoolId,
-          showAllDetail: true,
-          id: planInstanceId,
-        });
       }
+      await Services.Notification.addLogsIntoSchoolLedger(
+        {
+          schoolId,
+          planInstanceId,
+          operation:
+            Constants.NOTIFICATION.BILLING.LEDGER_REASON.SUBSCRIPTION_PURCHASED,
+        },
+        tx
+      );
+      return await this.getPlanInstances({
+        schoolId,
+        showAllDetail: true,
+        id: planInstanceId,
+      });
     });
   };
 }

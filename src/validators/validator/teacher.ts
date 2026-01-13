@@ -12,6 +12,7 @@ const createZod = z.array(
     startDate: zodDateValidator,
     endDate: zodDateValidator.optional(),
     designation: z.enum(TeacherDesignation),
+    phone : z.string()
   })
 );
 export class Teacher {

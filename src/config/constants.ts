@@ -7,7 +7,7 @@ export const NOTIFICATION_VARIABLE_LIST = [
 ] as const;
 
 const SYSTEM_ADMIN_ACCESS = ["READ", "WRITE", "ROOT"] as const;
-export type SYSTEM_ADMIN_ACCESS_TYPES = typeof SYSTEM_ADMIN_ACCESS
+export type SYSTEM_ADMIN_ACCESS_TYPES = typeof SYSTEM_ADMIN_ACCESS;
 
 const USER_ROLES = [
   "ADMIN",
@@ -19,6 +19,8 @@ const USER_ROLES = [
 ] as const;
 
 export const NOTIFICATION_CHANNEL_LIST = ["EMAIL", "SMS"] as const;
+export type NOTIFICATION_CHANNEL_TYPES =
+  (typeof NOTIFICATION_CHANNEL_LIST)[number];
 
 const NOTIFICATION_SENT_STATUS_LIST = [
   "DRAFT",
@@ -35,14 +37,17 @@ const N_BILLING = {
   PURCHASE_STATUS: ["PENDING", "SUCCEEDED", "FAILED", "CANCELLED"] as const,
   LEDGER_REASON: [
     "SYSTEM_PURCHASED",
-    "SUBSCRIPTION_INCLUDED",
+    "SUBSCRIPTION_PURCHASED",
     "ADDON_PURCHASES",
     "USAGE",
     "REFUND",
     "ADJUSTMENT",
     "ADMIN_GRANT",
   ] as const,
-};
+} as const;
+
+export type NOTIFICATION_LEDGER_REASONS_TYPE =
+  (typeof N_BILLING.LEDGER_REASON)[number];
 
 const Constants = {
   SYSTEM_ADMIN: {

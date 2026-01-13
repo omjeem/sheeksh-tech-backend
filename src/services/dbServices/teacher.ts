@@ -36,6 +36,7 @@ export class Teacher {
           dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
           firstName: d.firstName,
           lastName: d.lastName,
+          phone: d.phone,
         };
       });
       const usersResponse = await tx

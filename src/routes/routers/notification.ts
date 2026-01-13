@@ -39,6 +39,13 @@ notificationRouter.get(
 );
 
 notificationRouter.get(
+  "/admin/ledger",
+  adminMiddleware,
+  validateRequest(Validators.Notification.getLedgerInfo),
+  Controllers.Notification.getLedger
+);
+
+notificationRouter.get(
   "/admin/:notificationId",
   adminMiddleware,
   validateRequest(Validators.Notification.paramsNotificationId),
@@ -57,7 +64,7 @@ notificationRouter.post(
   "/send/draft/:notificationId",
   adminMiddleware,
   validateRequest(Validators.Notification.paramsNotificationId),
-  Controllers.Notification.sendDraftedNotification
+  Controllers.Notification.broadcastDraftedNotification
 );
 
 notificationRouter.post(

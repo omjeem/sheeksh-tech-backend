@@ -94,4 +94,13 @@ export class Notification {
       notificationRecipentId: z.uuid(),
     }),
   });
+
+  private static paginationQuery = z.object({
+    pageNo: z.coerce.number().int().positive(),
+    pageSize: z.coerce.number().int().positive(),
+  });
+
+  static getLedgerInfo = z.object({
+    query: this.paginationQuery,
+  });
 }

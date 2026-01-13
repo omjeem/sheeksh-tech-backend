@@ -1,19 +1,26 @@
 import { Request, Response } from "express";
 import { errorResponse, successResponse } from "@/config/response";
 import Services from "@/services";
-import Constants, { NOTIFICATION_VARIABLE_LIST } from "@/config/constants";
+import Constants, {
+  NOTIFICATION_CHANNEL_TYPES,
+  NOTIFICATION_VARIABLE_LIST,
+} from "@/config/constants";
 import { NotificationTemplatePayload } from "@/types/types";
 import { SendNotificationInput } from "@/validators/types";
 import { db } from "@/db";
 import {
   notificationRecipient_Table,
   notificationStatus_Table,
+  notifPlanInstance_Table,
+  notifPlanTrans_Table,
+  notifPurchasedChannelWise_Table,
 } from "@/db/schema";
+import { and, count, eq, or } from "drizzle-orm";
 
 const VARIABLES = Constants.NOTIFICATION.VARIABLES;
 
 export class Notification {
-  static sendDraftedNotification = async (req: Request, res: Response) => {
+  static broadcastDraftedNotification = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
       const { notificationId }: any = req.params;
@@ -25,52 +32,206 @@ export class Notification {
         throw new Error(`This notification is not belongs to your School!`);
       }
       const orginalPayload: any = notficationData[0]?.payload;
-      const isDynamicEmail = orginalPayload.variables.length > 0;
+      const isDynamicNotification = orginalPayload.variables.length > 0;
       const draftedNotification =
         await Services.Notification.getDraftedNotifications({
           notificationId,
           status: Constants.NOTIFICATION.SENT_STATUS.DRAFT,
         });
-      const emailTeamplates = [];
-      if (isDynamicEmail) {
-        emailTeamplates.push(
-          ...draftedNotification.map((d: any) => {
-            const tempPayLoad: any =
-              Services.Helper.notification.buildNotificationPayload(
-                orginalPayload,
-                d.payloadVariables
-              );
-            return {
-              user: [{ userId: d.user.id, email: d.user.email }],
-              ...tempPayLoad,
-            };
-          })
-        );
-      } else {
-        emailTeamplates.push({
-          user: draftedNotification.map((n) => {
-            return {
-              userId: n.user.id,
-              email: n.user.email,
-            };
-          }),
-          ...orginalPayload,
-        });
-      }
-      if (emailTeamplates.length === 0) {
+      if (draftedNotification.length === 0) {
         throw new Error("No drafted Emails found for deliver!");
       }
-      const response = await Services.Helper.email.sendEmail({
-        emailTeamplates,
-        notificationId,
-      });
-      console.dir({ emailTeamplates }, { depth: null });
-      return successResponse(res, "Notifications Sent Successfully", response);
+      const emailNotifications: any[] = [];
+      const smsNotifications: any[] = [];
+      if (isDynamicNotification) {
+        draftedNotification.forEach((d, index) => {
+          const tempPayLoad: any =
+            Services.Helper.notification.buildNotificationPayload(
+              orginalPayload,
+              d.payloadVariables as any
+            );
+          const payload = {
+            user: [
+              {
+                userId: d.user.id,
+                email: d.user.email,
+                phone: d.user.phone,
+              },
+            ],
+            ...tempPayLoad,
+          };
+          if (d.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
+            emailNotifications.push(payload);
+          } else if (d.channel === Constants.NOTIFICATION.CHANNEL.SMS) {
+            smsNotifications.push(payload);
+          }
+        });
+      } else {
+        const emailnotificationUserDetails: any[] = [];
+        const smsNotificationUserDetails: any[] = [];
+        draftedNotification.forEach((n) => {
+          const payload = {
+            userId: n.user.id,
+            email: n.user.email,
+            phone: n.user.phone,
+          };
+          if (n.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
+            emailnotificationUserDetails.push(payload);
+          } else if (n.channel === Constants.NOTIFICATION.CHANNEL.SMS) {
+            smsNotificationUserDetails.push(payload);
+          }
+        });
+        if (emailnotificationUserDetails.length > 0) {
+          emailNotifications.push({
+            user: [...emailnotificationUserDetails],
+            ...orginalPayload,
+          });
+        }
+        if (smsNotificationUserDetails.length > 0) {
+          smsNotifications.push({
+            user: [...smsNotificationUserDetails],
+            ...orginalPayload,
+          });
+        }
+      }
+      const channels: string[] = [];
+      if (emailNotifications.length > 0) {
+        channels.push(Constants.NOTIFICATION.CHANNEL.EMAIL);
+      }
+      if (smsNotifications.length > 0) {
+        channels.push(Constants.NOTIFICATION.CHANNEL.SMS);
+      }
+      const response: any = {};
+      const { plans, channelsBalanceMap } =
+        await this.getActivePlanInstanceAndValidateBalance({
+          schoolId,
+          requiredBal: emailNotifications.length,
+          channels,
+        });
+      console.dir({ plans, channelsBalanceMap }, { depth: null });
+      const responseData: any = {};
+
+      const substractCreditsFromPlans = (body: {
+        available: number;
+        required: number;
+        channel: NOTIFICATION_CHANNEL_TYPES;
+        plans: any[];
+      }) => {
+        const updateQueries: {
+          channelId: string;
+          planInstanceId: string;
+          unitsConsumed: number;
+          isExhaushed: boolean;
+        }[] = [];
+        let requiredLeft = body.required;
+        for (const plan of plans) {
+          const { id, purchasedChannels }: any = plan;
+          const planInstanceId = id;
+          for (const p of purchasedChannels) {
+            const { id, channel, unitsTotal, unitsConsumed } = p;
+            const unitsAvailable = unitsTotal - unitsConsumed;
+            if (channel === body.channel) {
+              if (unitsAvailable >= requiredLeft) {
+                updateQueries.push({
+                  channelId: id,
+                  planInstanceId,
+                  unitsConsumed: unitsConsumed + requiredLeft,
+                  isExhaushed: unitsAvailable === requiredLeft,
+                });
+                requiredLeft = 0;
+              } else {
+                updateQueries.push({
+                  channelId: id,
+                  planInstanceId,
+                  unitsConsumed: unitsConsumed + unitsAvailable,
+                  isExhaushed: true,
+                });
+                requiredLeft = requiredLeft - unitsAvailable;
+              }
+              if (requiredLeft === 0) {
+                return updateQueries;
+              }
+            }
+          }
+        }
+        return updateQueries;
+      };
+
+      const broadcastNotification = async (body: {
+        channel: NOTIFICATION_CHANNEL_TYPES;
+        notifications: any[];
+        plans: any[];
+      }) => {
+        const avlBal = channelsBalanceMap.get(body.channel) || 0;
+
+        const requiredBal = body.notifications.length;
+        if (avlBal < requiredBal) {
+          response[body.channel] = {
+            status: false,
+            message: this.notEnoughCreditMessage({
+              channel: body.channel,
+              avlBal,
+              required: requiredBal,
+            }),
+          };
+        } else {
+          const updateChannels = substractCreditsFromPlans({
+            available: avlBal,
+            required: requiredBal,
+            channel: body.channel,
+            plans,
+          });
+          console.dir({ updateChannels }, { depth: null });
+          await Services.Helper.Broadcast.broadcastNotification({
+            notificationBody: body.notifications,
+            notificationId,
+            channel: body.channel,
+            updateChannels,
+            schoolId,
+          });
+        }
+        responseData[body.channel] = {
+          initalCredits: avlBal,
+          creditsConsumed: requiredBal,
+          creditsLeft: avlBal - requiredBal,
+        };
+      };
+      if (emailNotifications.length > 0) {
+        await broadcastNotification({
+          channel: Constants.NOTIFICATION.CHANNEL.EMAIL,
+          notifications: emailNotifications,
+          plans,
+        });
+      }
+      if (smsNotifications.length > 0) {
+        await broadcastNotification({
+          channel: Constants.NOTIFICATION.CHANNEL.SMS,
+          notifications: smsNotifications,
+          plans,
+        });
+      }
+
+      return successResponse(
+        res,
+        "Notifications Sent Successfully",
+        responseData
+      );
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }
   };
 
+  private static notEnoughCreditMessage = (body: {
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    avlBal: number;
+    required: number;
+  }) => {
+    return (
+      `You don’t have enough ${body.channel} credits to send this notification. ` +
+      `Available: ${body.avlBal}, required: ${body.required}. ` +
+      `Please purchase more credits to continue.`
+    );
+  };
   static getAdminNotifications = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
@@ -84,6 +245,23 @@ export class Notification {
         "All Notification Fetched Successfully",
         notifications
       );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getLedger = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.user;
+      const { pageNo, pageSize }: any = req.query;
+      const limit = parseInt(pageSize);
+      const offSet = (parseInt(pageNo) - 1) * limit;
+      const ledgerInfo = await Services.Notification.getLedger({
+        schoolId,
+        limit,
+        offSet
+      });
+      return successResponse(res, "Notification Ledger fetched", ledgerInfo);
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }
@@ -117,6 +295,66 @@ export class Notification {
     }
   };
 
+  static getActivePlanInstanceAndValidateBalance = async (body: {
+    schoolId: string;
+    channels: string[];
+    requiredBal: number;
+  }) => {
+    const plans = await Services.SystemAdmin.getPlanInstances({
+      schoolId: body.schoolId,
+      showAllDetail: true,
+      isExhausted: false,
+      isActive: true,
+    });
+    if (!plans || plans.length === 0) {
+      throw new Error("No active plan available!, please purchase plan first");
+    }
+    let channelsBalanceMap = new Map<string, any>();
+    plans.forEach((p: any, index) => {
+      const { purchasedChannels } = p;
+      purchasedChannels.forEach((plan: any) => {
+        const { channel, unitsTotal, unitsConsumed } = plan;
+        const unitsLeft = unitsTotal - unitsConsumed;
+        if (channelsBalanceMap.has(channel)) {
+          const newBal = channelsBalanceMap.get(channel) + unitsLeft;
+          channelsBalanceMap.set(channel, newBal);
+        } else {
+          channelsBalanceMap.set(channel, unitsLeft);
+        }
+      });
+    });
+    const insufficientChannels: {
+      channel: string;
+      available: number;
+    }[] = [];
+
+    for (const c of body.channels) {
+      const bal = channelsBalanceMap.get(c) || 0;
+
+      if (body.requiredBal > bal) {
+        insufficientChannels.push({
+          channel: c,
+          available: bal,
+        });
+      }
+    }
+
+    if (insufficientChannels.length > 0) {
+      const details = insufficientChannels
+        .map(
+          ({ channel, available }) =>
+            `${channel}: available ${available}, required ${body.requiredBal}`
+        )
+        .join(" | ");
+
+      throw new Error(
+        `Insufficient credits for one or more channels. ${details}. ` +
+          `Please purchase additional credits to continue.`
+      );
+    }
+    return { plans, channelsBalanceMap };
+  };
+
   static draftNotification = async (req: Request, res: Response) => {
     try {
       const { schoolId, userId } = req.user;
@@ -127,8 +365,7 @@ export class Notification {
       if (!sessionId) {
         throw new Error("There is no active session of School!");
       }
-      console.log({ body });
-
+      // console.log({ body });
       const templateData: any =
         await Services.Notification.getTemplateByIdAndSchoolId({
           templateId,
@@ -148,10 +385,14 @@ export class Notification {
           sessionId
         );
       console.log(allUsersInfo, "Total - ", allUsersInfo.length);
-
       const channels = body.channels;
 
-      console.log("Payload Content ", payload);
+      const { channelsBalanceMap } =
+        await this.getActivePlanInstanceAndValidateBalance({
+          schoolId,
+          requiredBal: allUsersInfo.length,
+          channels,
+        });
 
       const response = await db.transaction(async (tx) => {
         const newNotification =
@@ -163,7 +404,7 @@ export class Notification {
             channels: [Constants.NOTIFICATION.CHANNEL.EMAIL],
             userId,
           });
-        console.log({ newNotification });
+        // console.log({ newNotification });
 
         const notificationId = newNotification[0]?.id;
         const bulkRecipents: any = [];
@@ -210,21 +451,26 @@ export class Notification {
           .values(notificationStatus)
           .returning();
 
-        console.dir({ notificationStatusData }, { depth: null });
+        // console.dir({ notificationStatusData }, { depth: null });
 
         const notificationRecipentData = await tx
           .insert(notificationRecipient_Table)
           .values(bulkRecipents)
           .returning();
 
-        console.dir({ notificationRecipentData }, { depth: null });
-        return notificationStatusData;
+        // console.dir({ notificationRecipentData }, { depth: null });
+        // return notificationStatusData;
+        return Services.Notification.getNotification({
+          schoolId,
+          notificationId: notificationId!,
+        });
       });
 
-      return successResponse(res, "Notification Drafted Successfully", {
-        response,
-        allUsersInfo,
-      });
+      return successResponse(
+        res,
+        "Notification Drafted Successfully",
+        response
+      );
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }

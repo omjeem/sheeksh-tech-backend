@@ -46,6 +46,7 @@ export class Student {
         password: hashedPassword,
         firstName: d.firstName,
         lastName: d.lastName,
+        phone : d.phone
         // parent : d.parent
       };
     });
