@@ -19,6 +19,12 @@ systemAdminRouter.post(
   Controllers.SystemAdmin.createNotificationPlan
 );
 
+systemAdminRouter.put(
+  "/notification/inventory",
+  validateRequest(Validators.SystemAdmin.updateSystemInventoryLimits),
+  Controllers.SystemAdmin.updateSystemInventoryLimits
+);
+
 systemAdminRouter.post(
   "/notification/inventory",
   validateRequest(Validators.SystemAdmin.addCreditsIntoSystemInventory),

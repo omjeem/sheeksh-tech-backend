@@ -44,6 +44,15 @@ export class SystemAdmin {
     }),
   });
 
+  static updateSystemInventoryLimits = z.object({
+    body: z.object({
+      id: z.uuid(),
+      metadata: z.object({
+        limits: z.array(this.limitFeature).nonempty(),
+      }),
+    }),
+  });
+
   static addCreditsIntoSystemInventory = z.object({
     body: z.object({
       channel: z.enum(NOTIFICATION_CHANNEL_LIST),
@@ -52,7 +61,9 @@ export class SystemAdmin {
       ),
       providerInvoiceId: z.string().optional(),
       unitsPurchased: z.number(),
-      metadata: z.any(),
+      metadata: z.object({
+        limits: z.array(this.limitFeature).nonempty(),
+      }),
     }),
   });
 }

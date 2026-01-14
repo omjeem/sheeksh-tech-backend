@@ -345,6 +345,17 @@ export class SystemAdmin {
       .returning();
   };
 
+  static updateSystemInventoryLimits = async (metadata: any, id: string) => {
+    return await db
+      .update(notifiSystemInventory_Table)
+      .set({
+        metadata,
+        updatedAt : new Date()
+      })
+      .where(eq(notifiSystemInventory_Table.id, id))
+      .returning();
+  };
+
   static getSystemInventory = async () => {
     return await db.query.notifiSystemInventory_Table.findMany({});
   };

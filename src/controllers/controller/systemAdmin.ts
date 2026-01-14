@@ -116,10 +116,24 @@ export class SystemAdmin {
     }
   };
 
+  static updateSystemInventoryLimits = async (req: Request, res: Response) => {
+    try {
+      const { metadata, id } = req.body;
+      const update = await Services.SystemAdmin.updateSystemInventoryLimits(metadata, id);
+      return successResponse(res, "Limits Updated Successfully", update)
+    } catch (error: any) {
+      return errorResponse(res, error.message || error)
+    }
+  };
+
   static getSystemInventory = async (req: Request, res: Response) => {
     try {
       const inventory = await Services.SystemAdmin.getSystemInventory();
-      return successResponse(res, "System Invetory Fetched Successfully!", inventory)
+      return successResponse(
+        res,
+        "System Invetory Fetched Successfully!",
+        inventory
+      );
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }
