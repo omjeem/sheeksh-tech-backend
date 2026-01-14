@@ -1,4 +1,4 @@
-import Constants from "@/config/constants";
+import Constants, { NOTIFICATION_CHANNEL_LIST } from "@/config/constants";
 import z from "zod";
 
 export class SystemAdmin {
@@ -41,6 +41,18 @@ export class SystemAdmin {
       planId: z.uuid(),
       schoolId: z.uuid(),
       price: z.number().optional(),
+    }),
+  });
+
+  static addCreditsIntoSystemInventory = z.object({
+    body: z.object({
+      channel: z.enum(NOTIFICATION_CHANNEL_LIST),
+      provider: z.enum(
+        Constants.NOTIFICATION.BILLING.SYSTEM_INVENTORY.PROVIDERS
+      ),
+      providerInvoiceId: z.string().optional(),
+      unitsPurchased: z.number(),
+      metadata: z.any(),
     }),
   });
 }

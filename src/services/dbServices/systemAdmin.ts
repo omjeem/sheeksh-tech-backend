@@ -1,6 +1,11 @@
-import Constants, { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
+import Constants, {
+  NOTIFICATION_CHANNEL_PROVIDERS_TYPES,
+  NOTIFICATION_CHANNEL_TYPES,
+  SYSTEM_ADMIN_ACCESS_TYPES,
+} from "@/config/constants";
 import { db } from "@/db";
 import {
+  notifiSystemInventory_Table,
   notifPlanFeatureLimit_Table,
   notifPlanFeatures_Table,
   notifPlanInstance_Table,
@@ -185,9 +190,9 @@ export class SystemAdmin {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
     // if (body.isExhausted) {
-      whereConditions.push(
-        eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
-      );
+    whereConditions.push(
+      eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
+    );
     // }
     if (body.isActive) {
       whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
@@ -321,5 +326,26 @@ export class SystemAdmin {
         id: planInstanceId,
       });
     });
+  };
+
+  static addCreditsToSystemInventory = async (body: {
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    provider: NOTIFICATION_CHANNEL_PROVIDERS_TYPES;
+    providerInvoiceId?: string | undefined;
+    unitsPurchased: number;
+    metadata: any;
+  }) => {
+    return await db
+      .insert(notifiSystemInventory_Table)
+      .values({
+        ...body,
+        available: body.unitsPurchased,
+        isActive: true,
+      })
+      .returning();
+  };
+
+  static getSystemInventory = async () => {
+    return await db.query.notifiSystemInventory_Table.findMany({});
   };
 }

@@ -19,6 +19,17 @@ systemAdminRouter.post(
   Controllers.SystemAdmin.createNotificationPlan
 );
 
+systemAdminRouter.post(
+  "/notification/inventory",
+  validateRequest(Validators.SystemAdmin.addCreditsIntoSystemInventory),
+  Controllers.SystemAdmin.addCreditsIntoSystemInventory
+);
+
+systemAdminRouter.get(
+  "/notification/inventory",
+  Controllers.SystemAdmin.getSystemInventory
+);
+
 systemAdminRouter.get(
   "/notification/ledger",
   validateRequest(Validators.Notification.getLedgerInfo),

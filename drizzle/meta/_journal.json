@@ -169,6 +169,13 @@
       "when": 1768299345158,
       "tag": "0023_glamorous_energizer",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1768383759964,
+      "tag": "0024_broken_blue_shield",
+      "breakpoints": true
     }
   ]
 }

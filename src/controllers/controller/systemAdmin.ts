@@ -1,6 +1,7 @@
 import { errorResponse, successResponse } from "@/config/response";
 import Services from "@/services";
 import { Utils } from "@/utils";
+import { AddCreditsIntoSystemInventory_Type } from "@/validators/types";
 import { Request, Response } from "express";
 
 export class SystemAdmin {
@@ -80,7 +81,7 @@ export class SystemAdmin {
   static getSystemNotificationLedger = async (req: Request, res: Response) => {
     try {
       const { pageNo = 1, pageSize = 15, id }: any = req.query;
-      console.log("Hit ---- ", req.query)
+      console.log("Hit ---- ", req.query);
       const ledgerInfo = await Services.Notification.getLedger({
         id,
         pageNo,
@@ -91,6 +92,34 @@ export class SystemAdmin {
         "System Notification Ledger fetched",
         ledgerInfo
       );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static addCreditsIntoSystemInventory = async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+      const body: AddCreditsIntoSystemInventory_Type["body"] = req.body;
+      const inventory = await Services.SystemAdmin.addCreditsToSystemInventory(
+        body
+      );
+      return successResponse(
+        res,
+        "Credits added into System Inventory",
+        inventory
+      );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getSystemInventory = async (req: Request, res: Response) => {
+    try {
+      const inventory = await Services.SystemAdmin.getSystemInventory();
+      return successResponse(res, "System Invetory Fetched Successfully!", inventory)
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }

@@ -44,7 +44,12 @@ const N_BILLING = {
     "ADJUSTMENT",
     "ADMIN_GRANT",
   ] as const,
+  SYSTEM_INVENTORY: {
+    PROVIDERS: ["RESEND"],
+  },
 } as const;
+export type NOTIFICATION_CHANNEL_PROVIDERS_TYPES =
+  (typeof N_BILLING.SYSTEM_INVENTORY.PROVIDERS)[number];
 
 export type NOTIFICATION_LEDGER_REASONS_TYPE =
   (typeof N_BILLING.LEDGER_REASON)[number];
@@ -106,6 +111,13 @@ const Constants = {
         N_BILLING.LEDGER_REASON.map((v) => [v, v])
       ) as {
         readonly [K in (typeof N_BILLING.LEDGER_REASON)[number]]: K;
+      },
+      SYSTEM_INVENTORY: {
+        PROVIDERS: Object.fromEntries(
+          N_BILLING.SYSTEM_INVENTORY.PROVIDERS.map((v) => [v, v])
+        ) as {
+          readonly [K in (typeof N_BILLING.SYSTEM_INVENTORY.PROVIDERS)[number]]: K;
+        },
       },
     },
   },
