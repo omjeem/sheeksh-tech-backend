@@ -1,4 +1,4 @@
-import { and, eq, or } from "drizzle-orm";
+import { and, eq, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { schoolsTable, usersTable } from "@/db/schema";
 import { CreateSchool_Type } from "@/validators/validator/school";
@@ -111,11 +111,16 @@ export class School {
         users: {
           where: eq(usersTable.role, Constants.USER_ROLES.SUPER_ADMIN),
           columns: {
-            password: false,
-            schoolId: false,
+            id: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            email: true,
+            phone: true,
           },
         },
       },
+      orderBy: (t) => sql`${t.createdAt} asc`,
     });
   };
 }
