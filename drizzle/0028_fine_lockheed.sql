@@ -1,0 +1,1 @@
+ALTER TABLE "notif_system_inventory" DROP COLUMN "available";

@@ -19,6 +19,40 @@ systemAdminRouter.post(
   Controllers.SystemAdmin.createNotificationPlan
 );
 
+systemAdminRouter.put(
+  "/notification/inventory",
+  validateRequest(Validators.SystemAdmin.updateSystemInventoryLimits),
+  Controllers.SystemAdmin.updateSystemInventoryLimits
+);
+
+systemAdminRouter.post(
+  "/notification/inventory",
+  validateRequest(Validators.SystemAdmin.addCreditsIntoSystemInventory),
+  Controllers.SystemAdmin.addCreditsIntoSystemInventory
+);
+
+systemAdminRouter.get(
+  "/notification/inventory",
+  Controllers.SystemAdmin.getSystemInventory
+);
+
+systemAdminRouter.post(
+  "/notification/limit",
+  validateRequest(Validators.SystemAdmin.notifChannelUsageLimit),
+  Controllers.SystemAdmin.notifChannelUsageLimit
+);
+
+systemAdminRouter.put(
+  "/notification/limit",
+  validateRequest(Validators.SystemAdmin.notifChannelUsageLimit),
+  Controllers.SystemAdmin.notifChannelLimitUpdate
+);
+
+systemAdminRouter.get(
+  "/notification/limit",
+  Controllers.SystemAdmin.getNotifChannelUsageLimit
+);
+
 systemAdminRouter.get(
   "/notification/ledger",
   validateRequest(Validators.Notification.getLedgerInfo),

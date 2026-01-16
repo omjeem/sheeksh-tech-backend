@@ -2,7 +2,10 @@ import { envConfigs } from "../config/envConfig";
 import jwt from "jsonwebtoken";
 import { UserRolesType, UserTokenPayload } from "@/types/types";
 import crypto from "crypto";
-import Constants, { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
+import Constants, {
+  DATE_RANGE_TYPES,
+  SYSTEM_ADMIN_ACCESS_TYPES,
+} from "@/config/constants";
 
 type VerifyTokenSuccess = {
   valid: true;
@@ -92,5 +95,56 @@ export class Utils {
 
   static defaultPassword = (firstName: string, email: string) => {
     return `${firstName}-${email}`;
+  };
+
+  static getDateRange = (
+    rangeType: DATE_RANGE_TYPES,
+    now: Date = new Date()
+  ): { startDate: Date; endDate: Date } => {
+    const startDate = new Date(now);
+    const endDate = new Date(now);
+
+    switch (rangeType) {
+      case "DAILY": {
+        startDate.setUTCHours(0, 0, 0, 0);
+        endDate.setUTCHours(23, 59, 59, 999);
+        break;
+      }
+
+      case "WEEKLY": {
+        const day = startDate.getUTCDay();
+        const diffToMonday = day === 0 ? -6 : 1 - day;
+
+        startDate.setUTCDate(startDate.getUTCDate() + diffToMonday);
+        startDate.setUTCHours(0, 0, 0, 0);
+
+        endDate.setUTCDate(startDate.getUTCDate() + 6);
+        endDate.setUTCHours(23, 59, 59, 999);
+        break;
+      }
+
+      case "MONTHLY": {
+        startDate.setUTCDate(1);
+        startDate.setUTCHours(0, 0, 0, 0);
+
+        endDate.setUTCMonth(startDate.getUTCMonth() + 1, 0);
+        endDate.setUTCHours(23, 59, 59, 999);
+        break;
+      }
+
+      case "YEARLY": {
+        startDate.setUTCMonth(0, 1);
+        startDate.setUTCHours(0, 0, 0, 0);
+
+        endDate.setUTCMonth(11, 31);
+        endDate.setUTCHours(23, 59, 59, 999);
+        break;
+      }
+
+      default:
+        throw new Error("Invalid date range type");
+    }
+
+    return { startDate, endDate };
   };
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "notif_system_inventory" ADD COLUMN "isActive" boolean DEFAULT false NOT NULL;

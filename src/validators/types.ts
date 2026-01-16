@@ -12,3 +12,11 @@ export type CreateNotificationPlan_Type = z.infer<
 export type PurchaseNotificationPlanBySystemAdmin_Type = z.infer<
   typeof Validators.SystemAdmin.purchaseNotificationPlanBySystemAdmin
 >;
+
+export type AddCreditsIntoSystemInventory_Type = z.infer<
+  typeof Validators.SystemAdmin.addCreditsIntoSystemInventory
+>;
+
+export type NotificationChannelLimits_Type = z.infer<
+  typeof Validators.SystemAdmin.notifChannelUsageLimit
+>;

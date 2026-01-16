@@ -1,7 +1,14 @@
-import Constants, { SYSTEM_ADMIN_ACCESS_TYPES } from "@/config/constants";
+import Constants, {
+  DATE_RANGE_TYPES,
+  NOTIFICATION_CHANNEL_PROVIDERS_TYPES,
+  NOTIFICATION_CHANNEL_TYPES,
+  ORGANIZATION_TYPES,
+  SYSTEM_ADMIN_ACCESS_TYPES,
+} from "@/config/constants";
 import { db } from "@/db";
 import {
-  notifPlanFeatureLimit_Table,
+  notifChannelUsageLimit_Table,
+  notifiSystemInventory_Table,
   notifPlanFeatures_Table,
   notifPlanInstance_Table,
   notifPlans_Table,
@@ -65,14 +72,14 @@ export class SystemAdmin {
       phone?: string;
     }
   ) => {
-    const updateObj = {
-      ...(body.password && { password: body.password }),
-      ...(body.name && { name: body.name }),
-      ...(body.phone && { phone: body.phone }),
-    };
     return await db
       .update(systemAdmin_Table)
-      .set(updateObj)
+      .set({
+        ...(body.password && { password: body.password }),
+        ...(body.name && { name: body.name }),
+        ...(body.phone && { phone: body.phone }),
+        updatedAt: new Date(),
+      })
       .where(eq(systemAdmin_Table.id, userId));
   };
 
@@ -93,29 +100,16 @@ export class SystemAdmin {
         });
       const planId = newPLan[0]?.id!;
       for (const feature of features) {
-        const { limit, ...detail } = feature;
         const featureFeed = await tx
           .insert(notifPlanFeatures_Table)
           .values({
             planId,
-            ...detail,
+            ...feature,
           })
           .returning({
             id: notifPlanFeatures_Table.id,
           });
         console.log({ featureFeed });
-        const planFeatureId = featureFeed[0]?.id;
-        const planFeatureLimits: any = feature.limit.map((f) => {
-          return {
-            planFeatureId,
-            ...f,
-          };
-        });
-        console.log({ planFeatureLimits });
-        const planFeatureLimitsPayload = await tx
-          .insert(notifPlanFeatureLimit_Table)
-          .values(planFeatureLimits)
-          .returning();
       }
       return await this.getAllNotificationPlans({ planId });
     });
@@ -152,15 +146,7 @@ export class SystemAdmin {
           columns: {
             planId: false,
             createdAt: false,
-          },
-          with: {
-            featureLimit: {
-              columns: {
-                planFeatureId: false,
-                createdAt: false,
-              },
-            },
-          },
+          }
         },
       },
     });
@@ -185,9 +171,9 @@ export class SystemAdmin {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
     // if (body.isExhausted) {
-      whereConditions.push(
-        eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
-      );
+    whereConditions.push(
+      eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
+    );
     // }
     if (body.isActive) {
       whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
@@ -297,7 +283,6 @@ export class SystemAdmin {
           planInstanceId,
           channel: f.channel,
           unitsTotal: f.units,
-          limits: f.featureLimit,
           metadata: f.metadata,
         };
         const channelWiseData = await tx
@@ -321,5 +306,124 @@ export class SystemAdmin {
         id: planInstanceId,
       });
     });
+  };
+
+  static addCreditsToSystemInventory = async (body: {
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    provider: NOTIFICATION_CHANNEL_PROVIDERS_TYPES;
+    providerInvoiceId?: string | undefined;
+    unitsPurchased: number;
+    metadata: any;
+  }) => {
+    return await db
+      .insert(notifiSystemInventory_Table)
+      .values({
+        ...body,
+        isActive: true,
+      })
+      .returning();
+  };
+
+  static updateSystemInventoryLimits = async (metadata: any, id: string) => {
+    return await db
+      .update(notifiSystemInventory_Table)
+      .set({
+        metadata,
+        updatedAt: new Date(),
+      })
+      .where(eq(notifiSystemInventory_Table.id, id))
+      .returning();
+  };
+
+  static getSystemInventory = async (body: {
+    active?: boolean;
+    channel?: NOTIFICATION_CHANNEL_TYPES;
+  }) => {
+    const whereConditions = [];
+    if (body.active) {
+      whereConditions.push(eq(notifiSystemInventory_Table.isActive, true));
+    }
+    if (body.channel) {
+      whereConditions.push(
+        eq(notifiSystemInventory_Table.channel, body.channel)
+      );
+    }
+    return await db.query.notifiSystemInventory_Table.findMany({
+      where: and(...whereConditions),
+    });
+  };
+
+  static notifChannelUsageLimit = async (body: {
+    schoolId?: string | undefined;
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    frequency: DATE_RANGE_TYPES;
+    limit: number;
+  }) => {
+    const isForCurrent = await this.getNotifChannelUsageLimit({
+      schoolId: body.schoolId,
+      frequency: body.frequency,
+      channel: body.channel,
+    });
+    if (isForCurrent.length > 0) {
+      throw new Error(
+        `Limit for ${body.frequency} is already set for the given organization`
+      );
+    }
+    return await db
+      .insert(notifChannelUsageLimit_Table)
+      .values({
+        ...body,
+        orgType: body.schoolId
+          ? Constants.ORGANIZATION.SCHOOL
+          : Constants.ORGANIZATION.SYSTEM,
+      })
+      .returning();
+  };
+
+  static getNotifChannelUsageLimit = async (body: {
+    schoolId?: string | undefined;
+    orgType?: ORGANIZATION_TYPES;
+    channel?: NOTIFICATION_CHANNEL_TYPES;
+    frequency?: DATE_RANGE_TYPES;
+  }) => {
+    const whereConditions = [];
+    if (body.schoolId) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.schoolId, body.schoolId)
+      );
+    }
+    if (body.orgType) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.orgType, body.orgType)
+      );
+    }
+    if (body.channel) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.channel, body.channel)
+      );
+    }
+    if (body.frequency) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.frequency, body.frequency)
+      );
+    }
+    return await db.query.notifChannelUsageLimit_Table.findMany({
+      where: and(...whereConditions),
+      orderBy: (t) => sql`${t.createdAt} asc`,
+    });
+  };
+
+  static notifChannelLimitUpdate = async (body: {
+    id: string;
+    limit: number;
+  }) => {
+    return await db
+      .update(notifChannelUsageLimit_Table)
+      .set({
+        limit: body.limit,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(notifChannelUsageLimit_Table.id, body.id)))
+      .returning();
   };
 }
