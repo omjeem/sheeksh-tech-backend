@@ -8,7 +8,6 @@ export class SystemAdmin {
     }),
   });
 
-
   static createNotificationPlan = z.object({
     body: z.object({
       key: z.string().min(3),
@@ -64,6 +63,18 @@ export class SystemAdmin {
       channel: z.enum(Constants.NOTIFICATION.CHANNEL),
       frequency: z.enum(Constants.NOTIFICATION.BILLING.USAGE_LIMIT),
       limit: z.number(),
+    }),
+  });
+
+  static createNewSystemAdminUser = z.object({
+    body: z.object({
+      name: z.string(),
+      email: z.email(),
+      access: z.enum(Constants.SYSTEM_ADMIN.ACCESS),
+      phone: z
+        .string()
+        .regex(/^[0-9]{10}$/, "Phone number must be a valid 10-digit number"),
+      password: z.string().nonempty(),
     }),
   });
 }

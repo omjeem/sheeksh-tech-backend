@@ -71,3 +71,76 @@ export const systemAdminMiddleware = async (
     );
   }
 };
+
+export const systemAdminSuperRootAccessMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userAccess = req.user.access;
+    if (userAccess !== Constants.SYSTEM_ADMIN.ACCESS.SUPER_ROOT) {
+      throw new Error(
+        `This is Super Root access protected route ${userAccess} access are not allowed for this route`
+      );
+    }
+    next();
+  } catch (error: any) {
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.FORBIDDEN
+    );
+  }
+};
+
+export const systemAdminRootAccessMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userAccess = req.user.access;
+    if (
+      userAccess !== Constants.SYSTEM_ADMIN.ACCESS.ROOT &&
+      userAccess !== Constants.SYSTEM_ADMIN.ACCESS.SUPER_ROOT
+    ) {
+      throw new Error(
+        `This is Root access protected route ${userAccess} access are not allowed for this route`
+      );
+    }
+    next();
+  } catch (error: any) {
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.FORBIDDEN
+    );
+  }
+};
+
+export const systemAdminMaintainerAccessMiddleware = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const userAccess = req.user.access;
+    if (
+      userAccess !== Constants.SYSTEM_ADMIN.ACCESS.ROOT &&
+      userAccess !== Constants.SYSTEM_ADMIN.ACCESS.SUPER_ROOT &&
+      userAccess !== Constants.SYSTEM_ADMIN.ACCESS.MAINTAINER
+    ) {
+      throw new Error(
+        `You have View only permission! you can't write/delete on this route`
+      );
+    }
+    next();
+  } catch (error: any) {
+    return errorResponse(
+      res,
+      error.message || error,
+      Constants.STATUS_CODE.FORBIDDEN
+    );
+  }
+};

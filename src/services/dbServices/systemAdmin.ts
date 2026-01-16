@@ -146,7 +146,7 @@ export class SystemAdmin {
           columns: {
             planId: false,
             createdAt: false,
-          }
+          },
         },
       },
     });
@@ -425,5 +425,15 @@ export class SystemAdmin {
       })
       .where(and(eq(notifChannelUsageLimit_Table.id, body.id)))
       .returning();
+  };
+
+  static createSystemAdminUser = async (body: any) => {
+    return await db.insert(systemAdmin_Table).values(body).returning({
+      id: systemAdmin_Table.id,
+      access: systemAdmin_Table.access,
+      name: systemAdmin_Table.name,
+      email: systemAdmin_Table.email,
+      phone: systemAdmin_Table.phone,
+    });
   };
 }
