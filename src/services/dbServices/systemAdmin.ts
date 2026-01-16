@@ -73,14 +73,14 @@ export class SystemAdmin {
       phone?: string;
     }
   ) => {
-    const updateObj = {
-      ...(body.password && { password: body.password }),
-      ...(body.name && { name: body.name }),
-      ...(body.phone && { phone: body.phone }),
-    };
     return await db
       .update(systemAdmin_Table)
-      .set(updateObj)
+      .set({
+        ...(body.password && { password: body.password }),
+        ...(body.name && { name: body.name }),
+        ...(body.phone && { phone: body.phone }),
+        updatedAt: new Date(),
+      })
       .where(eq(systemAdmin_Table.id, userId));
   };
 
@@ -444,6 +444,7 @@ export class SystemAdmin {
       .update(notifChannelUsageLimit_Table)
       .set({
         limit: body.limit,
+        updatedAt: new Date(),
       })
       .where(and(eq(notifChannelUsageLimit_Table.id, body.id)))
       .returning();

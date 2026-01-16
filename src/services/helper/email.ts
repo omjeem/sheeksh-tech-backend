@@ -146,6 +146,7 @@ export class Broadcast {
         unitsConsumed: sql`${notifiSystemInventory_Table.unitsConsumed} + ${
           totalSuccess + totalFailure
         }`,
+        updatedAt: new Date(),
       })
       .where(
         and(

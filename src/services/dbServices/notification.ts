@@ -538,7 +538,10 @@ export class Notification {
     }
     return await db
       .update(notificationRecipient_Table)
-      .set(updateObj)
+      .set({
+        ...updateObj,
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(notificationRecipient_Table.notificationId, body.notificationId),
@@ -602,6 +605,7 @@ export class Notification {
       .update(notificationRecipient_Table)
       .set({
         seenOnPortalAt: new Date(),
+        updatedAt: new Date(),
       })
       .where(
         and(
