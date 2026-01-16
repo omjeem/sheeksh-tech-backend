@@ -9,7 +9,6 @@ import { db } from "@/db";
 import {
   notifChannelUsageLimit_Table,
   notifiSystemInventory_Table,
-  notifPlanFeatureLimit_Table,
   notifPlanFeatures_Table,
   notifPlanInstance_Table,
   notifPlans_Table,
@@ -101,29 +100,16 @@ export class SystemAdmin {
         });
       const planId = newPLan[0]?.id!;
       for (const feature of features) {
-        const { limit, ...detail } = feature;
         const featureFeed = await tx
           .insert(notifPlanFeatures_Table)
           .values({
             planId,
-            ...detail,
+            ...feature,
           })
           .returning({
             id: notifPlanFeatures_Table.id,
           });
         console.log({ featureFeed });
-        const planFeatureId = featureFeed[0]?.id;
-        const planFeatureLimits: any = feature.limit.map((f) => {
-          return {
-            planFeatureId,
-            ...f,
-          };
-        });
-        console.log({ planFeatureLimits });
-        const planFeatureLimitsPayload = await tx
-          .insert(notifPlanFeatureLimit_Table)
-          .values(planFeatureLimits)
-          .returning();
       }
       return await this.getAllNotificationPlans({ planId });
     });
@@ -160,15 +146,7 @@ export class SystemAdmin {
           columns: {
             planId: false,
             createdAt: false,
-          },
-          with: {
-            featureLimit: {
-              columns: {
-                planFeatureId: false,
-                createdAt: false,
-              },
-            },
-          },
+          }
         },
       },
     });
@@ -305,7 +283,6 @@ export class SystemAdmin {
           planInstanceId,
           channel: f.channel,
           unitsTotal: f.units,
-          limits: f.featureLimit,
           metadata: f.metadata,
         };
         const channelWiseData = await tx

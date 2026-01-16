@@ -8,11 +8,6 @@ export class SystemAdmin {
     }),
   });
 
-  private static limitFeature = z.object({
-    period: z.enum(Constants.NOTIFICATION.BILLING.USAGE_LIMIT),
-    maxUnits: z.number().min(1),
-    metadata: z.any().optional(),
-  });
 
   static createNotificationPlan = z.object({
     body: z.object({
@@ -29,7 +24,6 @@ export class SystemAdmin {
             channel: z.enum(Constants.NOTIFICATION.CHANNEL),
             units: z.number().min(1),
             metadata: z.any().optional(),
-            limit: z.array(this.limitFeature),
           })
         )
         .nonempty(),
@@ -47,9 +41,7 @@ export class SystemAdmin {
   static updateSystemInventoryLimits = z.object({
     body: z.object({
       id: z.uuid(),
-      metadata: z.object({
-        limits: z.array(this.limitFeature).nonempty(),
-      }),
+      metadata: z.any(),
     }),
   });
 
@@ -61,9 +53,7 @@ export class SystemAdmin {
       ),
       providerInvoiceId: z.string().optional(),
       unitsPurchased: z.number(),
-      metadata: z.object({
-        limits: z.array(this.limitFeature).nonempty(),
-      }),
+      metadata: z.any(),
     }),
   });
 

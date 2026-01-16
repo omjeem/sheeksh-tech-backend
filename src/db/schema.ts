@@ -28,7 +28,6 @@ export * from "./schema/teacher/teacherClassSubSec";
 export * from "./schema/teacher/teacherSchoolHis";
 
 // notification Billing
-export * from "./schema/notificationBilling/planFeatureLimit";
 export * from "./schema/notificationBilling/planFeatures";
 export * from "./schema/notificationBilling/planInstance";
 export * from "./schema/notificationBilling/planPurchased";
