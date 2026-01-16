@@ -3,6 +3,7 @@ import Constants, { NOTIFICATION_CHANNEL_TYPES } from "@/config/constants";
 import { resend } from "@/config/emailClients";
 import { db } from "@/db";
 import {
+  notifiSystemInventory_Table,
   notifPlanInstance_Table,
   notifPurchasedChannelWise_Table,
 } from "@/db/schema";
@@ -128,17 +129,30 @@ export class Broadcast {
         .returning();
 
       await markPlanInstanceExhaustedIfAllChannelsExhausted(ch.planInstanceId);
-
-      const schoolLedger = await Services.Notification.addLogsIntoSchoolLedger({
+      await Services.Notification.addLogsIntoSchoolLedger({
         schoolId: body.schoolId,
         planInstanceId: ch.planInstanceId,
         operation: Constants.NOTIFICATION.BILLING.LEDGER_REASON.USAGE,
         channelId: ch.channelId,
         notificationId: body.notificationId,
         creditsUsed: totalSuccess,
+        channel: body.channel,
       });
       // console.dir({ update, schoolLedger }, { depth: null });
     }
+    await db
+      .update(notifiSystemInventory_Table)
+      .set({
+        unitsConsumed: sql`${notifiSystemInventory_Table.unitsConsumed} + ${
+          totalSuccess + totalFailure
+        }`,
+      })
+      .where(
+        and(
+          eq(notifiSystemInventory_Table.channel, body.channel),
+          eq(notifiSystemInventory_Table.isActive, true)
+        )
+      );
     return await Services.Notification.updateNotificationStatus({
       notificationId: body.notificationId,
       totalFailure,

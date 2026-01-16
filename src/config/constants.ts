@@ -31,9 +31,19 @@ const NOTIFICATION_SENT_STATUS_LIST = [
   "BOUNCED",
 ] as const;
 
+const ORGANIZATION = ["SYSTEM", "SCHOOL"] as const;
+export type ORGANIZATION_TYPES = (typeof ORGANIZATION)[number];
+
 const N_BILLING = {
   PLAN_TYPES: ["PUBLIC", "CUSTOM"] as const,
-  USAGE_LIMIT: ["DAILY", "MONTHLY", "WEEKLY", "YEARLY", "ONE_TIME", "NO_LIMIT"] as const,
+  USAGE_LIMIT: [
+    "DAILY",
+    "MONTHLY",
+    "WEEKLY",
+    "YEARLY",
+    "ONE_TIME",
+    "NO_LIMIT",
+  ] as const,
   PURCHASE_STATUS: ["PENDING", "SUCCEEDED", "FAILED", "CANCELLED"] as const,
   LEDGER_REASON: [
     "SYSTEM_PURCHASED",
@@ -54,7 +64,12 @@ export type NOTIFICATION_CHANNEL_PROVIDERS_TYPES =
 export type NOTIFICATION_LEDGER_REASONS_TYPE =
   (typeof N_BILLING.LEDGER_REASON)[number];
 
+export type DATE_RANGE_TYPES = (typeof N_BILLING.USAGE_LIMIT)[number];
+
 const Constants = {
+  ORGANIZATION: Object.fromEntries(ORGANIZATION.map((v) => [v, v])) as {
+    readonly [K in (typeof ORGANIZATION)[number]]: K;
+  },
   SYSTEM_ADMIN: {
     ROLE: "SYSTEM_ADMIN",
     ACCESS: Object.fromEntries(SYSTEM_ADMIN_ACCESS.map((v) => [v, v])) as {

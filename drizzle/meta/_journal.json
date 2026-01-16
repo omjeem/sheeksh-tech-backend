@@ -176,6 +176,34 @@
       "when": 1768383759964,
       "tag": "0024_broken_blue_shield",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1768397651195,
+      "tag": "0025_magenta_wallow",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1768469547354,
+      "tag": "0026_shocking_tony_stark",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1768472134015,
+      "tag": "0027_keen_iceman",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1768473923644,
+      "tag": "0028_fine_lockheed",
+      "breakpoints": true
     }
   ]
 }

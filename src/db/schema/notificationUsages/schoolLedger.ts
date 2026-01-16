@@ -21,6 +21,7 @@ export const notifSchoolLedger_table = pgTable("notif_school_ledger", {
     .notNull(),
   planInstanceId: uuid().references(() => notifPlanInstance_Table.id),
   channelId: uuid().references(() => notifPurchasedChannelWise_Table.id),
+  channelName : varchar({length : 30}),
   notificationId: uuid().references(() => notification_Table.id),
   operation: varchar({ length: 40 }).notNull(),
   creditsUsed: integer().default(0).notNull(),

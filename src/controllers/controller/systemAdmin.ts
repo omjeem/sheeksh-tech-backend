@@ -1,7 +1,10 @@
 import { errorResponse, successResponse } from "@/config/response";
 import Services from "@/services";
 import { Utils } from "@/utils";
-import { AddCreditsIntoSystemInventory_Type } from "@/validators/types";
+import {
+  AddCreditsIntoSystemInventory_Type,
+  NotificationChannelLimits_Type,
+} from "@/validators/types";
 import { Request, Response } from "express";
 
 export class SystemAdmin {
@@ -119,21 +122,55 @@ export class SystemAdmin {
   static updateSystemInventoryLimits = async (req: Request, res: Response) => {
     try {
       const { metadata, id } = req.body;
-      const update = await Services.SystemAdmin.updateSystemInventoryLimits(metadata, id);
-      return successResponse(res, "Limits Updated Successfully", update)
+      const update = await Services.SystemAdmin.updateSystemInventoryLimits(
+        metadata,
+        id
+      );
+      return successResponse(res, "Limits Updated Successfully", update);
     } catch (error: any) {
-      return errorResponse(res, error.message || error)
+      return errorResponse(res, error.message || error);
     }
   };
 
   static getSystemInventory = async (req: Request, res: Response) => {
     try {
-      const inventory = await Services.SystemAdmin.getSystemInventory();
+      const inventory = await Services.SystemAdmin.getSystemInventory({});
       return successResponse(
         res,
         "System Invetory Fetched Successfully!",
         inventory
       );
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static notifChannelUsageLimit = async (req: Request, res: Response) => {
+    try {
+      const body: NotificationChannelLimits_Type["body"] = req.body;
+      const limit = await Services.SystemAdmin.notifChannelUsageLimit(body);
+      return successResponse(res, "Limit Set Successfully", limit);
+    } catch (error: any) {
+      console.log("Error in Creating the limit", error)
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static getNotifChannelUsageLimit = async (req: Request, res: Response) => {
+    try {
+      const query = req.query || {};
+      const limit = await Services.SystemAdmin.getNotifChannelUsageLimit(query);
+      return successResponse(res, "Limit Set Successfully", limit);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static notifChannelLimitUpdate = async (req: Request, res: Response) => {
+    try {
+      const body = req.body;
+      const updated = await Services.SystemAdmin.notifChannelLimitUpdate(body);
+      return successResponse(res, "Limits Updated Successfully", updated);
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }

@@ -18,7 +18,6 @@ export const notifiSystemInventory_Table = pgTable(
     providerInvoiceId: varchar({ length: 255 }),
     unitsPurchased: integer().notNull(),
     unitsConsumed: integer().default(0).notNull(),
-    available: integer().notNull(),
     purchasedAt: timestamp().defaultNow().notNull(),
     metadata: jsonb(),
     isActive : boolean().default(false).notNull(),

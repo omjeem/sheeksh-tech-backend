@@ -36,6 +36,23 @@ systemAdminRouter.get(
   Controllers.SystemAdmin.getSystemInventory
 );
 
+systemAdminRouter.post(
+  "/notification/limit",
+  validateRequest(Validators.SystemAdmin.notifChannelUsageLimit),
+  Controllers.SystemAdmin.notifChannelUsageLimit
+);
+
+systemAdminRouter.put(
+  "/notification/limit",
+  validateRequest(Validators.SystemAdmin.notifChannelUsageLimit),
+  Controllers.SystemAdmin.notifChannelLimitUpdate
+);
+
+systemAdminRouter.get(
+  "/notification/limit",
+  Controllers.SystemAdmin.getNotifChannelUsageLimit
+);
+
 systemAdminRouter.get(
   "/notification/ledger",
   validateRequest(Validators.Notification.getLedgerInfo),

@@ -1,4 +1,14 @@
-import { and, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
+import {
+  and,
+  between,
+  count,
+  desc,
+  eq,
+  inArray,
+  notInArray,
+  sql,
+  sum,
+} from "drizzle-orm";
 import { db } from "@/db";
 import {
   notification_Table,
@@ -6,6 +16,7 @@ import {
   notificationRecipient_Table,
   notificationStatus_Table,
   notificationTemplate_Table,
+  notifiSystemInventory_Table,
   notifSchoolLedger_table,
   studentClassSectionTable,
   teachersTable,
@@ -14,8 +25,12 @@ import {
 import { PostgressTransaction_Type } from "@/types/types";
 import { SendNotificationInput } from "@/validators/types";
 import Constants, {
+  DATE_RANGE_TYPES,
+  NOTIFICATION_CHANNEL_TYPES,
   NOTIFICATION_LEDGER_REASONS_TYPE,
 } from "@/config/constants";
+import { Utils } from "@/utils";
+import Services from "..";
 
 const notificationVar = Constants.NOTIFICATION.VARIABLES;
 
@@ -629,23 +644,23 @@ export class Notification {
       notificationId?: string;
       creditsUsed?: number;
       metadata?: string;
+      channel?: NOTIFICATION_CHANNEL_TYPES;
     },
     tx?: PostgressTransaction_Type
   ) => {
     const dbObj = tx ?? db;
-    const logObj = {
-      schoolId: body.schoolId,
-      operation: body.operation,
-      ...(body.planInstanceId && { planInstanceId: body.planInstanceId }),
-      ...(body.channelId && { channelId: body.channelId }),
-      ...(body.notificationId && { notificationId: body.notificationId }),
-      ...(body.creditsUsed && { creditsUsed: body.creditsUsed }),
-      ...(body.metadata && { metadata: body.metadata }),
-    };
-    console.dir({ logObj }, { depth: null });
     return await dbObj
       .insert(notifSchoolLedger_table)
-      .values(logObj)
+      .values({
+        schoolId: body.schoolId,
+        operation: body.operation,
+        ...(body.planInstanceId && { planInstanceId: body.planInstanceId }),
+        ...(body.channelId && { channelId: body.channelId }),
+        ...(body.notificationId && { notificationId: body.notificationId }),
+        ...(body.creditsUsed && { creditsUsed: body.creditsUsed }),
+        ...(body.metadata && { metadata: body.metadata }),
+        ...(body.channel && { channelName: body.channel }),
+      })
       .returning();
   };
 
@@ -710,5 +725,60 @@ export class Notification {
         }),
       },
     });
+  };
+
+  static getCreditsUsagesRangeWise = async (body: {
+    frequency: DATE_RANGE_TYPES;
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    schoolId?: string;
+    planInstanceId?: string;
+    channelId?: string;
+    notificationId?: string;
+  }) => {
+    const { startDate, endDate } = Utils.getDateRange(body.frequency);
+    console.log({
+      startDate: startDate.toISOString(),
+      start: startDate.toLocaleDateString(),
+      endDate: endDate.toISOString(),
+      end: endDate.toLocaleDateString(),
+    });
+    const whereConditions = [
+      eq(
+        notifSchoolLedger_table.operation,
+        Constants.NOTIFICATION.BILLING.LEDGER_REASON.USAGE
+      ),
+      between(notifSchoolLedger_table.createdAt, startDate, endDate),
+      eq(notifSchoolLedger_table.channelName, body.channel),
+    ];
+    if (body.schoolId) {
+      whereConditions.push(eq(notifSchoolLedger_table.schoolId, body.schoolId));
+    }
+    if (body.planInstanceId) {
+      whereConditions.push(
+        eq(notifSchoolLedger_table.planInstanceId, body.planInstanceId)
+      );
+    }
+    if (body.channelId) {
+      whereConditions.push(
+        eq(notifSchoolLedger_table.channelId, body.channelId)
+      );
+    }
+
+    if (body.notificationId) {
+      whereConditions.push(
+        eq(notifSchoolLedger_table.notificationId, body.notificationId)
+      );
+    }
+
+    const info = await db
+      .select({
+        total: sql<number>`
+      COALESCE(SUM(${notifSchoolLedger_table.creditsUsed})::int, 0)
+    `,
+      })
+      .from(notifSchoolLedger_table)
+      .where(and(...whereConditions));
+
+    return info[0]?.total || 0;
   };
 }

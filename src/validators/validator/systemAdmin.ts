@@ -66,4 +66,14 @@ export class SystemAdmin {
       }),
     }),
   });
+
+  static notifChannelUsageLimit = z.object({
+    body: z.object({
+      id: z.uuid().optional(),
+      schoolId: z.uuid().optional(),
+      channel: z.enum(Constants.NOTIFICATION.CHANNEL),
+      frequency: z.enum(Constants.NOTIFICATION.BILLING.USAGE_LIMIT),
+      limit: z.number(),
+    }),
+  });
 }

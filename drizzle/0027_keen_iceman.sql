@@ -1,0 +1,1 @@
+ALTER TABLE "notif_channel_usage_limit" DROP CONSTRAINT "unique_org_limit";

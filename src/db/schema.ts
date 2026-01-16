@@ -39,3 +39,4 @@ export * from "./schema/notificationBilling/plans";
 export * from "./schema/notificationUsages/aggregateBalance";
 export * from "./schema/notificationUsages/schoolLedger";
 export * from "./schema/notificationUsages/systemLedger";
+export * from "./schema/notificationUsages/channelUsageLimit";

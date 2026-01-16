@@ -1,10 +1,13 @@
 import Constants, {
+  DATE_RANGE_TYPES,
   NOTIFICATION_CHANNEL_PROVIDERS_TYPES,
   NOTIFICATION_CHANNEL_TYPES,
+  ORGANIZATION_TYPES,
   SYSTEM_ADMIN_ACCESS_TYPES,
 } from "@/config/constants";
 import { db } from "@/db";
 import {
+  notifChannelUsageLimit_Table,
   notifiSystemInventory_Table,
   notifPlanFeatureLimit_Table,
   notifPlanFeatures_Table,
@@ -339,7 +342,6 @@ export class SystemAdmin {
       .insert(notifiSystemInventory_Table)
       .values({
         ...body,
-        available: body.unitsPurchased,
         isActive: true,
       })
       .returning();
@@ -350,13 +352,100 @@ export class SystemAdmin {
       .update(notifiSystemInventory_Table)
       .set({
         metadata,
-        updatedAt : new Date()
+        updatedAt: new Date(),
       })
       .where(eq(notifiSystemInventory_Table.id, id))
       .returning();
   };
 
-  static getSystemInventory = async () => {
-    return await db.query.notifiSystemInventory_Table.findMany({});
+  static getSystemInventory = async (body: {
+    active?: boolean;
+    channel?: NOTIFICATION_CHANNEL_TYPES;
+  }) => {
+    const whereConditions = [];
+    if (body.active) {
+      whereConditions.push(eq(notifiSystemInventory_Table.isActive, true));
+    }
+    if (body.channel) {
+      whereConditions.push(
+        eq(notifiSystemInventory_Table.channel, body.channel)
+      );
+    }
+    return await db.query.notifiSystemInventory_Table.findMany({
+      where: and(...whereConditions),
+    });
+  };
+
+  static notifChannelUsageLimit = async (body: {
+    schoolId?: string | undefined;
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    frequency: DATE_RANGE_TYPES;
+    limit: number;
+  }) => {
+    const isForCurrent = await this.getNotifChannelUsageLimit({
+      schoolId: body.schoolId,
+      frequency: body.frequency,
+      channel: body.channel,
+    });
+    if (isForCurrent.length > 0) {
+      throw new Error(
+        `Limit for ${body.frequency} is already set for the given organization`
+      );
+    }
+    return await db
+      .insert(notifChannelUsageLimit_Table)
+      .values({
+        ...body,
+        orgType: body.schoolId
+          ? Constants.ORGANIZATION.SCHOOL
+          : Constants.ORGANIZATION.SYSTEM,
+      })
+      .returning();
+  };
+
+  static getNotifChannelUsageLimit = async (body: {
+    schoolId?: string | undefined;
+    orgType?: ORGANIZATION_TYPES;
+    channel?: NOTIFICATION_CHANNEL_TYPES;
+    frequency?: DATE_RANGE_TYPES;
+  }) => {
+    const whereConditions = [];
+    if (body.schoolId) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.schoolId, body.schoolId)
+      );
+    }
+    if (body.orgType) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.orgType, body.orgType)
+      );
+    }
+    if (body.channel) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.channel, body.channel)
+      );
+    }
+    if (body.frequency) {
+      whereConditions.push(
+        eq(notifChannelUsageLimit_Table.frequency, body.frequency)
+      );
+    }
+    return await db.query.notifChannelUsageLimit_Table.findMany({
+      where: and(...whereConditions),
+      orderBy: (t) => sql`${t.createdAt} asc`,
+    });
+  };
+
+  static notifChannelLimitUpdate = async (body: {
+    id: string;
+    limit: number;
+  }) => {
+    return await db
+      .update(notifChannelUsageLimit_Table)
+      .set({
+        limit: body.limit,
+      })
+      .where(and(eq(notifChannelUsageLimit_Table.id, body.id)))
+      .returning();
   };
 }
