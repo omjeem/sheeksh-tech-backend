@@ -1,3 +1,4 @@
+import Constants from "@/config/constants";
 import { errorResponse, successResponse } from "@/config/response";
 import Services from "@/services";
 import { Utils } from "@/utils";
@@ -151,7 +152,7 @@ export class SystemAdmin {
       const limit = await Services.SystemAdmin.notifChannelUsageLimit(body);
       return successResponse(res, "Limit Set Successfully", limit);
     } catch (error: any) {
-      console.log("Error in Creating the limit", error)
+      console.log("Error in Creating the limit", error);
       return errorResponse(res, error.message || error);
     }
   };
@@ -173,6 +174,35 @@ export class SystemAdmin {
       return successResponse(res, "Limits Updated Successfully", updated);
     } catch (error: any) {
       return errorResponse(res, error.message || error);
+    }
+  };
+
+  static createNewSystemAdminUser = async (req: Request, res: Response) => {
+    try {
+      const body = req.body;
+      const { name, email, access, password, phone } = body;
+      if (access === Constants.SYSTEM_ADMIN.ACCESS.SUPER_ROOT) {
+        throw new Error(
+          "SUPER_ROOT user already exits there can't be two SUPER_ROOT users"
+        );
+      }
+      const hashedPassword = Utils.hashPassword(password, email);
+      const obj = {
+        name,
+        email,
+        access,
+        password: hashedPassword,
+        phone,
+      };
+      const newUser = await Services.SystemAdmin.createSystemAdminUser(obj);
+      console.log({ body });
+      return successResponse(res, "Admin created Succesfully", newUser);
+    } catch (error: any) {
+      let message = error.message || error;
+      if (error?.cause?.code === "23505") {
+        message = error?.cause?.detail;
+      }
+      return errorResponse(res, message);
     }
   };
 }

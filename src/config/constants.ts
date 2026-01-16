@@ -6,8 +6,13 @@ export const NOTIFICATION_VARIABLE_LIST = [
   "recipientDob",
 ] as const;
 
-const SYSTEM_ADMIN_ACCESS = ["READ", "WRITE", "ROOT"] as const;
-export type SYSTEM_ADMIN_ACCESS_TYPES = typeof SYSTEM_ADMIN_ACCESS;
+const SYSTEM_ADMIN_ACCESS = [
+  "VIEWER",
+  "MAINTAINER",
+  "ROOT",
+  "SUPER_ROOT",
+] as const;
+export type SYSTEM_ADMIN_ACCESS_TYPES = (typeof SYSTEM_ADMIN_ACCESS)[number];
 
 const USER_ROLES = [
   "ADMIN",
