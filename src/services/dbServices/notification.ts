@@ -1,14 +1,4 @@
-import {
-  and,
-  between,
-  count,
-  desc,
-  eq,
-  inArray,
-  notInArray,
-  sql,
-  sum,
-} from "drizzle-orm";
+import { and, between, eq, inArray, notInArray, sql } from "drizzle-orm";
 import { db } from "@/db";
 import {
   notification_Table,
@@ -304,6 +294,20 @@ export class Notification {
           eq(studentClassSectionTable.schoolId, schoolId),
           eq(studentClassSectionTable.sessionId, sessionId),
         ];
+        if (!body.students.sentAll) {
+          if (body.students.isInclude) {
+            studentsWhereConditions.push(
+              inArray(studentClassSectionTable.studentId, body.students.values)
+            );
+          } else {
+            studentsWhereConditions.push(
+              notInArray(
+                studentClassSectionTable.studentId,
+                body.students.values
+              )
+            );
+          }
+        }
         const students = await db.query.studentClassSectionTable.findMany({
           where: and(...studentsWhereConditions),
           columns: {
@@ -324,19 +328,7 @@ export class Notification {
             },
           },
         });
-        const studentsIdSet = new Set(...body.students.values);
-
-        const studentsInfo = students.map((s) => {
-          if (body?.students?.sentAll) {
-            return s.student.user;
-          } else if (body.students?.isInclude) {
-            if (studentsIdSet.has(s.student.id)) return s.student.user;
-          } else {
-            if (!studentsIdSet.has(s.student.id)) return s.student.user;
-          }
-        });
-
-        userInfo.push(...studentsInfo);
+        userInfo.push(...students.map((s) => s.student.user));
       } else if (body.sections) {
         for (const s of body.sections) {
           const whereConditions = [
@@ -346,7 +338,6 @@ export class Notification {
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
-              console.log("Is Include data");
               whereConditions.push(
                 inArray(studentClassSectionTable.studentId, [...s.values])
               );
