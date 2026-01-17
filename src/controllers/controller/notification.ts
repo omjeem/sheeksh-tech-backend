@@ -652,7 +652,7 @@ class NotificationHelper {
         const { channel, unitsTotal, unitsConsumed } = plan;
         const unitsLeft = unitsTotal - unitsConsumed;
         if (channelsBalanceMap.has(channel)) {
-          const newBal = channelsBalanceMap.get(channel) || 0 + unitsLeft;
+          const newBal = (channelsBalanceMap.get(channel) || 0) + unitsLeft;
           channelsBalanceMap.set(channel, newBal);
         } else {
           channelsBalanceMap.set(channel, unitsLeft);

@@ -412,7 +412,7 @@ export class Notification {
         userInfo.push(...teachersInfo.map((t) => t.user));
       }
     }
-    return userInfo;
+    return userInfo.filter(Boolean);
   };
 
   static getNotification = async (body: {
