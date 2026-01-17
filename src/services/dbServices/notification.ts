@@ -441,6 +441,7 @@ export class Notification {
           },
         },
       },
+      orderBy : (t)=> sql`${t.createdAt} desc`
     });
   };
 
