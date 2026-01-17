@@ -5,6 +5,7 @@ export class Auth {
     body: z.object({
       email: z.email(),
       password: z.string(),
+      isSystemAdmin: z.boolean().optional(),
     }),
   });
 }

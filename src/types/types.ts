@@ -1,5 +1,5 @@
-import Constants from "../config/constants";
-import { db } from "../config/db";
+import Constants, { SYSTEM_ADMIN_ACCESS_TYPES } from "../config/constants";
+import { db } from "@/db";
 
 export interface UserTokenPayload {
   user: {
@@ -7,6 +7,8 @@ export interface UserTokenPayload {
     email: string;
     schoolId: string;
     role: UserRolesType;
+    // Used For the System Admin Only
+    access: SYSTEM_ADMIN_ACCESS_TYPES;
   };
 }
 

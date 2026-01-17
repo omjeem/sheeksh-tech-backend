@@ -1,0 +1,1 @@
+ALTER TABLE "notif_purchased_channel" ADD COLUMN "isExhausted" boolean DEFAULT false NOT NULL;

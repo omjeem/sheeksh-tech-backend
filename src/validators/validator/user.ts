@@ -1,5 +1,5 @@
 import z from "zod";
-import Constants from "../../config/constants";
+import Constants from "@/config/constants";
 
 export class User {
   static search = z.object({

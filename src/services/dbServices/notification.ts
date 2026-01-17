@@ -1,18 +1,36 @@
-import { and, eq, inArray, notInArray } from "drizzle-orm";
-import { db } from "../../config/db";
+import {
+  and,
+  between,
+  count,
+  desc,
+  eq,
+  inArray,
+  notInArray,
+  sql,
+  sum,
+} from "drizzle-orm";
+import { db } from "@/db";
 import {
   notification_Table,
   notificationCategory_Table,
   notificationRecipient_Table,
   notificationStatus_Table,
   notificationTemplate_Table,
-  studentClassesTable,
+  notifiSystemInventory_Table,
+  notifSchoolLedger_table,
+  studentClassSectionTable,
   teachersTable,
   usersTable,
-} from "../../config/schema";
-import { PostgressTransaction_Type } from "../../types/types";
-import { SendNotificationInput } from "../../validators/types";
-import Constants from "../../config/constants";
+} from "@/db/schema";
+import { PostgressTransaction_Type } from "@/types/types";
+import { SendNotificationInput } from "@/validators/types";
+import Constants, {
+  DATE_RANGE_TYPES,
+  NOTIFICATION_CHANNEL_TYPES,
+  NOTIFICATION_LEDGER_REASONS_TYPE,
+} from "@/config/constants";
+import { Utils } from "@/utils";
+import Services from "..";
 
 const notificationVar = Constants.NOTIFICATION.VARIABLES;
 
@@ -283,10 +301,10 @@ export class Notification {
     } else {
       if (body.students) {
         const studentsWhereConditions = [
-          eq(studentClassesTable.schoolId, schoolId),
-          eq(studentClassesTable.sessionId, sessionId),
+          eq(studentClassSectionTable.schoolId, schoolId),
+          eq(studentClassSectionTable.sessionId, sessionId),
         ];
-        const students = await db.query.studentClassesTable.findMany({
+        const students = await db.query.studentClassSectionTable.findMany({
           where: and(...studentsWhereConditions),
           columns: {
             id: true,
@@ -322,42 +340,44 @@ export class Notification {
       } else if (body.sections) {
         for (const s of body.sections) {
           const whereConditions = [
-            eq(studentClassesTable.sessionId, sessionId),
-            eq(studentClassesTable.schoolId, schoolId),
-            eq(studentClassesTable.sectionId, s.id),
+            eq(studentClassSectionTable.sessionId, sessionId),
+            eq(studentClassSectionTable.schoolId, schoolId),
+            eq(studentClassSectionTable.sectionId, s.id),
           ];
           if (!s.sentAll) {
             if (s.isInclude) {
               console.log("Is Include data");
               whereConditions.push(
-                inArray(studentClassesTable.studentId, [...s.values])
+                inArray(studentClassSectionTable.studentId, [...s.values])
               );
             } else {
               whereConditions.push(
-                notInArray(studentClassesTable.studentId, [...s.values])
+                notInArray(studentClassSectionTable.studentId, [...s.values])
               );
             }
           }
-          const sectionsData = await db.query.studentClassesTable.findMany({
-            where: and(...whereConditions),
-            columns: {
-              sectionId: true,
-            },
-            with: {
-              student: {
-                columns: {
-                  id: true,
-                },
-                with: {
-                  user: {
-                    columns: {
-                      ...requiredUserFields,
+          const sectionsData = await db.query.studentClassSectionTable.findMany(
+            {
+              where: and(...whereConditions),
+              columns: {
+                sectionId: true,
+              },
+              with: {
+                student: {
+                  columns: {
+                    id: true,
+                  },
+                  with: {
+                    user: {
+                      columns: {
+                        ...requiredUserFields,
+                      },
                     },
                   },
                 },
               },
-            },
-          });
+            }
+          );
           console.dir({ sectionsData }, { depth: null });
           userInfo.push(...sectionsData.map((s) => s.student.user));
         }
@@ -392,7 +412,7 @@ export class Notification {
         userInfo.push(...teachersInfo.map((t) => t.user));
       }
     }
-    return userInfo;
+    return userInfo.filter(Boolean);
   };
 
   static getNotification = async (body: {
@@ -424,6 +444,7 @@ export class Notification {
       with: {
         status: {
           columns: {
+            notificationId: false,
             updatedAt: false,
             isDeleted: false,
           },
@@ -494,6 +515,7 @@ export class Notification {
           columns: {
             id: true,
             email: true,
+            phone: true,
           },
         },
       },
@@ -516,7 +538,10 @@ export class Notification {
     }
     return await db
       .update(notificationRecipient_Table)
-      .set(updateObj)
+      .set({
+        ...updateObj,
+        updatedAt: new Date(),
+      })
       .where(
         and(
           eq(notificationRecipient_Table.notificationId, body.notificationId),
@@ -580,6 +605,7 @@ export class Notification {
       .update(notificationRecipient_Table)
       .set({
         seenOnPortalAt: new Date(),
+        updatedAt: new Date(),
       })
       .where(
         and(
@@ -611,5 +637,152 @@ export class Notification {
         )
       )
       .returning();
+  };
+
+  static addLogsIntoSchoolLedger = async (
+    body: {
+      schoolId: string;
+      operation: NOTIFICATION_LEDGER_REASONS_TYPE;
+      planInstanceId?: string;
+      channelId?: string;
+      notificationId?: string;
+      creditsUsed?: number;
+      metadata?: string;
+      channel?: NOTIFICATION_CHANNEL_TYPES;
+    },
+    tx?: PostgressTransaction_Type
+  ) => {
+    const dbObj = tx ?? db;
+    return await dbObj
+      .insert(notifSchoolLedger_table)
+      .values({
+        schoolId: body.schoolId,
+        operation: body.operation,
+        ...(body.planInstanceId && { planInstanceId: body.planInstanceId }),
+        ...(body.channelId && { channelId: body.channelId }),
+        ...(body.notificationId && { notificationId: body.notificationId }),
+        ...(body.creditsUsed && { creditsUsed: body.creditsUsed }),
+        ...(body.metadata && { metadata: body.metadata }),
+        ...(body.channel && { channelName: body.channel }),
+      })
+      .returning();
+  };
+
+  static getLedger = async (body: {
+    schoolId?: string;
+    id?: string;
+    pageNo: string;
+    pageSize: string;
+  }) => {
+    const limit = parseInt(body.pageSize);
+    const offSet = (parseInt(body.pageNo) - 1) * limit;
+    const whereConditions = [];
+    if (body.schoolId) {
+      whereConditions.push(eq(notifSchoolLedger_table.schoolId, body.schoolId));
+    }
+    if (body.id) {
+      whereConditions.push(eq(notifSchoolLedger_table.id, body.id));
+    }
+    return await db.query.notifSchoolLedger_table.findMany({
+      where: and(...whereConditions),
+      columns: {
+        id: true,
+        operation: true,
+        creditsUsed: true,
+        metadata: true,
+        createdAt: true,
+      },
+      orderBy: (t) => sql`${t.createdAt} desc`,
+      limit: limit,
+      offset: offSet,
+      with: {
+        channel: {
+          columns: {
+            id: true,
+            channel: true,
+          },
+        },
+        planInstance: {
+          columns: {
+            id: true,
+            key: true,
+            name: true,
+          },
+        },
+        ...(!body.schoolId && {
+          school: {
+            columns: {
+              id: true,
+              name: true,
+              url: true,
+            },
+          },
+        }),
+        ...(body.id && {
+          notification: {
+            columns: {
+              id: true,
+              payload: true,
+              channels: true,
+            },
+          },
+        }),
+      },
+    });
+  };
+
+  static getCreditsUsagesRangeWise = async (body: {
+    frequency: DATE_RANGE_TYPES;
+    channel: NOTIFICATION_CHANNEL_TYPES;
+    schoolId?: string;
+    planInstanceId?: string;
+    channelId?: string;
+    notificationId?: string;
+  }) => {
+    const { startDate, endDate } = Utils.getDateRange(body.frequency);
+    console.log({
+      startDate: startDate.toISOString(),
+      start: startDate.toLocaleDateString(),
+      endDate: endDate.toISOString(),
+      end: endDate.toLocaleDateString(),
+    });
+    const whereConditions = [
+      eq(
+        notifSchoolLedger_table.operation,
+        Constants.NOTIFICATION.BILLING.LEDGER_REASON.USAGE
+      ),
+      between(notifSchoolLedger_table.createdAt, startDate, endDate),
+      eq(notifSchoolLedger_table.channelName, body.channel),
+    ];
+    if (body.schoolId) {
+      whereConditions.push(eq(notifSchoolLedger_table.schoolId, body.schoolId));
+    }
+    if (body.planInstanceId) {
+      whereConditions.push(
+        eq(notifSchoolLedger_table.planInstanceId, body.planInstanceId)
+      );
+    }
+    if (body.channelId) {
+      whereConditions.push(
+        eq(notifSchoolLedger_table.channelId, body.channelId)
+      );
+    }
+
+    if (body.notificationId) {
+      whereConditions.push(
+        eq(notifSchoolLedger_table.notificationId, body.notificationId)
+      );
+    }
+
+    const info = await db
+      .select({
+        total: sql<number>`
+      COALESCE(SUM(${notifSchoolLedger_table.creditsUsed})::int, 0)
+    `,
+      })
+      .from(notifSchoolLedger_table)
+      .where(and(...whereConditions));
+
+    return info[0]?.total || 0;
   };
 }

@@ -1,7 +1,7 @@
 import express from "express";
-import Controllers from "../../controllers";
-import { validateRequest } from "../../middlewares/zodMiddleware";
-import Validators from "../../validators";
+import Controllers from "@/controllers";
+import { validateRequest } from "@/middlewares/zodMiddleware";
+import Validators from "@/validators";
 
 const userRouter = express.Router();
 

@@ -6,6 +6,7 @@ import { Section } from "./controller/section";
 import { Session } from "./controller/session";
 import { Student } from "./controller/student";
 import { Subject } from "./controller/subject";
+import { SystemAdmin } from "./controller/systemAdmin";
 import { Teacher } from "./controller/teacher";
 import { User } from "./controller/user";
 
@@ -19,7 +20,8 @@ const Controllers = {
   Student,
   Teacher,
   Subject,
-  Notification
+  Notification,
+  SystemAdmin
 };
 
 export default Controllers;

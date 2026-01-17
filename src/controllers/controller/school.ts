@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "../../config/response";
-import Services from "../../services";
-import Constants from "../../config/constants";
+import { errorResponse, successResponse } from "@/config/response";
+import Services from "@/services";
+import Constants from "@/config/constants";
 
 export class School {
   static createSchool = async (req: Request, res: Response) => {

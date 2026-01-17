@@ -1,5 +1,5 @@
 import { drizzle } from "drizzle-orm/node-postgres";
-import { envConfigs } from "../config/envConfig";
+import { envConfigs } from "@/config/envConfig";
 import * as schema from "./schema";
 import { Client } from "pg";
 

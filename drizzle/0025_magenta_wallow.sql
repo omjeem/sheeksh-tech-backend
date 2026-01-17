@@ -1,0 +1,1 @@
+ALTER TABLE "notif_school_ledger" ADD COLUMN "channelName" varchar(30);

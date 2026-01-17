@@ -1,4 +1,4 @@
-import { NotificationTemplatePayload } from "../../types/types";
+import { NotificationTemplatePayload } from "@/types/types";
 
 export class notification {
   private static applyTemplateVariables = (

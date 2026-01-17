@@ -1,17 +1,48 @@
 import express from "express";
-import { adminMiddleware } from "../../middlewares/userRolesMiddleware";
-import { authMiddleware } from "../../middlewares/authMiddleware";
-import Controllers from "../../controllers";
-import { validateRequest } from "../../middlewares/zodMiddleware";
-import Validators from "../../validators";
+import { adminMiddleware } from "@/middlewares/userRolesMiddleware";
+import { authMiddleware } from "@/middlewares/authMiddleware";
+import Controllers from "@/controllers";
+import { validateRequest } from "@/middlewares/zodMiddleware";
+import Validators from "@/validators";
 
 const notificationRouter = express.Router();
 notificationRouter.use(authMiddleware);
 
 notificationRouter.get(
+  "/variables",
+  Controllers.Notification.getNotificationDynamicVariable
+);
+
+notificationRouter.get(
+  "/plans",
+  adminMiddleware,
+  Controllers.Notification.getAllNotificationPlans
+);
+
+notificationRouter.get(
+  "/plans/purchased",
+  adminMiddleware,
+  Controllers.Notification.getAllPurchasedPlans
+);
+
+notificationRouter.get(
+  "/plans/purchased/:planInstanceId",
+  adminMiddleware,
+  validateRequest(Validators.Notification.planInstanceId),
+  Controllers.Notification.getAllPurchasedPlansDetail
+);
+
+notificationRouter.get(
   "/admin",
   adminMiddleware,
   Controllers.Notification.getAdminNotifications
+);
+
+notificationRouter.get(
+  "/admin/ledger",
+  adminMiddleware,
+  validateRequest(Validators.Notification.getLedgerInfo),
+  Controllers.Notification.getLedger
 );
 
 notificationRouter.get(
@@ -33,7 +64,7 @@ notificationRouter.post(
   "/send/draft/:notificationId",
   adminMiddleware,
   validateRequest(Validators.Notification.paramsNotificationId),
-  Controllers.Notification.sendDraftedNotification
+  Controllers.Notification.broadcastDraftedNotification
 );
 
 notificationRouter.post(

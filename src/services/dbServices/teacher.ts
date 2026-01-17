@@ -1,5 +1,5 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
-import { db } from "../../config/db";
+import { and, eq } from "drizzle-orm";
+import { db } from "@/db";
 import {
   sectionsTable,
   sessionsTable,
@@ -7,11 +7,11 @@ import {
   teacherClassSubjectSectionTable,
   teachersTable,
   usersTable,
-} from "../../config/schema";
+} from "@/db/schema";
 import { Utils } from "../../utils";
-import { CreateTeachers_Type } from "../../validators/validator/teacher";
+import { CreateTeachers_Type } from "@/validators/validator/teacher";
 import Services from "..";
-import Constants from "../../config/constants";
+import Constants from "@/config/constants";
 
 export class Teacher {
   static createTeachers = async (
@@ -36,6 +36,7 @@ export class Teacher {
           dateOfBirth: Utils.toUTCFromIST(d.dateOfBirth),
           firstName: d.firstName,
           lastName: d.lastName,
+          phone: d.phone,
         };
       });
       const usersResponse = await tx
@@ -45,7 +46,7 @@ export class Teacher {
           userId: usersTable.id,
         });
 
-        const teachersDataTofeed = usersResponse.map((d, i) => {
+      const teachersDataTofeed = usersResponse.map((d, i) => {
         return {
           userId: d.userId,
           schoolId,
