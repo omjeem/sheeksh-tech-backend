@@ -171,9 +171,9 @@ export class SystemAdmin {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
     // if (body.isExhausted) {
-    whereConditions.push(
-      eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
-    );
+    // whereConditions.push(
+    //   eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
+    // );
     // }
     if (body.isActive) {
       whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));

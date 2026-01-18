@@ -179,6 +179,7 @@ export class Broadcast {
       // if (error) {
       //   return { success: false, message: error.message };
       // }
+      // console.log({data, error})
       return { success: true, data: {} };
     } catch (error: any) {
       console.log("Error In resend Api", error);
