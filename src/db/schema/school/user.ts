@@ -52,9 +52,9 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   templateCreated: many(notificationTemplate_Table),
   purchasedPlan: many(notifPlanTrans_Table),
   guardian: many(userGuardiansTable, {
-    relationName: "guardian_children",
+    relationName: "children_guardian",
   }),
   children: many(userGuardiansTable, {
-    relationName: "children_guardian",
+    relationName: "guardian_children",
   }),
 }));

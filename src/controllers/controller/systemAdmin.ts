@@ -1,5 +1,9 @@
 import Constants from "@/config/constants";
-import { errorResponse, successResponse } from "@/config/response";
+import {
+  errorResponse,
+  sqlDuplicateError,
+  successResponse,
+} from "@/config/response";
 import Services from "@/services";
 import { Utils } from "@/utils";
 import {
@@ -198,11 +202,7 @@ export class SystemAdmin {
       console.log({ body });
       return successResponse(res, "Admin created Succesfully", newUser);
     } catch (error: any) {
-      let message = error.message || error;
-      if (error?.cause?.code === "23505") {
-        message = error?.cause?.detail;
-      }
-      return errorResponse(res, message);
+      return errorResponse(res, sqlDuplicateError(error));
     }
   };
 }
