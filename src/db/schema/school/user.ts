@@ -24,7 +24,7 @@ export const usersTable = pgTable("users", {
   role: varchar({ length: 255 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   email: varchar({ length: 255 }).unique().notNull(),
-  phone: varchar().notNull(),
+  phone: varchar().notNull().unique(),
   dateOfBirth: timestamp(),
   isSuspended: boolean().default(false),
   firstName: varchar({ length: 100 }).notNull(),
