@@ -14,6 +14,7 @@ import { notification_Table } from "../notification/notification";
 import { notificationCategory_Table } from "../notification/notificationCategory";
 import { notificationTemplate_Table } from "../notification/notificationTemplate";
 import { notifPlanTrans_Table } from "../notificationBilling/planTransaction";
+import { userGuardiansTable } from "./guardians";
 
 export const usersTable = pgTable("users", {
   id: uuid().primaryKey().defaultRandom(),
@@ -23,7 +24,7 @@ export const usersTable = pgTable("users", {
   role: varchar({ length: 255 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   email: varchar({ length: 255 }).unique().notNull(),
-  phone: varchar().notNull(),
+  phone: varchar().notNull().unique(),
   dateOfBirth: timestamp(),
   isSuspended: boolean().default(false),
   firstName: varchar({ length: 100 }).notNull(),
@@ -50,4 +51,10 @@ export const usersRelations = relations(usersTable, ({ one, many }) => ({
   categoryCreated: many(notificationCategory_Table),
   templateCreated: many(notificationTemplate_Table),
   purchasedPlan: many(notifPlanTrans_Table),
+  guardian: many(userGuardiansTable, {
+    relationName: "children_guardian",
+  }),
+  children: many(userGuardiansTable, {
+    relationName: "guardian_children",
+  }),
 }));

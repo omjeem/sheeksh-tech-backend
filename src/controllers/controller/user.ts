@@ -1,33 +1,39 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "@/config/response";
-import { db } from "@/db";
-import { usersTable } from "@/db/schema";
+import {
+  errorResponse,
+  sqlDuplicateError,
+  successResponse,
+} from "@/config/response";
 import Services from "@/services";
 import Constants from "@/config/constants";
-import { BulkUserSearch } from "@/validators/types";
+import { BulkUserSearch, CreateGuardian_Type } from "@/validators/types";
+import { Utils } from "@/utils";
 
 export class User {
-  static create = async (req: Request, res: Response) => {
+  static createGuardian = async (req: Request, res: Response) => {
     try {
-      const { role, password, email, firstName, lastName, phone } = req.body;
-      const schoolId = req.user.schoolId;
-      const userData = await db.insert(usersTable).values({
-        schoolId,
-        role,
-        password,
-        email,
-        firstName,
-        lastName,
-        phone
+      const body: CreateGuardian_Type["body"] = req.body;
+      const { schoolId } = req.user;
+
+      const dataToFeed = body.map((u) => {
+        return {
+          ...u,
+          password: Utils.hashPassword(u.password, u.email),
+          role: Constants.USER_ROLES.GUARDIAN,
+          schoolId,
+          dateOfBirth: Utils.toUTCFromIST(u.dateOfBirth) ?? null,
+          isSuspended: false,
+        };
       });
+      const userData = await Services.User.addNewUsers(dataToFeed);
       return successResponse(
         res,
-        "User Created Successfully",
+        "Guardian Created Successfully",
         userData,
         Constants.STATUS_CODE.CREATED
       );
     } catch (error: any) {
-      return errorResponse(res, error.message || error);
+      return errorResponse(res, sqlDuplicateError(error));
     }
   };
 
@@ -61,6 +67,7 @@ export class User {
         ...(query.sectionId && { sectionId: query.sectionId }),
         ...(query.sessionId && { sessionId: query.sessionId }),
         ...(query.searchQuery && { searchQuery: query.searchQuery }),
+        ...(query.role && { role: query.role }),
       };
       if (query.type === Constants.USER_ROLES.STUDENT) {
         if (query.studentId) {
@@ -87,8 +94,58 @@ export class User {
           offSet,
         });
         finalResponse.push(...responseData);
+      } else if (query.type === "USER") {
+        const responseData = await Services.User.userSearch({
+          schoolId,
+          searchObj,
+          limit,
+          offSet,
+        });
+        finalResponse.push(...responseData);
       }
       return successResponse(res, "User Searched Successfully", finalResponse);
+    } catch (error: any) {
+      return errorResponse(res, error.message || error);
+    }
+  };
+
+  static userGuardianRelationMap = async (req: Request, res: Response) => {
+    try {
+      const { userId, schoolId } = req.user;
+      const body = req.body;
+      const data = await Services.User.userGuardianRelationMap({
+        schoolId,
+        data: body,
+      });
+      return successResponse(
+        res,
+        "User Successfully mapped with the guardians",
+        data
+      );
+    } catch (error: any) {
+      return errorResponse(
+        res,
+        sqlDuplicateError(
+          error,
+          "Some user relation with guardian already exists"
+        )
+      );
+    }
+  };
+
+  static getAllUserGuardians = async (req: Request, res: Response) => {
+    try {
+      const { schoolId } = req.user;
+      const { userId }: any = req.params;
+      const userData = await Services.User.getGuardians({
+        schoolId,
+        userId: userId,
+      });
+      return successResponse(
+        res,
+        "All Guardians Fetched Successfully",
+        userData
+      );
     } catch (error: any) {
       return errorResponse(res, error.message || error);
     }

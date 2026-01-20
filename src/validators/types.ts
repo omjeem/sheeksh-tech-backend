@@ -20,3 +20,11 @@ export type AddCreditsIntoSystemInventory_Type = z.infer<
 export type NotificationChannelLimits_Type = z.infer<
   typeof Validators.SystemAdmin.notifChannelUsageLimit
 >;
+
+export type UserGuardianMap_Type = z.infer<
+  typeof Validators.User.userGuardianRelationMap
+>;
+
+export type CreateGuardian_Type = z.infer<
+  typeof Validators.User.createGuardian
+>;
