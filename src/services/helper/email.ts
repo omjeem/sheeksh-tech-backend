@@ -171,7 +171,7 @@ export class Broadcast {
     body: string;
   }) => {
     try {
-      if (envConfigs.nodeEnv === "production") {
+      if (envConfigs.nodeEnv === "prod") {
         const footerHtml = `
          <hr style="margin-top:24px;margin-bottom:12px;border:none;border-top:1px solid #e5e7eb;" />
          <p style="font-size:12px;color:#6b7280;text-align:center;margin:0;">
@@ -198,8 +198,6 @@ export class Broadcast {
         console.log("Sending from Demo");
         return { success: true, data: {} };
       }
-
-      // console.log({data, error})
     } catch (error: any) {
       console.log("Error In resend Api", error);
       return { success: false, message: error.message };

@@ -25,7 +25,7 @@ userRouter.post(
 );
 
 userRouter.get(
-  "/guardian/:userId",
+  "/guardian-children/:userId",
   validateRequest(Validators.User.getAllUserGuardians),
   Controllers.User.getAllUserGuardians
 );

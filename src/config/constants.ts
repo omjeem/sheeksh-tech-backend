@@ -24,7 +24,16 @@ const USER_ROLES = [
   "SUPER_ADMIN",
 ] as const;
 
-const GUARDIANS_RELATIONS = ["FATHER", "MOTHER", "BROTHER", "SISTER"] as const;
+const GUARDIANS_RELATIONS = [
+  "FATHER",
+  "MOTHER",
+  "BROTHER",
+  "SISTER",
+  "GRAND_FATHER",
+  "GRAND_MOTHER",
+  "UNCLE",
+  "AUNTY",
+] as const;
 export type GUARDIANS_TYPES = (typeof GUARDIANS_RELATIONS)[number];
 
 export const NOTIFICATION_CHANNEL_LIST = ["EMAIL", "SMS"] as const;
@@ -76,7 +85,9 @@ export type NOTIFICATION_LEDGER_REASONS_TYPE =
 export type DATE_RANGE_TYPES = (typeof N_BILLING.USAGE_LIMIT)[number];
 
 const Constants = {
-  GUARDIANS_RELATIONS: Object.fromEntries(GUARDIANS_RELATIONS.map((v) => [v, v])) as {
+  GUARDIANS_RELATIONS: Object.fromEntries(
+    GUARDIANS_RELATIONS.map((v) => [v, v])
+  ) as {
     readonly [K in (typeof GUARDIANS_RELATIONS)[number]]: K;
   },
   ORGANIZATION: Object.fromEntries(ORGANIZATION.map((v) => [v, v])) as {

@@ -280,6 +280,7 @@ export class User {
       phone: true,
       firstName: true,
       lastName: true,
+      role: true,
     };
     return await db.query.usersTable.findFirst({
       where: and(
@@ -297,6 +298,19 @@ export class User {
           },
           with: {
             guardian: {
+              columns: {
+                ...getUserInfo,
+              },
+            },
+          },
+        },
+        children: {
+          columns: {
+            isPrimary: true,
+            relation: true,
+          },
+          with: {
+            children: {
               columns: {
                 ...getUserInfo,
               },
