@@ -15,6 +15,7 @@ const envVarsSchema = z.object({
     .nonempty()
     .transform((str) => parseInt(str, 10)),
   RENSEND_API_KEY: z.string().nonempty(),
+  NODE_ENV: z.string().default("dev"),
 });
 
 const envVars = envVarsSchema.parse(process.env);
@@ -30,4 +31,5 @@ export const envConfigs = {
   notification: {
     resendApiKey: envVars.RENSEND_API_KEY,
   },
+  nodeEnv: envVars.NODE_ENV,
 };

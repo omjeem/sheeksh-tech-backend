@@ -402,6 +402,28 @@ export class Notification {
         console.dir({ teachersInfo }, { depth: null });
         userInfo.push(...teachersInfo.map((t) => t.user));
       }
+      if (body.guardians) {
+        const whereConditions = [
+          eq(usersTable.schoolId, schoolId),
+          eq(usersTable.role, Constants.USER_ROLES.GUARDIAN),
+        ];
+        if (!body.guardians.sentAll) {
+          if (body.guardians.isInclude) {
+            whereConditions.push(
+              inArray(usersTable.id, [...body.guardians.values])
+            );
+          } else {
+            whereConditions.push(
+              notInArray(usersTable.id, [...body.guardians.values])
+            );
+          }
+        }
+        const users = await db.query.usersTable.findMany({
+          where: and(...whereConditions),
+          columns: { ...requiredUserFields },
+        });
+        userInfo.push(...users);
+      }
     }
     return userInfo.filter(Boolean);
   };
@@ -441,7 +463,7 @@ export class Notification {
           },
         },
       },
-      orderBy : (t)=> sql`${t.createdAt} desc`
+      orderBy: (t) => sql`${t.createdAt} desc`,
     });
   };
 

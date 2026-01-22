@@ -64,6 +64,7 @@ export class Notification {
       users: this.sendAllOrExclude,
       students: this.sendAllOrExclude,
       teachers: this.sendAllOrExclude,
+      guardians: this.sendAllOrExclude,
       sections: z
         .array(
           z.object({

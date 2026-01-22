@@ -1,6 +1,7 @@
 import Services from "..";
 import Constants, { NOTIFICATION_CHANNEL_TYPES } from "@/config/constants";
 import { resend } from "@/config/emailClients";
+import { envConfigs } from "@/config/envConfig";
 import { db } from "@/db";
 import {
   notifiSystemInventory_Table,
@@ -170,16 +171,33 @@ export class Broadcast {
     body: string;
   }) => {
     try {
-      // const { data, error } = await resend.emails.send({
-      //   from: body.from,
-      //   to: [...body.to],
-      //   subject: body.subject,
-      //   html: body.body,
-      // });
-      // if (error) {
-      //   return { success: false, message: error.message };
-      // }
-      return { success: true, data: {} };
+      if (envConfigs.nodeEnv === "prod") {
+        const footerHtml = `
+         <hr style="margin-top:24px;margin-bottom:12px;border:none;border-top:1px solid #e5e7eb;" />
+         <p style="font-size:12px;color:#6b7280;text-align:center;margin:0;">
+           Sent by <strong>shikshatech.org</strong><br />
+           Contact us at
+           <a href="mailto:contact@shikshatech.org" style="color:#2563eb;text-decoration:none;">
+             contact@shikshatech.org
+           </a>
+         </p>
+        `;
+
+        const { data, error } = await resend.emails.send({
+          from: body.from,
+          to: [...body.to],
+          subject: body.subject,
+          html: `${body.body}${footerHtml}`,
+        });
+        if (error) {
+          return { success: false, message: error.message };
+        }
+        console.log("Sending from Production");
+        return { success: true, data };
+      } else {
+        console.log("Sending from Demo");
+        return { success: true, data: {} };
+      }
     } catch (error: any) {
       console.log("Error In resend Api", error);
       return { success: false, message: error.message };

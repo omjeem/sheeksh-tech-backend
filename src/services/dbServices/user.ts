@@ -5,12 +5,14 @@ import {
   studentsTable,
   teacherClassSubjectSectionTable,
   teachersTable,
+  userGuardiansTable,
   usersTable,
 } from "@/db/schema";
 import { UserRolesType } from "@/types/types";
 import { UsersTable_Type } from "@/db/types";
-import { BulkUserSearch } from "@/validators/types";
+import { BulkUserSearch, UserGuardianMap_Type } from "@/validators/types";
 import { Utils } from "@/utils";
+import Constants, { GUARDIANS_TYPES } from "@/config/constants";
 
 export class User {
   static isUsersExists = async (emails: string[]) => {
@@ -26,12 +28,20 @@ export class User {
   };
 
   static addNewUsers = async (
-    data: [Omit<UsersTable_Type, "id" | "createdAt" | "updatedAt">],
-    tx: any
+    data: Omit<UsersTable_Type, "id" | "createdAt" | "updatedAt">[],
+    tx?: any
   ) => {
+    const dbObj = tx ?? db;
     const emails = data.map((d) => d.email);
     await this.isUsersExists(emails);
-    return await tx.insert(usersTable).values(data).returning();
+    return await dbObj.insert(usersTable).values(data).returning({
+      id: usersTable.id,
+      firstName: usersTable.firstName,
+      lastName: usersTable.lastName,
+      role: usersTable.role,
+      email: usersTable.email,
+      phone: usersTable.phone,
+    });
   };
 
   static validateUserIdAndPassword = async (
@@ -226,5 +236,186 @@ export class User {
       .where(and(...whereConditions))
       .limit(body.limit)
       .offset(body.offSet);
+  };
+
+  static userSearch = async (body: {
+    schoolId: string;
+    searchObj: Omit<BulkUserSearch["body"], "type">;
+    offSet: number;
+    limit: number;
+  }) => {
+    const whereConditions: any = [eq(usersTable.schoolId, body.schoolId)];
+    if (body.searchObj.searchQuery) {
+      const pattern = `%${body.searchObj.searchQuery}%`;
+      console.log({ pattern });
+      whereConditions.push(
+        or(
+          sql`LOWER(${usersTable.firstName}) LIKE LOWER(${pattern})`,
+          sql`LOWER(${usersTable.lastName}) LIKE LOWER(${pattern})`,
+          sql`LOWER(${usersTable.email}) LIKE LOWER(${pattern})`
+        )
+      );
+    }
+    if (body.searchObj.role) {
+      whereConditions.push(eq(usersTable.role, body.searchObj.role));
+    }
+    return await db
+      .select({
+        userId: usersTable.id,
+        firstName: usersTable.firstName,
+        lastName: usersTable.lastName,
+        email: usersTable.email,
+        role: usersTable.role,
+      })
+      .from(usersTable)
+      .where(and(...whereConditions))
+      .limit(body.limit)
+      .offset(body.offSet);
+  };
+
+  static getGuardians = async (body: { schoolId: string; userId: string }) => {
+    const getUserInfo = {
+      id: true,
+      email: true,
+      phone: true,
+      firstName: true,
+      lastName: true,
+      role: true,
+    };
+    return await db.query.usersTable.findFirst({
+      where: and(
+        eq(usersTable.id, body.userId),
+        eq(usersTable.schoolId, body.schoolId)
+      ),
+      columns: {
+        ...getUserInfo,
+      },
+      with: {
+        guardian: {
+          columns: {
+            isPrimary: true,
+            relation: true,
+          },
+          with: {
+            guardian: {
+              columns: {
+                ...getUserInfo,
+              },
+            },
+          },
+        },
+        children: {
+          columns: {
+            isPrimary: true,
+            relation: true,
+          },
+          with: {
+            children: {
+              columns: {
+                ...getUserInfo,
+              },
+            },
+          },
+        },
+      },
+    });
+  };
+
+  static getAllUserGuardians = async (body: {
+    schoolId: string;
+    childUserId?: string;
+    guardianUserId?: string;
+    isPrimary?: boolean | undefined;
+    isActive?: boolean | undefined;
+    relation?: GUARDIANS_TYPES;
+  }) => {
+    const whereConditions = [eq(userGuardiansTable.schoolId, body.schoolId)];
+    if (body.childUserId) {
+      whereConditions.push(
+        eq(userGuardiansTable.childUserId, body.childUserId)
+      );
+    }
+    if (body.guardianUserId) {
+      whereConditions.push(
+        eq(userGuardiansTable.guardianUserId, body.guardianUserId)
+      );
+    }
+    if (typeof body.isPrimary === "boolean") {
+      whereConditions.push(eq(userGuardiansTable.isPrimary, body.isPrimary));
+    }
+    if (typeof body.isActive === "boolean") {
+      whereConditions.push(eq(userGuardiansTable.isActive, body.isActive));
+    }
+    if (body.relation) {
+      whereConditions.push(eq(userGuardiansTable.relation, body.relation));
+    }
+    return await db.query.userGuardiansTable.findMany({
+      where: and(...whereConditions),
+      columns: {
+        id: true,
+        childUserId: true,
+        guardianUserId: true,
+        isPrimary: true,
+        relation: true,
+      },
+    });
+  };
+
+  static userGuardianRelationMap = async (body: {
+    schoolId: string;
+    data: UserGuardianMap_Type["body"];
+  }) => {
+    const childUserId = body.data.childUserId;
+    const childerData = await this.getUserDetails(childUserId);
+    if (!childerData) {
+      throw new Error("Child User not exists!");
+    }
+    if (childerData.role !== Constants.USER_ROLES.STUDENT) {
+      throw new Error(
+        `Given Child user is not student type but ${childerData.role} type`
+      );
+    }
+    const allGuardiansId = body.data.guardians.map((g) => g.guardianUserId);
+    const getAllGuardiansInfo = await this.getBulkUserInfo(
+      allGuardiansId,
+      body.schoolId
+    );
+    if (allGuardiansId.length !== getAllGuardiansInfo.length) {
+      throw new Error(
+        `${
+          allGuardiansId.length - getAllGuardiansInfo.length
+        } guardians records not dound`
+      );
+    }
+    const nonGuardiansRoles: string[] = [];
+    getAllGuardiansInfo.forEach((g) => {
+      if (g.role !== Constants.USER_ROLES.GUARDIAN) {
+        nonGuardiansRoles.push(g.firstName);
+      }
+    });
+    if (nonGuardiansRoles.length > 0) {
+      throw new Error(
+        `These users are not type of ${
+          Constants.USER_ROLES.GUARDIAN
+        } ${nonGuardiansRoles.join(" | ")}`
+      );
+    }
+    const primaryGuardians = await this.getAllUserGuardians({
+      schoolId: body.schoolId,
+      childUserId,
+      isPrimary: true,
+    });
+    const isUserHavePrimaryGuardian = primaryGuardians.length > 0;
+    const dataToFeed = body.data.guardians.map((g, index) => {
+      const isPrimary = !isUserHavePrimaryGuardian && index <= 1 ? true : false;
+      return {
+        schoolId: body.schoolId,
+        childUserId,
+        guardianUserId: g.guardianUserId,
+        relation: g.relation,
+        isPrimary,
+      };
+    });
+    return await db.insert(userGuardiansTable).values(dataToFeed).returning();
   };
 }

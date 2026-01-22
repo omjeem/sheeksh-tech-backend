@@ -12,4 +12,22 @@ userRouter.put(
   Controllers.User.userSearch
 );
 
+userRouter.post(
+  "/guardian-map",
+  validateRequest(Validators.User.userGuardianRelationMap),
+  Controllers.User.userGuardianRelationMap
+);
+
+userRouter.post(
+  "/guardian",
+  validateRequest(Validators.User.createGuardian),
+  Controllers.User.createGuardian
+);
+
+userRouter.get(
+  "/guardian-children/:userId",
+  validateRequest(Validators.User.getAllUserGuardians),
+  Controllers.User.getAllUserGuardians
+);
+
 export default userRouter;

@@ -10,7 +10,7 @@ app.use(cors());
 
 app.get("/", (req: Request, res: Response) => {
   return res.json({
-    message: "Hello world",
+    message: "Welcome to Shiksha Tech Api",
   });
 });
 
