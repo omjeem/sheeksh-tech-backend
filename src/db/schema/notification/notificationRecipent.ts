@@ -10,6 +10,7 @@ import { jsonb } from "drizzle-orm/pg-core";
 import { usersTable } from "../school/user";
 import { notification_Table } from "./notification";
 import Constants from "@/config/constants";
+import { notificationRecipientAck_Table } from "./notificationRecipentAck";
 
 export const notificationRecipient_Table = pgTable("notification_recipient", {
   id: uuid().primaryKey().defaultRandom(),
@@ -53,5 +54,6 @@ export const notificationRecipientRelations = relations(
       fields: [notificationRecipient_Table.userId],
       references: [usersTable.id],
     }),
+    notifAck: many(notificationRecipientAck_Table),
   })
 );
