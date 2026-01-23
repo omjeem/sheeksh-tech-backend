@@ -8,6 +8,7 @@ export * from "./schema/notification/notificationCategory";
 export * from "./schema/notification/notificationRecipent";
 export * from "./schema/notification/notificationStatus";
 export * from "./schema/notification/notificationTemplate";
+export * from "./schema/notification/notificationRecipentAck";
 
 // School Related Schema's
 export * from "./schema/school/feeStructure";

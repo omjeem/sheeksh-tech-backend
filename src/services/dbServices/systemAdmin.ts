@@ -170,12 +170,12 @@ export class SystemAdmin {
     if (body.planId) {
       whereConditions.push(eq(notifPlanInstance_Table.planId, body.planId));
     }
-    // if (body.isExhausted) {
-    // whereConditions.push(
-    //   eq(notifPlanInstance_Table.isExhausted, body.isExhausted || false)
-    // );
-    // }
-    if (body.isActive) {
+    if (typeof body.isExhausted === "boolean") {
+      whereConditions.push(
+        eq(notifPlanInstance_Table.isExhausted, body.isExhausted)
+      );
+    }
+    if (typeof body.isActive === "boolean") {
       whereConditions.push(eq(notifPlanInstance_Table.isActive, body.isActive));
     }
 

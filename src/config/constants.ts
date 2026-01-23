@@ -7,10 +7,10 @@ export const NOTIFICATION_VARIABLE_LIST = [
 ] as const;
 
 const SYSTEM_ADMIN_ACCESS = [
-  "VIEWER",
-  "MAINTAINER",
-  "ROOT",
   "SUPER_ROOT",
+  "ROOT",
+  "MAINTAINER",
+  "VIEWER",
 ] as const;
 export type SYSTEM_ADMIN_ACCESS_TYPES = (typeof SYSTEM_ADMIN_ACCESS)[number];
 
@@ -60,7 +60,6 @@ const N_BILLING = {
     "WEEKLY",
     "YEARLY",
     "ONE_TIME",
-    "NO_LIMIT",
   ] as const,
   PURCHASE_STATUS: ["PENDING", "SUCCEEDED", "FAILED", "CANCELLED"] as const,
   LEDGER_REASON: [
