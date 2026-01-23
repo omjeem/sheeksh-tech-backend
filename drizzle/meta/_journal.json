@@ -225,6 +225,13 @@
       "when": 1768808799720,
       "tag": "0031_tidy_nightmare",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1769194514304,
+      "tag": "0032_broken_madelyne_pryor",
+      "breakpoints": true
     }
   ]
 }

@@ -4,6 +4,7 @@ import { resend } from "@/config/emailClients";
 import { envConfigs } from "@/config/envConfig";
 import { db } from "@/db";
 import {
+  notificationRecipientAck_Table,
   notifiSystemInventory_Table,
   notifPlanInstance_Table,
   notifPurchasedChannelWise_Table,
@@ -13,7 +14,13 @@ import { and, eq, sql } from "drizzle-orm";
 export class Broadcast {
   static broadcastNotification = async (body: {
     notificationBody: {
-      user: { userId: string; email: string; phone: any; channel: string }[];
+      user: {
+        userId: string;
+        email: string;
+        phone: any;
+        channel: string;
+        recipentId: string;
+      }[];
       subject: string;
       bodyHtml: string;
       bodyText: string;
@@ -28,74 +35,76 @@ export class Broadcast {
     }[];
     schoolId: string;
   }) => {
-    let delivered: string[] = [];
-    let failed: string[] = [];
-    let totalSuccess = 0;
-    let totalFailure = 0;
-    // console.dir({ body }, { depth: null });
-    const updateNotificationInChunk = async (proceedDirectly: boolean) => {
-      if (
-        (proceedDirectly ||
-          delivered.length > Constants.NOTIFICATION.SENT_SIZE) &&
-        delivered.length > 0
-      ) {
-        const deliveredUp =
+    const usersToSentNotf: {
+      userId: string;
+      recipentId: string;
+      to: string;
+      from: string;
+      subject: string;
+      body: string;
+    }[] = [];
+    const footerHtml = `
+         <hr style="margin-top:24px;margin-bottom:12px;border:none;border-top:1px solid #e5e7eb;" />
+         <p style="font-size:12px;color:#6b7280;text-align:center;margin:0;">
+           Sent by <strong>shikshatech.org</strong><br />
+           Contact us at
+           <a href="mailto:contact@shikshatech.org" style="color:#2563eb;text-decoration:none;">
+             contact@shikshatech.org
+           </a>
+         </p>
+        `;
+
+    console.dir({ body }, { depth: null });
+    for (const notif of body.notificationBody) {
+      if (body.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
+        notif.user.forEach((u) => {
+          usersToSentNotf.push({
+            recipentId: u.recipentId,
+            userId: u.userId,
+            to: u.email,
+            from: "Shiksha@shikshatech.org",
+            subject: notif.subject,
+            body: `${notif.bodyHtml}${footerHtml}`,
+          });
+        });
+      } else if (body.channel === Constants.NOTIFICATION.CHANNEL.SMS) {
+        notif.user.forEach((u) => {
+          usersToSentNotf.push({
+            recipentId: u.recipentId,
+            userId: u.userId,
+            to: u.phone,
+            from: "9999999999",
+            subject: notif.subject,
+            body: notif.bodyText,
+          });
+        });
+      }
+    }
+    console.dir({ usersToSentNotf }, { depth: null });
+
+    const processInBatches = async (batchSize: number) => {
+      for (let i = 0; i < usersToSentNotf.length; i += batchSize) {
+        const batch = usersToSentNotf.slice(i, i + batchSize);
+        console.log(`Processing batch ${i / batchSize + 1}`);
+        const response = await Email.sendWithResend(batch, body.notificationId);
+        if (!response.success) {
+          console.log("Error in sending the notitifiction", response.error);
+          throw new Error(response.error?.message);
+        }
+        const data = response.data!;
+        await db.insert(notificationRecipientAck_Table).values(data);
+        const usersIdsUpdate =
           await Services.Notification.updateRecipentsNotifications({
-            userIds: [...delivered],
+            userIds: [...batch.map((b) => b.userId)],
             notificationId: body.notificationId,
             status: Constants.NOTIFICATION.SENT_STATUS.SENT,
             channel: body.channel,
           });
-        totalSuccess += delivered.length;
-        // console.log({ deliveredUp });
-        delivered = [];
-      }
-      if (
-        (proceedDirectly ||
-          delivered.length > Constants.NOTIFICATION.SENT_SIZE) &&
-        failed.length > 0
-      ) {
-        const failedUp =
-          await Services.Notification.updateRecipentsNotifications({
-            userIds: [...failed],
-            notificationId: body.notificationId,
-            status: Constants.NOTIFICATION.SENT_STATUS.FAILED,
-            channel: body.channel,
-          });
-        // console.log({ failedUp });
-        totalFailure += failed.length;
-        failed = [];
+        console.log({ usersIdsUpdate });
       }
     };
-
-    for (const notif of body.notificationBody) {
-      // console.dir({ notif }, { depth: null });
-      let sendData: any;
-      if (body.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
-        sendData = await this.sendWithResend({
-          to: [...notif.user.map((u) => u.email)],
-          from: "no-reply@shikshatech.org",
-          subject: notif.subject,
-          body: notif.bodyHtml,
-        });
-      } else if (body.channel === Constants.NOTIFICATION.CHANNEL.SMS) {
-        sendData = await this.sendSms({
-          to: [...notif.user.map((u) => u.phone)],
-          from: "9999999999",
-          subject: notif.subject,
-          body: notif.bodyText,
-        });
-      }
-      const userIds = [...notif.user.map((u) => u.userId)];
-      if (sendData.success) {
-        delivered.push(...userIds);
-        await updateNotificationInChunk(false);
-      } else {
-        failed.push(...userIds);
-        await updateNotificationInChunk(false);
-      }
-    }
-    await updateNotificationInChunk(true);
+    await processInBatches(10);
+    
     const markPlanInstanceExhaustedIfAllChannelsExhausted = async (
       planInstanceId: string
     ) => {
@@ -136,7 +145,7 @@ export class Broadcast {
         operation: Constants.NOTIFICATION.BILLING.LEDGER_REASON.USAGE,
         channelId: ch.channelId,
         notificationId: body.notificationId,
-        creditsUsed: totalSuccess,
+        creditsUsed: usersToSentNotf.length,
         channel: body.channel,
       });
       // console.dir({ update, schoolLedger }, { depth: null });
@@ -144,9 +153,7 @@ export class Broadcast {
     await db
       .update(notifiSystemInventory_Table)
       .set({
-        unitsConsumed: sql`${notifiSystemInventory_Table.unitsConsumed} + ${
-          totalSuccess + totalFailure
-        }`,
+        unitsConsumed: sql`${notifiSystemInventory_Table.unitsConsumed} + ${usersToSentNotf.length}`,
         updatedAt: new Date(),
       })
       .where(
@@ -157,54 +164,66 @@ export class Broadcast {
       );
     return await Services.Notification.updateNotificationStatus({
       notificationId: body.notificationId,
-      totalFailure,
-      totalSuccess,
+      totalFailure: 0,
+      totalSuccess: usersToSentNotf.length,
       channel: body.channel,
       status: Constants.NOTIFICATION.SENT_STATUS.SENT,
     });
   };
+}
 
-  private static sendWithResend = async (body: {
-    to: string[];
-    from: string;
-    subject: string;
-    body: string;
-  }) => {
+class Email {
+  static sendWithResend = async (
+    body: {
+      recipentId: string;
+      userId: string;
+      to: string;
+      from: string;
+      subject: string;
+      body: string;
+    }[],
+    notificationId: string
+  ) => {
     try {
       if (envConfigs.nodeEnv === "prod") {
-        const footerHtml = `
-         <hr style="margin-top:24px;margin-bottom:12px;border:none;border-top:1px solid #e5e7eb;" />
-         <p style="font-size:12px;color:#6b7280;text-align:center;margin:0;">
-           Sent by <strong>shikshatech.org</strong><br />
-           Contact us at
-           <a href="mailto:contact@shikshatech.org" style="color:#2563eb;text-decoration:none;">
-             contact@shikshatech.org
-           </a>
-         </p>
-        `;
-
-        const { data, error } = await resend.emails.send({
-          from: body.from,
-          to: [...body.to],
-          subject: body.subject,
-          html: `${body.body}${footerHtml}`,
-        });
+        const { data, error } = await resend.batch.send(
+          body.map((b) => ({
+            to: b.to,
+            from: b.from,
+            subject: b.subject,
+            html: b.body,
+          }))
+        );
         if (error) {
-          return { success: false, message: error.message };
+          return { success: false, error };
         }
+        const ack = body.map((b, index) => {
+          return {
+            notificationId,
+            reciepntId: b.recipentId,
+            ackId: data.data[index]?.id,
+          };
+        });
         console.log("Sending from Production");
-        return { success: true, data };
+        return { success: true, data: ack };
       } else {
         console.log("Sending from Demo");
-        return { success: true, data: {} };
+        const ack = body.map((b) => {
+          return {
+            notificationId,
+            reciepntId: b.recipentId,
+            ackId: `test_${Math.random().toFixed(7)}`,
+          };
+        });
+        return { success: true, data: ack };
       }
     } catch (error: any) {
       console.log("Error In resend Api", error);
-      return { success: false, message: error.message };
+      return { success: false, message: error };
     }
   };
 
-  private static sendSms = async (body: {
+  static sendSms = async (body: {
     to: number[];
     from: string;
     subject: string;

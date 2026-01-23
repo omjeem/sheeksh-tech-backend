@@ -20,7 +20,6 @@ export class Notification {
     try {
       const { schoolId } = req.user;
       const { notificationId }: any = req.params;
-      console.log("****************************************************");
       const notficationData = await Services.Notification.getNotification({
         schoolId,
         notificationId,
@@ -53,6 +52,7 @@ export class Notification {
                 userId: d.user.id,
                 email: d.user.email,
                 phone: d.user.phone,
+                recipentId: d.id,
               },
             ],
             ...tempPayLoad,
@@ -71,6 +71,7 @@ export class Notification {
             userId: n.user.id,
             email: n.user.email,
             phone: n.user.phone,
+            recipentId: n.id,
           };
           if (n.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
             emailnotificationUserDetails.push(payload);
@@ -548,11 +549,9 @@ export class Notification {
   static getAllPurchasedPlans = async (req: Request, res: Response) => {
     try {
       const { schoolId } = req.user;
-      const { showAll } = req.query;
       const plans = await Services.SystemAdmin.getPlanInstances({
         schoolId,
         showAllDetail: true,
-        isExhausted: showAll === "1",
       });
       return successResponse(
         res,

@@ -8,6 +8,7 @@ import { notificationTemplate_Table } from "./notificationTemplate";
 import { notificationStatus_Table } from "./notificationStatus";
 import { notificationRecipient_Table } from "./notificationRecipent";
 import { notifSchoolLedger_table } from "../notificationUsages/schoolLedger";
+import { notificationRecipientAck_Table } from "./notificationRecipentAck";
 
 export const notification_Table = pgTable("notification", {
   id: uuid().primaryKey().defaultRandom(),
@@ -52,5 +53,6 @@ export const notificationRelations = relations(
       references: [usersTable.id],
     }),
     notifLedger: many(notifSchoolLedger_table),
+    notifAck : many(notificationRecipientAck_Table)
   })
 );
