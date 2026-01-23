@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc && tsc-alias",
-    "start": "npm run build &&  cross-env NODE_ENV=production node dist/index.js",
+    "start": "npm run build && node dist/index.js",
     "dev": "nodemon --exec npx tsx src/index.ts",
     "d:generate": "drizzle-kit generate",
     "d:migrate": "drizzle-kit migrate",
