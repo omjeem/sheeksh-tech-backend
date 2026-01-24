@@ -1,6 +1,10 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/db";
-import { studentClassSectionTable, studentsTable, usersTable } from "@/db/schema";
+import {
+  studentClassSectionTable,
+  studentsTable,
+  usersTable,
+} from "@/db/schema";
 import Services from "..";
 import {
   FeedStudents_Type,
@@ -46,7 +50,7 @@ export class Student {
         password: hashedPassword,
         firstName: d.firstName,
         lastName: d.lastName,
-        phone : d.phone
+        phone: d.phone,
         // parent : d.parent
       };
     });
@@ -177,6 +181,7 @@ export class Student {
           with: {
             user: {
               columns: {
+                id: true,
                 firstName: true,
                 lastName: true,
                 email: true,
