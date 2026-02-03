@@ -28,10 +28,9 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-
 app.use("/api", router);
 
-app.listen(envConfigs.port, () => {
+app.listen(envConfigs.port, "0.0.0.0", () => {
   console.log(`Server is running on http://localhost:${envConfigs.port}`);
   connectToDatabase();
 });
