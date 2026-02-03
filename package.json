@@ -8,7 +8,8 @@
     "dev": "nodemon --exec npx tsx src/index.ts",
     "d:generate": "drizzle-kit generate",
     "d:migrate": "drizzle-kit migrate",
-    "d:studio": "drizzle-kit studio"
+    "d:studio": "drizzle-kit studio",
+    "docker:build": "docker buildx build --platform linux/amd64,linux/arm64 -t omjeem/s-tech:latest --push ."
   },
   "keywords": [],
   "author": "",
