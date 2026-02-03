@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "@/config/response";
+import { errorResponse, sqlErrors, successResponse } from "@/config/response";
 import Services from "@/services";
 import Constants from "@/config/constants";
 
@@ -17,7 +17,7 @@ export class Student {
       );
     } catch (error: any) {
       console.log("Error while feeding user data", error);
-      return errorResponse(res, error.message || error);
+      return errorResponse(res, sqlErrors(error));
     }
   };
 
