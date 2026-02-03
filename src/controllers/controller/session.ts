@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "@/config/response";
+import { errorResponse, sqlErrors, successResponse } from "@/config/response";
 import Services from "@/services";
 import Constants from "@/config/constants";
 
@@ -29,7 +29,7 @@ export class Session {
         Constants.STATUS_CODE.CREATED
       );
     } catch (error: any) {
-      return errorResponse(res, error.message || error);
+      return errorResponse(res, sqlErrors(error));
     }
   };
 
@@ -49,7 +49,7 @@ export class Session {
         Constants.STATUS_CODE.NO_CONTENT
       );
     } catch (error: any) {
-      return errorResponse(res, error.message || error);
+      return errorResponse(res, sqlErrors(error));
     }
   };
 
