@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import {
   errorResponse,
-  sqlDuplicateError,
+  sqlErrors,
   successResponse,
 } from "@/config/response";
 import Services from "@/services";
@@ -33,7 +33,7 @@ export class User {
         Constants.STATUS_CODE.CREATED
       );
     } catch (error: any) {
-      return errorResponse(res, sqlDuplicateError(error));
+      return errorResponse(res, sqlErrors(error));
     }
   };
 
@@ -125,7 +125,7 @@ export class User {
     } catch (error: any) {
       return errorResponse(
         res,
-        sqlDuplicateError(
+        sqlErrors(
           error,
           "Some user relation with guardian already exists"
         )

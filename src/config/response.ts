@@ -18,7 +18,7 @@ export function errorResponse(
   return res.status(status).json({ success: false, error: error });
 }
 
-export function sqlDuplicateError(error: any, preMsg: string | null = null) {
+export function sqlErrors(error: any, preMsg: string | null = null) {
   let message = error.message || error;
   if (error?.cause?.code === "23505") {
     message = preMsg ?? error?.cause?.detail;

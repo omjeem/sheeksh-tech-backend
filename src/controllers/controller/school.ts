@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { errorResponse, successResponse } from "@/config/response";
+import { errorResponse, sqlErrors, successResponse } from "@/config/response";
 import Services from "@/services";
 import Constants from "@/config/constants";
 
@@ -18,7 +18,7 @@ export class School {
       console.error("School Onboarding Error:", error);
       return errorResponse(
         res,
-        error?.message || error
+        sqlErrors(error)
       );
     }
   };
