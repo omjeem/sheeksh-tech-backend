@@ -57,7 +57,7 @@ export class Notification {
       category: c,
     }));
 
-    console.log({ values });
+    // console.log({ values });
     return await db
       .insert(notificationCategory_Table)
       .values(values)
@@ -197,7 +197,7 @@ export class Notification {
     schoolId: string;
     payload: Object;
   }) => {
-    console.log({ body });
+    // console.log({ body });
     const isBelongsToSchool = await this.getTemplateByIdAndSchoolId({
       templateId: body.templateId,
       schoolId: body.schoolId,
@@ -251,7 +251,7 @@ export class Notification {
     variables: string[],
     sessionId: string
   ) => {
-    console.log({ body, schoolId, variables });
+    // console.log({ body, schoolId, variables });
 
     const requiredUserFields: Record<string, boolean> = {
       id: true,
@@ -369,7 +369,7 @@ export class Notification {
               },
             }
           );
-          console.dir({ sectionsData }, { depth: null });
+          // console.dir({ sectionsData }, { depth: null });
           userInfo.push(...sectionsData.map((s) => s.student.user));
         }
       }
@@ -399,7 +399,7 @@ export class Notification {
             },
           },
         });
-        console.dir({ teachersInfo }, { depth: null });
+        // console.dir({ teachersInfo }, { depth: null });
         userInfo.push(...teachersInfo.map((t) => t.user));
       }
       if (body.guardians) {

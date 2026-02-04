@@ -54,7 +54,7 @@ export class Broadcast {
          </p>
         `;
 
-    console.dir({ body }, { depth: null });
+    // console.dir({ body }, { depth: null });
     for (const notif of body.notificationBody) {
       if (body.channel === Constants.NOTIFICATION.CHANNEL.EMAIL) {
         notif.user.forEach((u) => {
@@ -80,7 +80,7 @@ export class Broadcast {
         });
       }
     }
-    console.dir({ usersToSentNotf }, { depth: null });
+    // console.dir({ usersToSentNotf }, { depth: null });
 
     const processInBatches = async (batchSize: number) => {
       for (let i = 0; i < usersToSentNotf.length; i += batchSize) {
@@ -100,7 +100,7 @@ export class Broadcast {
             status: Constants.NOTIFICATION.SENT_STATUS.SENT,
             channel: body.channel,
           });
-        console.log({ usersIdsUpdate });
+        // console.log({ usersIdsUpdate });
       }
     };
     await processInBatches(10);

@@ -128,7 +128,7 @@ export class Notification {
           channels: channelsData.map((c) => c.channel),
         });
 
-      console.dir({ channelsBalanceMap }, { depth: null });
+      // console.dir({ channelsBalanceMap }, { depth: null });
 
       /****************************************************/
 
@@ -708,7 +708,7 @@ class NotificationHelper {
       plans: body.plans,
     });
 
-    console.dir({ updateChannelsQueries }, { depth: null });
+    // console.dir({ updateChannelsQueries }, { depth: null });
 
     await Services.Helper.Broadcast.broadcastNotification({
       notificationBody: body.notifications,
@@ -755,7 +755,7 @@ class NotificationHelper {
         orgType: shouldCheckForSchool ? "SCHOOL" : "SYSTEM",
         ...(shouldCheckForSchool && { schoolId: body.schoolId }),
       });
-      console.log({ shouldCheckForSchool, limits });
+      // console.log({ shouldCheckForSchool, limits });
       const DateRanges = Constants.NOTIFICATION.BILLING.USAGE_LIMIT;
 
       const frequencyOrder: any = {
@@ -770,7 +770,7 @@ class NotificationHelper {
         (a, b) => frequencyOrder[a.frequency] - frequencyOrder[b.frequency]
       );
 
-      console.log({ sortedLimits });
+      // console.log({ sortedLimits });
       for (const limitData of sortedLimits) {
         const { frequency, limit } = limitData;
         switch (frequency) {
@@ -784,15 +784,15 @@ class NotificationHelper {
                 channel: body.channel,
                 ...(shouldCheckForSchool && { schoolId: body.schoolId }),
               });
-            console.dir(
-              {
-                totalConsumed,
-                frequency,
-                limit,
-                body,
-              },
-              { depth: null }
-            );
+            // console.dir(
+            //   {
+            //     totalConsumed,
+            //     frequency,
+            //     limit,
+            //     body,
+            //   },
+            //   { depth: null }
+            // );
             if (totalConsumed + body.requiredCredits > limit) {
               limitReachedErrors.push(
                 `${
@@ -825,7 +825,7 @@ class NotificationHelper {
           default:
             continue;
         }
-        console.log({ limitReachedErrors });
+        // console.log({ limitReachedErrors });
       }
     } while (i < 2);
     return limitReachedErrors;
