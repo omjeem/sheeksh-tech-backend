@@ -33,7 +33,7 @@ export class SystemAdmin {
     try {
       const { userId } = req.user;
       const body = req.body;
-      console.log({ body });
+      // console.log({ body });
       const plan = await Services.SystemAdmin.createNotificationPlan(
         body,
         userId
@@ -89,7 +89,7 @@ export class SystemAdmin {
   static getSystemNotificationLedger = async (req: Request, res: Response) => {
     try {
       const { pageNo = 1, pageSize = 15, id }: any = req.query;
-      console.log("Hit ---- ", req.query);
+      // console.log("Hit ---- ", req.query);
       const ledgerInfo = await Services.Notification.getLedger({
         id,
         pageNo,
@@ -199,7 +199,7 @@ export class SystemAdmin {
         phone,
       };
       const newUser = await Services.SystemAdmin.createSystemAdminUser(obj);
-      console.log({ body });
+      // console.log({ body });
       return successResponse(res, "Admin created Succesfully", newUser);
     } catch (error: any) {
       return errorResponse(res, sqlErrors(error));
