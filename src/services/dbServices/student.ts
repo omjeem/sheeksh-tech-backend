@@ -40,7 +40,7 @@ export class Student {
         d.email
       );
       const dateOfBirth = Utils.toUTCFromIST(d.dateOfBirth);
-      console.log({ dateOfBirth });
+      // console.log({ dateOfBirth });
       return {
         srNo: selfAssignSr ? ++lastSrNo : d.srNo,
         dateOfBirth,
@@ -127,7 +127,7 @@ export class Student {
   };
 
   static getStudentBySchoolId = async (schoolId: string) => {
-    console.log({ schoolId });
+    // console.log({ schoolId });
     return await db.query.studentsTable.findMany({
       where: and(eq(studentsTable.schoolId, schoolId)),
       columns: {

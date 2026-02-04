@@ -146,7 +146,7 @@ export class User {
     }
     if (body.searchObj.searchQuery) {
       const pattern = `%${body.searchObj.searchQuery}%`;
-      console.log({ pattern });
+      // console.log({ pattern });
       whereConditions.push(
         or(
           sql`LOWER(${usersTable.firstName}) LIKE LOWER(${pattern})`,
@@ -210,7 +210,7 @@ export class User {
     }
     if (body.searchObj.searchQuery) {
       const pattern = `%${body.searchObj.searchQuery}%`;
-      console.log({ pattern });
+      // console.log({ pattern });
       whereConditions.push(
         or(
           sql`LOWER(${usersTable.firstName}) LIKE LOWER(${pattern})`,
@@ -247,7 +247,7 @@ export class User {
     const whereConditions: any = [eq(usersTable.schoolId, body.schoolId)];
     if (body.searchObj.searchQuery) {
       const pattern = `%${body.searchObj.searchQuery}%`;
-      console.log({ pattern });
+      // console.log({ pattern });
       whereConditions.push(
         or(
           sql`LOWER(${usersTable.firstName}) LIKE LOWER(${pattern})`,

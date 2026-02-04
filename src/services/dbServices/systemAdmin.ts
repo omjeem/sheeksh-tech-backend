@@ -109,7 +109,7 @@ export class SystemAdmin {
           .returning({
             id: notifPlanFeatures_Table.id,
           });
-        console.log({ featureFeed });
+        // console.log({ featureFeed });
       }
       return await this.getAllNotificationPlans({ planId });
     });
@@ -256,7 +256,7 @@ export class SystemAdmin {
         .values(newPlanInstance)
         .returning();
 
-      console.dir({ createPlanInstance }, { depth: null });
+      // console.dir({ createPlanInstance }, { depth: null });
       const planInstanceId = createPlanInstance[0]?.id!;
 
       const planTransactionObj = {
@@ -273,7 +273,7 @@ export class SystemAdmin {
         .values(planTransactionObj)
         .returning();
 
-      console.dir({ purchaseTrans }, { depth: null });
+      // console.dir({ purchaseTrans }, { depth: null });
 
       const transactionId = purchaseTrans[0]?.id;
       const { feature } = planDetails;
@@ -289,7 +289,7 @@ export class SystemAdmin {
           .insert(notifPurchasedChannelWise_Table)
           .values(channelWiseObj)
           .returning();
-        console.dir({ channelWiseData }, { depth: null });
+        // console.dir({ channelWiseData }, { depth: null });
       }
       await Services.Notification.addLogsIntoSchoolLedger(
         {
